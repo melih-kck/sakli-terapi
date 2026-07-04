@@ -1,0 +1,117 @@
+/* ============================================
+   About Page Styles
+   ============================================ */
+
+.about-hero {
+  padding: 120px 0 80px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-light);
+  text-align: center;
+}
+
+.about-hero h1 {
+  font-size: var(--text-5xl);
+  margin-bottom: var(--space-md);
+  color: var(--text-primary);
+}
+
+.about-hero p {
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2xl);
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .about-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.about-content h2 {
+  font-size: var(--text-3xl);
+  margin-bottom: var(--space-md);
+  color: var(--text-primary);
+}
+
+.about-content p {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin-bottom: var(--space-md);
+}
+
+.donation-highlight {
+  background: var(--bg-primary);
+  border: 1px solid var(--primary);
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
+  text-align: center;
+}
+
+.donation-highlight-icon {
+  font-size: 4rem;
+  margin-bottom: var(--space-md);
+}
+
+.donation-highlight h3 {
+  font-size: var(--text-2xl);
+  color: var(--primary);
+  margin-bottom: var(--space-sm);
+}
+
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-lg);
+}
+
+@media (max-width: 1024px) {
+  .values-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .values-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.value-card {
+  text-align: center;
+  padding: var(--space-xl) var(--space-md);
+}
+
+.value-icon {
+  width: 64px;
+  height: 64px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin: 0 auto var(--space-md);
+}
+
+.value-card h4 {
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-xs);
+  color: var(--text-primary);
+}
+
+.value-card p {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}

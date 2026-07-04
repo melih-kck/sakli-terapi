@@ -1,0 +1,26 @@
+.rating-stars-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.rating-stars .star {
+  color: var(--border-medium);
+  cursor: default;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.rating-stars .star.filled,
+.rating-stars .star.half {
+  color: var(--accent);
+}
+
+.rating-stars .star.interactive {
+  cursor: pointer;
+}
+
+.rating-stars .star.interactive:hover {
+  transform: scale(1.2);
+  color: var(--accent);
+}

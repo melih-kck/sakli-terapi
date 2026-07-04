@@ -1,0 +1,110 @@
+.mood-tracker {}
+
+.mood-options {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: center;
+}
+
+.mood-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--border-light);
+  background: var(--bg-primary);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.mood-option:hover {
+  border-color: var(--primary-lighter);
+  background: var(--primary-bg);
+  transform: translateY(-2px);
+}
+
+.mood-option.selected {
+  border-color: var(--primary);
+  background: var(--primary-bg);
+  box-shadow: 0 0 0 3px rgba(74, 58, 255, 0.15);
+}
+
+.mood-emoji {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.mood-tracker-sm .mood-emoji {
+  font-size: 1.25rem;
+}
+
+.mood-label {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  font-weight: var(--weight-medium);
+}
+
+.mood-tracker-sm .mood-label {
+  display: none;
+}
+
+.mood-chart {
+  margin-top: var(--space-lg);
+  padding: var(--space-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+.mood-chart-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--space-sm);
+  height: 80px;
+}
+
+.mood-bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.mood-bar {
+  width: 100%;
+  max-width: 32px;
+  min-height: 8px;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  transition: height var(--transition-slow);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 2px;
+}
+
+.mood-bar-emoji {
+  font-size: 0.7rem;
+}
+
+.mood-bar-day {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 480px) {
+  .mood-options {
+    gap: var(--space-xs);
+  }
+  .mood-option {
+    padding: var(--space-xs) var(--space-sm);
+  }
+  .mood-emoji {
+    font-size: 1.4rem;
+  }
+}
