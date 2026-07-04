@@ -41,22 +41,32 @@ export default async function handler(req, res) {
 
         // 4. ÖDEME BAŞARILI! Supabase'i Güncelle
         // Backend'de RLS'yi atlamak için Service Role Key kullanılmalı!
-        const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY; 
+        const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+        if (!supabaseUrl || !supabaseServiceKey || !sessionId) {
+          console.error('Supabase payment callback configuration is missing.');
+          res.redirect(302, '/panel?payment=pending');
+          return resolve();
+        }
         
         if (supabaseUrl && supabaseServiceKey && sessionId) {
           const supabase = createClient(supabaseUrl, supabaseServiceKey);
           
-          const { error: updateError } = await supabase
+          const { data: updatedSessions, error: updateError } = await supabase
             .from('sessions')
             .update({
               payment_status: 'paid',
               paid_at: new Date().toISOString()
             })
-            .eq('id', sessionId);
+            .eq('id', sessionId)
+            .eq('payment_status', 'pending')
+            .select('id');
 
-          if (updateError) {
+          if (updateError || updatedSessions?.length !== 1) {
             console.error("Supabase payment update error:", updateError);
+            res.redirect(302, '/panel?payment=pending');
+            return resolve();
             // Uyarı: Ödeme alındı ama veritabanı güncellenemedi! 
             // Gerçek projede bunu Discord/Slack'e loglamak iyi olur.
           }

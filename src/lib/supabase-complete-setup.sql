@@ -9,6 +9,9 @@
 -- - Missing columns, indexes, policies, functions, and triggers are added.
 -- - Known old policies are replaced with the current canonical policies.
 --
+-- After this baseline setup, also run migration-009-privacy-boundaries.sql.
+-- It is kept separate so the latest privacy boundary remains auditable.
+--
 -- Important:
 -- - This script does not automatically promote any email to admin.
 -- - After creating your admin user, run the commented UPDATE near the bottom
