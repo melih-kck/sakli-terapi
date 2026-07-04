@@ -40,6 +40,7 @@ For a fresh Supabase project, run:
 
 ```text
 src/lib/supabase-complete-setup.sql
+src/lib/migration-009-privacy-boundaries.sql
 ```
 
 For an already-created database, run the latest incremental migrations in order:
@@ -48,9 +49,19 @@ For an already-created database, run the latest incremental migrations in order:
 src/lib/migration-006-rls-hardening.sql
 src/lib/migration-007-session-update-hardening.sql
 src/lib/migration-008-auth-profile-trigger.sql
+src/lib/migration-009-privacy-boundaries.sql
 ```
 
 `migration-008-auth-profile-trigger.sql` keeps profile creation working when Supabase Auth email confirmation is enabled.
+`migration-009-privacy-boundaries.sql` replaces legacy policies, limits public
+catalog data to safe views, and protects server-managed role, payment, and
+rating fields.
+
+After Migration 009, run `src/lib/verify-rls.sql` in the SQL Editor. The final
+block raises an exception if a protected table has RLS disabled or a public
+view exposes a private identifier.
+
+The expected role access matrix is documented in `docs/security-model.md`.
 
 ## Admin
 

@@ -63,9 +63,8 @@ export const getDemoPsychologists = () => mockPsychologists.map(psychologist => 
 
 export const fetchApprovedPsychologists = async () => {
   const { data, error } = await supabase
-    .from('psychologists')
+    .from('public_psychologists')
     .select('*')
-    .eq('approval_status', 'approved')
     .order('rating', { ascending: false });
 
   if (error) throw error;
@@ -74,10 +73,9 @@ export const fetchApprovedPsychologists = async () => {
 
 export const fetchApprovedPsychologistById = async (id) => {
   const { data, error } = await supabase
-    .from('psychologists')
+    .from('public_psychologists')
     .select('*')
     .eq('id', id)
-    .eq('approval_status', 'approved')
     .single();
 
   if (error) throw error;

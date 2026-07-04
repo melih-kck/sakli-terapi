@@ -302,8 +302,18 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
     // --- Supabase path -----------------------------------------------------
     try {
       const { data, error } = await supabase
-        .from('reviews')
-        .select('*')
+        .from('public_reviews')
+        .select(`
+          id,
+          psychologist_id,
+          rating,
+          categories,
+          comment,
+          anonymous,
+          channel,
+          created_at,
+          client_alias
+        `)
         .eq('psychologist_id', psychologistId)
         .order('created_at', { ascending: false });
 

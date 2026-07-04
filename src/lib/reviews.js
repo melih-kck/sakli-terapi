@@ -114,7 +114,7 @@ export const getPsychologistReviews = async (psychologistId) => {
     // Yorumları public review alanlarından çek; profiles join'i RLS nedeniyle
     // client dışı kullanıcılar için gereksiz hata üretebilir.
     const { data, error } = await supabase
-      .from('reviews')
+      .from('public_reviews')
       .select(`
         id,
         rating,
