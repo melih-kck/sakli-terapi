@@ -7,11 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "preview": "vite preview"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.2",
-    "iyzipay": "^2.0.67",
+    "iyzipay": "^2.0.69",
     "peerjs": "^1.5.5",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
@@ -19,6 +21,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
@@ -26,7 +30,12 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "jsdom": "^29.1.1",
     "vite": "^8.0.12",
-    "vite-plugin-vercel": "^11.1.0"
+    "vitest": "^4.1.9"
+  },
+  "overrides": {
+    "qs": "^6.15.3",
+    "uuid": "^11.1.1"
   }
 }

@@ -9,6 +9,8 @@ npm install
 npm run dev
 ```
 
+Copy `.env.example` to `.env.local` and fill in the local Supabase values.
+
 Required local env keys:
 
 ```env
@@ -17,6 +19,20 @@ VITE_SUPABASE_ANON_KEY=
 ```
 
 Do not put `SUPABASE_SERVICE_ROLE_KEY` in frontend env files.
+
+## Quality Checks
+
+Run the same checks used by GitHub Actions:
+
+```bash
+npm audit --omit=dev --audit-level=high
+npm run lint
+npm test
+npm run build
+```
+
+Tests use Vitest, React Testing Library, and jsdom. Pull requests and pushes to
+`main` run the full check suite automatically.
 
 ## Database Setup
 
