@@ -1,0 +1,620 @@
+/* ============================================
+   Psychologists Pages Styles
+   ============================================ */
+
+/* List Page Header */
+.psy-header {
+  text-align: center;
+  padding: var(--space-3xl) 0 var(--space-xl);
+  margin-bottom: var(--space-xl);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.psy-header h1 {
+  font-size: var(--text-4xl);
+  margin-bottom: var(--space-sm);
+}
+
+.psy-header p {
+  color: var(--text-secondary);
+  font-size: var(--text-lg);
+}
+
+/* Sidebar Layout */
+.sidebar-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: var(--space-2xl);
+  align-items: start;
+}
+
+.psy-filters {
+  background: var(--bg-secondary);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  position: sticky;
+  top: 100px;
+}
+
+.filter-section {
+  margin: var(--space-lg) 0;
+}
+
+.filter-section h4 {
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-md);
+  color: var(--text-primary);
+}
+
+.filter-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.filter-radios {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.radio-group {
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+}
+
+.tag {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tag.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+/* Results Area */
+.psy-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-xl);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.psy-count {
+  color: var(--text-secondary);
+  font-weight: var(--weight-medium);
+}
+
+.psy-sort {
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  font-family: inherit;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.psy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-lg);
+}
+
+.psy-card {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+}
+
+.psy-card-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+  position: relative;
+}
+
+.psy-card-info h4 {
+  font-size: var(--text-lg);
+  margin-bottom: 2px;
+}
+
+.psy-card-title {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-xs);
+}
+
+.psy-status {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  background: var(--bg-secondary);
+  padding: 4px 8px;
+  border-radius: var(--radius-full);
+}
+
+.psy-status.available .status-dot { background: var(--success); }
+.psy-status .status-dot { background: var(--danger); width: 8px; height: 8px; border-radius: 50%; }
+
+.psy-card-specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+}
+
+.psy-card-rating {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px dashed var(--border-light);
+}
+
+.psy-exp {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  font-weight: var(--weight-medium);
+}
+
+.psy-card-bio {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-lg);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex-grow: 1;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: var(--space-4xl) var(--space-lg);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: var(--space-md);
+}
+
+.empty-state-title {
+  margin-bottom: var(--space-sm);
+}
+
+.empty-state-description {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xl);
+}
+
+
+/* ============================================
+   Profile Page
+   ============================================ */
+.psy-profile-header {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(147, 112, 219, 0.05) 100%);
+  padding: 100px 0 var(--space-3xl);
+  border-bottom: 1px solid var(--border-medium);
+}
+
+.psy-profile-header-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xl);
+}
+
+.psy-profile-avatar {
+  border: 4px solid var(--bg-secondary);
+  box-shadow: 0 0 25px rgba(147, 112, 219, 0.15);
+  width: 150px;
+  height: 150px;
+  font-size: 3rem;
+}
+
+.psy-profile-title-area h1 {
+  font-size: var(--text-4xl);
+  margin-bottom: 4px;
+}
+
+.psy-profile-title {
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+}
+
+.psy-candidate-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.psy-supervisor {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.psy-profile-stats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.psy-stat-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.psy-stat-item strong {
+  color: var(--text-primary);
+  font-size: var(--text-base);
+}
+
+.psy-stat-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border-medium);
+}
+
+.psy-profile-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.booking-confirm-box {
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+}
+
+.booking-confirm-box .content-metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-md);
+  font-size: var(--text-sm);
+}
+
+.booking-confirm-box .content-metric span {
+  color: var(--text-tertiary);
+}
+
+.booking-confirm-box .content-metric strong {
+  color: var(--text-primary);
+}
+
+/* Profile Layout */
+.psy-profile-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: var(--space-3xl);
+  align-items: start;
+}
+
+.psy-section {
+  margin-bottom: var(--space-3xl);
+}
+
+.psy-section h2 {
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.psy-bio-text {
+  font-size: var(--text-base);
+  line-height: var(--leading-loose);
+  color: var(--text-secondary);
+}
+
+.psy-approach-item {
+  margin-bottom: var(--space-md);
+}
+
+.psy-approach-item h4 {
+  font-size: var(--text-base);
+  margin-bottom: 4px;
+  color: var(--text-primary);
+  font-weight: var(--weight-bold);
+}
+
+.psy-approach-item p {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+/* Reviews */
+.reviews-summary {
+  display: flex;
+  gap: var(--space-2xl);
+  align-items: center;
+}
+
+.reviews-overall {
+  text-align: center;
+  padding-right: var(--space-2xl);
+  border-right: 1px solid var(--border-light);
+}
+
+.reviews-big-rating {
+  font-size: 4rem;
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  line-height: 1;
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.reviews-categories {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.review-cat-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.review-cat-label {
+  width: 140px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-lighter) 100%);
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 10px rgba(147, 112, 219, 0.3);
+}
+
+.review-cat-score {
+  width: 30px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  text-align: right;
+}
+
+.review-item {
+  padding: var(--space-lg) 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-sm);
+}
+
+.review-author {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.review-alias {
+  display: block;
+  font-weight: var(--weight-bold);
+  font-size: var(--text-sm);
+}
+
+.review-date {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.review-comment {
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-sm);
+}
+
+.review-meta {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.review-channel, .review-session-count {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  background: rgba(147, 112, 219, 0.1);
+  border: 1px solid rgba(147, 112, 219, 0.2);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+/* Sidebar Booking */
+.sticky-sidebar {
+  position: sticky;
+  top: 100px;
+}
+
+.booking-section {
+  margin-bottom: var(--space-lg);
+}
+
+.booking-label {
+  display: block;
+  font-weight: var(--weight-bold);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.date-picker-scroll {
+  display: flex;
+  gap: var(--space-sm);
+  overflow-x: auto;
+  padding-bottom: var(--space-xs);
+  scrollbar-width: thin;
+}
+
+.date-btn {
+  flex: 0 0 65px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-sm);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.date-btn:not(.disabled):hover {
+  border-color: var(--primary-lighter);
+}
+
+.date-btn.selected {
+  background: var(--bg-secondary);
+  border-color: var(--primary);
+  color: var(--text-primary);
+  box-shadow: 0 0 10px rgba(147, 112, 219, 0.2);
+}
+
+.date-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--bg-secondary);
+  color: var(--text-tertiary);
+}
+
+.date-day-name { font-size: var(--text-xs); text-transform: uppercase; margin-bottom: 2px; color: inherit; }
+.date-day-num { font-size: var(--text-lg); font-weight: var(--weight-bold); margin-bottom: 2px; color: inherit; }
+.date-month { font-size: var(--text-xs); color: inherit; }
+
+.date-btn.selected .date-day-name,
+.date-btn.selected .date-day-num,
+.date-btn.selected .date-month { color: var(--primary); }
+
+.time-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-xs);
+}
+
+.time-btn {
+  padding: var(--space-sm);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.time-btn:hover { border-color: var(--primary-lighter); }
+.time-btn.selected { background: var(--bg-secondary); border-color: var(--primary); color: var(--primary); font-weight: var(--weight-bold); box-shadow: 0 0 10px rgba(147, 112, 219, 0.2); }
+
+.channel-select-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+}
+
+.channel-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-sm);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.channel-btn:hover { border-color: var(--primary-lighter); }
+.channel-btn.selected { background: var(--bg-secondary); border-color: var(--primary); color: var(--primary); box-shadow: 0 0 10px rgba(147, 112, 219, 0.2); }
+
+.channel-icon { font-size: 1.5rem; }
+.channel-name { font-size: var(--text-xs); font-weight: var(--weight-medium); }
+
+.donation-notice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .sidebar-layout { grid-template-columns: 1fr; }
+  .psy-filters { position: static; }
+  .psy-profile-layout { grid-template-columns: 1fr; }
+  .psy-profile-sidebar { order: -1; margin-bottom: var(--space-2xl); }
+  .sticky-sidebar { position: static; }
+}
+
+@media (max-width: 768px) {
+  .psy-profile-header-inner { flex-direction: column; text-align: center; }
+  .psy-profile-stats { justify-content: center; flex-wrap: wrap; }
+  .psy-profile-badges { justify-content: center; }
+  .reviews-summary { flex-direction: column; text-align: center; gap: var(--space-lg); }
+  .reviews-overall { padding-right: 0; border-right: none; padding-bottom: var(--space-lg); border-bottom: 1px solid var(--border-light); width: 100%; }
+}
+
+/* Dark Mode Enhancements for Profile Cards */
+.psy-section .card-glass {
+  background: rgba(20, 20, 30, 0.4);
+  border: 1px solid var(--border-medium);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.psy-section .card-glass h4 {
+  color: var(--text-primary);
+}
