@@ -1,27 +1,46 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { mockReviews } from '../data/mock-reviews';
 import { SPECIALIZATIONS, APPROACHES, COMMUNICATION_CHANNELS, DAYS_TR } from '../data/constants';
 import { fetchApprovedPsychologistById, getDemoPsychologists } from '../lib/psychologists';
-import { getLocalReviewsForPsychologist } from '../lib/local-reviews';
-import { formatCurrency, getSessionFee } from '../lib/session-flow';
+import {
+  formatCurrency,
+  getSessionFee,
+  getSessionSlotKey,
+  isSessionSlotBookable,
+  isSessionSlotInPast,
+} from '../lib/session-flow';
 import RatingStars from '../components/RatingStars';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
+import { useReview } from '../context/ReviewContext';
 import { useSession } from '../context/SessionContext';
 import { useToast } from '../context/ToastContext';
 import '../styles/pages/Psychologists.css';
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const formatLocalDateIso = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 export default function PsychologistProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { bookSession } = useSession();
+  const { bookSession, fetchBookedSlots } = useSession();
+  const { fetchReviewsForPsychologist } = useReview();
   const { success, warning } = useToast();
 
   const [psych, setPsych] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [reviews, setReviews] = useState([]);
+  const [bookedSlotKeys, setBookedSlotKeys] = useState([]);
+  const [isBooking, setIsBooking] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
   const [selectedChannel, setSelectedChannel] = useState('video-blur');
@@ -33,14 +52,19 @@ export default function PsychologistProfile() {
 
     const loadPsychologist = async () => {
       setIsLoading(true);
+      setLoadError('');
       const demoPsychologists = getDemoPsychologists();
-      const demoPsychologist = demoPsychologists.find(p => String(p.id) === id) || demoPsychologists[0];
-      const looksLikeUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+      const demoPsychologist = demoPsychologists.find(p => String(p.id) === id);
+      const looksLikeUuid = UUID_PATTERN.test(id);
 
       try {
         const loadedPsychologist = looksLikeUuid
           ? await fetchApprovedPsychologistById(id)
           : demoPsychologist;
+
+        if (!loadedPsychologist) {
+          throw new Error('Psikolog profili bulunamadı.');
+        }
 
         if (!isMounted) return;
         setPsych(loadedPsychologist);
@@ -48,8 +72,8 @@ export default function PsychologistProfile() {
       } catch (error) {
         console.warn('Psikolog profili Supabase üzerinden çekilemedi:', error);
         if (isMounted) {
-          setPsych(demoPsychologist);
-          setSelectedChannel(demoPsychologist.channels[0] || 'video-blur');
+          setPsych(null);
+          setLoadError('Bu psikolog profili bulunamadı veya şu anda görüntülenemiyor.');
         }
       } finally {
         if (isMounted) setIsLoading(false);
@@ -63,24 +87,55 @@ export default function PsychologistProfile() {
     };
   }, [id]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!psych?.id) {
+      return undefined;
+    }
+
+    fetchReviewsForPsychologist(psych.id).then((loadedReviews) => {
+      if (isMounted) setReviews(loadedReviews);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [psych?.id, fetchReviewsForPsychologist]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!psych?.id || user?.role !== 'client' || !UUID_PATTERN.test(String(psych.id))) {
+      return undefined;
+    }
+
+    const rangeStartDate = new Date();
+    const rangeEndDate = new Date();
+    rangeEndDate.setDate(rangeEndDate.getDate() + 6);
+
+    fetchBookedSlots(
+      psych.id,
+      formatLocalDateIso(rangeStartDate),
+      formatLocalDateIso(rangeEndDate),
+    ).then((result) => {
+      if (!isMounted) return;
+      setBookedSlotKeys(result.slotKeys || []);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [psych?.id, user?.role, fetchBookedSlots]);
+
   const getSpec = (sId) => SPECIALIZATIONS.find(s => s.id === sId);
   const getApproach = (aId) => APPROACHES.find(a => a.id === aId);
   const getChannel = (cId) => COMMUNICATION_CHANNELS.find(c => c.id === cId);
 
-  const baseReviews = psych ? mockReviews.filter(r => String(r.psychologistId) === String(psych.id)) : [];
-  const localReviews = psych ? getLocalReviewsForPsychologist(psych.id) : [];
-  const reviews = [...localReviews, ...baseReviews].sort((a, b) => new Date(b.date) - new Date(a.date));
   const profileRating = reviews.length
     ? Number((reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / reviews.length).toFixed(1))
     : Number(psych?.rating || 0);
-  const profileReviewCount = (psych?.reviewCount || 0) + localReviews.length;
-
-  const formatLocalDateIso = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
+  const profileReviewCount = reviews.length || Number(psych?.reviewCount || 0);
 
   const next7Days = Array.from({ length: 7 }).map((_, i) => {
     const d = new Date();
@@ -112,26 +167,42 @@ export default function PsychologistProfile() {
       return;
     }
 
-    const result = await bookSession({
-      psychologistId: psych.id,
-      psychologistName: psych.name,
-      psychologistInitials: psych.initials,
-      clientAlias: user.alias || 'Anonim Danışan',
-      date: selectedDate,
-      time: selectedTime,
-      channel: selectedChannel,
-      status: 'upcoming',
-      paymentStatus: 'pending',
-      fee: getSessionFee(psych),
-    });
+    setIsBooking(true);
+    let result;
 
-    if (!result.success) return;
+    try {
+      result = await bookSession({
+        psychologistId: psych.id,
+        psychologistName: psych.name,
+        psychologistInitials: psych.initials,
+        clientAlias: user.alias || 'Anonim Danışan',
+        date: selectedDate,
+        time: selectedTime,
+        channel: selectedChannel,
+        status: 'upcoming',
+        paymentStatus: 'pending',
+        fee: getSessionFee(psych),
+      });
+    } finally {
+      setIsBooking(false);
+    }
+
+    if (!result?.success) {
+      if (result?.code === 'slot_taken') {
+        setBookedSlotKeys((current) => (
+          Array.from(new Set([...current, getSessionSlotKey(selectedDate, selectedTime)]))
+        ));
+        setSelectedTime(null);
+        setAcceptedBookingTerms(false);
+      }
+      return;
+    }
 
     success('Randevu Onaylandı', 'Randevunuz başarıyla oluşturuldu. Detayları panelinizden takip edebilirsiniz.');
     navigate('/panel');
   };
 
-  if (isLoading || !psych) {
+  if (isLoading) {
     return (
       <div className="page">
         <Navbar />
@@ -140,6 +211,28 @@ export default function PsychologistProfile() {
             <div className="card card-elevated">
               <div className="card-body text-center">
                 <p className="text-tertiary">Psikolog profili yükleniyor...</p>
+              </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!psych) {
+    return (
+      <div className="page">
+        <Navbar />
+        <main className="page-content">
+          <div className="container mt-2xl mb-3xl">
+            <div className="card card-elevated">
+              <div className="card-body text-center">
+                <h2>Profil görüntülenemiyor</h2>
+                <p className="text-tertiary">{loadError}</p>
+                <button className="btn btn-primary" type="button" onClick={() => navigate('/psikologlar')}>
+                  Psikologlara Dön
+                </button>
               </div>
             </div>
           </div>
@@ -315,7 +408,13 @@ export default function PsychologistProfile() {
                     <div className="date-picker-scroll">
                       {next7Days.map(day => {
                         const isSelected = selectedDate === day.dateStr;
-                        const hasSlots = day.slots.length > 0;
+                        const hasSlots = day.slots.some((time) => (
+                          isSessionSlotBookable({
+                            date: day.dateStr,
+                            time,
+                            bookedSlotKeys,
+                          })
+                        ));
                         return (
                           <button
                             key={day.dateStr}
@@ -336,15 +435,26 @@ export default function PsychologistProfile() {
                     <div className="booking-section slide-up">
                       <label className="booking-label">2. Saat Seçin</label>
                       <div className="time-slots-grid">
-                        {next7Days.find(d => d.dateStr === selectedDate)?.slots.map(time => (
-                          <button
-                            key={time}
-                            className={`time-btn ${selectedTime === time ? 'selected' : ''}`}
-                            onClick={() => { setSelectedTime(time); setAcceptedBookingTerms(false); }}
-                          >
-                            {time}
-                          </button>
-                        ))}
+                        {next7Days.find(d => d.dateStr === selectedDate)?.slots.map(time => {
+                          const slotKey = getSessionSlotKey(selectedDate, time);
+                          const isBooked = bookedSlotKeys.includes(slotKey);
+                          const isPast = isSessionSlotInPast(selectedDate, time);
+                          const isUnavailable = isBooked || isPast;
+
+                          return (
+                            <button
+                              key={time}
+                              className={`time-btn ${selectedTime === time ? 'selected' : ''} ${isUnavailable ? 'disabled' : ''}`}
+                              disabled={isUnavailable}
+                              onClick={() => { setSelectedTime(time); setAcceptedBookingTerms(false); }}
+                            >
+                              <span>{time}</span>
+                              {(isBooked || isPast) && (
+                                <small>{isBooked ? 'Dolu' : 'Geçti'}</small>
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -402,10 +512,14 @@ export default function PsychologistProfile() {
                     )}
                     <button 
                       className="btn btn-primary btn-block btn-lg"
-                      disabled={!selectedDate || !selectedTime || !selectedChannel || !acceptedBookingTerms}
+                      disabled={!selectedDate || !selectedTime || !selectedChannel || !acceptedBookingTerms || isBooking}
                       onClick={handleBooking}
                     >
-                      {selectedDate && selectedTime ? 'Randevuyu Oluştur' : 'Tarih ve Saat Seçin'}
+                      {isBooking
+                        ? 'Randevu Oluşturuluyor...'
+                        : selectedDate && selectedTime
+                          ? 'Randevuyu Oluştur'
+                          : 'Tarih ve Saat Seçin'}
                     </button>
                   </div>
                 </div>

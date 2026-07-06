@@ -4,8 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { useSession } from '../context/SessionContext';
 import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
-import { mockPsychologists } from '../data/mock-psychologists';
 import { COMMUNICATION_CHANNELS, SPECIALIZATIONS } from '../data/constants';
+import { fetchApprovedPsychologists, getDemoPsychologists } from '../lib/psychologists';
 import { formatCurrency, getSessionFee, getSessionJoinState } from '../lib/session-flow';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -36,6 +36,7 @@ export default function ClientDashboard() {
   const [sessionToCancel, setSessionToCancel] = useState(null);
   const [cancelReason, setCancelReason] = useState('');
   const [updatingSessionId, setUpdatingSessionId] = useState(null);
+  const [psychologists, setPsychologists] = useState([]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -49,6 +50,23 @@ export default function ClientDashboard() {
       window.history.replaceState({}, '', '/panel');
     }
   }, [success, showError, refreshSessions]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    fetchApprovedPsychologists()
+      .then((data) => {
+        if (isMounted) setPsychologists(data.length > 0 ? data : getDemoPsychologists());
+      })
+      .catch((error) => {
+        console.warn('Önerilen psikologlar yüklenemedi:', error);
+        if (isMounted) setPsychologists(getDemoPsychologists());
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
 
 
@@ -72,7 +90,7 @@ export default function ClientDashboard() {
 
   if (!user || (!isClient && user.role !== 'admin')) return null;
 
-  const getPsychologist = (id) => mockPsychologists.find(p => String(p.id) === String(id));
+  const getPsychologist = (id) => psychologists.find(p => String(p.id) === String(id));
   const getChannel = (channelId) => COMMUNICATION_CHANNELS.find(channel => channel.id === channelId);
   const formatSessionDate = (date) => new Date(`${date}T12:00:00`).toLocaleDateString('tr-TR');
   const formatSessionDateLong = (date) => new Date(`${date}T12:00:00`).toLocaleDateString('tr-TR', {
@@ -97,7 +115,7 @@ export default function ClientDashboard() {
     : 0;
 
   const clientTopics = user.clientProfile?.topics || [];
-  const recommendedPsychologists = mockPsychologists
+  const recommendedPsychologists = psychologists
     .map(psychologist => ({
       ...psychologist,
       matchScore: (psychologist.specializations || []).filter(spec => clientTopics.includes(spec)).length,

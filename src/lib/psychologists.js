@@ -57,9 +57,13 @@ export const normalizePsychologist = (psychologist) => {
   };
 };
 
-export const getDemoPsychologists = () => mockPsychologists.map(psychologist => (
-  normalizePsychologist({ ...psychologist, source: 'demo' })
-));
+export const getDemoPsychologists = () => (
+  import.meta.env.DEV
+    ? mockPsychologists.map(psychologist => (
+      normalizePsychologist({ ...psychologist, source: 'demo' })
+    ))
+    : []
+);
 
 export const fetchApprovedPsychologists = async () => {
   const { data, error } = await supabase

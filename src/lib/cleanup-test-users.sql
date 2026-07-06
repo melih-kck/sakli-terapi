@@ -11,7 +11,10 @@ DECLARE
     'codex.psych.20260604012300@example.com',
     'codex.client.e2e.20260604014809@example.com',
     'codex.rls7.20260604015131@example.com',
-    'codex.regression.20260604015701@example.com'
+    'codex.regression.20260604015701@example.com',
+    'codex.client.20260705@example.com',
+    'codex.psychologist.20260705@example.com',
+    'codex.admin.20260705@example.com'
   ];
 BEGIN
   DELETE FROM public.reviews r
