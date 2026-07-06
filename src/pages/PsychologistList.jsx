@@ -10,6 +10,7 @@ import '../styles/pages/Psychologists.css';
 export default function PsychologistList() {
   const [psychologists, setPsychologists] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [search, setSearch] = useState('');
   const [selectedSpecs, setSelectedSpecs] = useState([]);
   const [minRating, setMinRating] = useState(0);
@@ -25,6 +26,7 @@ export default function PsychologistList() {
     let isMounted = true;
 
     const loadPsychologists = async () => {
+      setLoadError('');
       try {
         const data = await fetchApprovedPsychologists();
         if (!isMounted) return;
@@ -33,6 +35,7 @@ export default function PsychologistList() {
         console.warn('Psikologlar Supabase üzerinden çekilemedi:', error);
         if (isMounted) {
           setPsychologists(getDemoPsychologists());
+          setLoadError('Psikolog listesi şu anda yüklenemiyor. Lütfen biraz sonra tekrar deneyin.');
         }
       } finally {
         if (isMounted) setIsLoading(false);
@@ -186,7 +189,14 @@ export default function PsychologistList() {
                 ))}
               </div>
 
-              {!isLoading && filtered.length === 0 && (
+              {!isLoading && loadError && (
+                <div className="empty-state" role="alert">
+                  <h3 className="empty-state-title">Liste yüklenemedi</h3>
+                  <p className="empty-state-description">{loadError}</p>
+                </div>
+              )}
+
+              {!isLoading && !loadError && filtered.length === 0 && (
                 <div className="empty-state">
                   <span className="empty-state-icon">🔍</span>
                   <h3 className="empty-state-title">Sonuç bulunamadı</h3>

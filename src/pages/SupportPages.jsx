@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -8,8 +8,6 @@ import { useReview } from '../context/ReviewContext';
 import { useSession } from '../context/SessionContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../lib/supabase';
-import { getLocalReviewsForPsychologist } from '../lib/local-reviews';
-import { mockReviews } from '../data/mock-reviews';
 import '../styles/pages/SupportPages.css';
 
 function PageShell({ eyebrow, title, subtitle, children, aside }) {
@@ -186,13 +184,23 @@ export function ReviewPage() {
 
 export function ReviewsPage() {
   const { user } = useAuth();
+  const { fetchReviewsForPsychologist } = useReview();
   const psychologistId = user?.psychologistId || user?.psychologistProfile?.id || user?.id;
-  const ownReviews = psychologistId
-    ? [
-      ...getLocalReviewsForPsychologist(psychologistId),
-      ...mockReviews.filter(review => String(review.psychologistId) === String(psychologistId)),
-    ].sort((a, b) => new Date(b.date) - new Date(a.date))
-    : [];
+  const [ownReviews, setOwnReviews] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!psychologistId) return undefined;
+
+    fetchReviewsForPsychologist(psychologistId).then((loadedReviews) => {
+      if (isMounted) setOwnReviews(loadedReviews);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [psychologistId, fetchReviewsForPsychologist]);
 
   const average = ownReviews.length
     ? ownReviews.reduce((sum, review) => sum + review.rating, 0) / ownReviews.length

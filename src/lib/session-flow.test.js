@@ -4,6 +4,9 @@ import {
   getSessionDateTime,
   getSessionFee,
   getSessionJoinState,
+  getSessionSlotKey,
+  isSessionSlotBookable,
+  isSessionSlotInPast,
 } from './session-flow';
 
 describe('session-flow', () => {
@@ -44,5 +47,28 @@ describe('session-flow', () => {
 
     expect(result).toContain('1.250');
     expect(result).toMatch(/₺|TL/);
+  });
+
+  it('builds stable booking slot keys', () => {
+    expect(getSessionSlotKey('2026-07-07', '14:30')).toBe('2026-07-07|14:30');
+    expect(getSessionSlotKey('', '14:30')).toBe('');
+  });
+
+  it('rejects past and already-booked appointment slots', () => {
+    const now = new Date('2026-07-07T12:00:00');
+
+    expect(isSessionSlotInPast('2026-07-07', '11:00', now)).toBe(true);
+    expect(isSessionSlotBookable({
+      date: '2026-07-07',
+      time: '14:30',
+      bookedSlotKeys: ['2026-07-07|14:30'],
+      now,
+    })).toBe(false);
+    expect(isSessionSlotBookable({
+      date: '2026-07-07',
+      time: '15:00',
+      bookedSlotKeys: [],
+      now,
+    })).toBe(true);
   });
 });

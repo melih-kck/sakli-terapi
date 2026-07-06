@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { getSessionSlotKey, isSessionSlotInPast } from '../lib/session-flow';
 import { useToast } from './ToastContext';
 
 // ─── Constants ──────────────────────────────────────────────────────────────────
@@ -82,7 +83,7 @@ export function SessionProvider({ user, children }) {
     if (!user?.id) return [];
 
     // Mock users: read sessions from localStorage
-    if (isMockUser(user)) {
+    if (import.meta.env.DEV && isMockUser(user)) {
       try {
         const stored = localStorage.getItem('mock_user_session');
         if (stored) {
@@ -138,14 +139,58 @@ export function SessionProvider({ user, children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, user?.role]);
 
+  const fetchBookedSlots = useCallback(async (psychologistId, rangeStart, rangeEnd) => {
+    if (!user || user.role !== 'client') {
+      return { success: true, slots: [], slotKeys: [] };
+    }
+
+    if (!UUID_PATTERN.test(String(psychologistId))) {
+      return import.meta.env.DEV
+        ? { success: true, slots: [], slotKeys: [] }
+        : { success: false, error: 'Geçersiz psikolog kaydı.', slots: [], slotKeys: [] };
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('get_booked_slots', {
+        target_psychologist_id: psychologistId,
+        range_start: rangeStart,
+        range_end: rangeEnd,
+      });
+
+      if (error) {
+        console.warn('Dolu randevu saatleri alınamadı:', error);
+        return { success: false, error: error.message, slots: [], slotKeys: [] };
+      }
+
+      const slots = data || [];
+      return {
+        success: true,
+        slots,
+        slotKeys: slots.map((slot) => getSessionSlotKey(slot.scheduled_date, slot.scheduled_time)),
+      };
+    } catch (err) {
+      console.warn('Dolu randevu saatleri alınırken hata:', err);
+      return { success: false, error: err.message, slots: [], slotKeys: [] };
+    }
+  }, [user]);
+
   // ── bookSession ─────────────────────────────────────────────────────────────
   const bookSession = useCallback(async (sessionData) => {
     if (!user) {
       return { success: false, error: 'Randevu oluşturmak için giriş yapmalısınız.' };
     }
 
+    if (user.role !== 'client') {
+      const message = 'Randevu yalnızca danışan hesabıyla oluşturulabilir.';
+      showError('Randevu Oluşturulamadı', message);
+      return { success: false, error: message };
+    }
+
     // Local / mock fallback
-    if (isMockUser(user) || !UUID_PATTERN.test(String(sessionData.psychologistId))) {
+    if (
+      import.meta.env.DEV
+      && (isMockUser(user) || !UUID_PATTERN.test(String(sessionData.psychologistId)))
+    ) {
       const fallbackSession = normalizeSession({
         ...sessionData,
         id: sessionData.id || `local-${crypto.randomUUID()}`,
@@ -173,6 +218,37 @@ export function SessionProvider({ user, children }) {
       return { success: true, session: fallbackSession, isLocalFallback: true };
     }
 
+    if (!UUID_PATTERN.test(String(sessionData.psychologistId))) {
+      const message = 'Geçersiz psikolog kaydı.';
+      showError('Randevu Oluşturulamadı', message);
+      return { success: false, error: message };
+    }
+
+    if (!sessionData.date || !sessionData.time || !sessionData.channel) {
+      const message = 'Tarih, saat ve görüşme tipi seçilmelidir.';
+      showError('Randevu Oluşturulamadı', message);
+      return { success: false, error: message };
+    }
+
+    if (isSessionSlotInPast(sessionData.date, sessionData.time)) {
+      const message = 'Geçmiş bir tarih veya saat için randevu oluşturulamaz.';
+      showError('Randevu Oluşturulamadı', message);
+      return { success: false, error: message };
+    }
+
+    const bookedSlots = await fetchBookedSlots(
+      sessionData.psychologistId,
+      sessionData.date,
+      sessionData.date,
+    );
+    const requestedSlotKey = getSessionSlotKey(sessionData.date, sessionData.time);
+
+    if (bookedSlots.success && bookedSlots.slotKeys.includes(requestedSlotKey)) {
+      const message = 'Bu saat kısa süre önce doldu. Lütfen başka bir saat seçin.';
+      showError('Randevu Oluşturulamadı', message);
+      return { success: false, error: message, code: 'slot_taken' };
+    }
+
     // Real Supabase insert
     const payload = {
       client_id: user.id,
@@ -197,6 +273,11 @@ export function SessionProvider({ user, children }) {
         .single();
 
       if (error) {
+        if (error.code === '23505') {
+          const message = 'Bu saat kısa süre önce doldu. Lütfen başka bir saat seçin.';
+          showError('Randevu Oluşturulamadı', message);
+          return { success: false, error: message, code: 'slot_taken' };
+        }
         showError('Randevu Oluşturulamadı', error.message);
         return { success: false, error: error.message };
       }
@@ -210,7 +291,7 @@ export function SessionProvider({ user, children }) {
       showError('Randevu Oluşturulamadı', 'Beklenmeyen bir hata oluştu.');
       return { success: false, error: err.message };
     }
-  }, [user, success, showError]);
+  }, [user, success, showError, fetchBookedSlots]);
 
   // ── updateSession ───────────────────────────────────────────────────────────
   const updateSession = useCallback(async (sessionId, updates) => {
@@ -230,7 +311,10 @@ export function SessionProvider({ user, children }) {
     };
 
     // Local / mock fallback
-    if (isMockUser(user) || !UUID_PATTERN.test(String(sessionId))) {
+    if (
+      import.meta.env.DEV
+      && (isMockUser(user) || !UUID_PATTERN.test(String(sessionId)))
+    ) {
       applyLocalUpdate(updates);
       return { success: true, session: updates, isLocalFallback: true };
     }
@@ -269,7 +353,10 @@ export function SessionProvider({ user, children }) {
 
   // ── markSessionReviewed ─────────────────────────────────────────────────────
   const markSessionReviewed = useCallback(async (sessionId) => {
-    if (isMockUser(user) || !UUID_PATTERN.test(String(sessionId))) {
+    if (
+      import.meta.env.DEV
+      && (isMockUser(user) || !UUID_PATTERN.test(String(sessionId)))
+    ) {
       return updateSession(sessionId, { reviewed: true });
     }
 
@@ -284,6 +371,7 @@ export function SessionProvider({ user, children }) {
   const value = {
     sessions,
     bookSession,
+    fetchBookedSlots,
     updateSession,
     refreshSessions,
     markSessionReviewed,

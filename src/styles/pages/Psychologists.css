@@ -541,6 +541,12 @@
 }
 
 .time-btn {
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
   padding: var(--space-sm);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
@@ -552,8 +558,18 @@
   transition: all var(--transition-fast);
 }
 
-.time-btn:hover { border-color: var(--primary-lighter); }
+.time-btn:not(:disabled):hover { border-color: var(--primary-lighter); }
 .time-btn.selected { background: var(--bg-secondary); border-color: var(--primary); color: var(--primary); font-weight: var(--weight-bold); box-shadow: 0 0 10px rgba(147, 112, 219, 0.2); }
+.time-btn.disabled {
+  cursor: not-allowed;
+  color: var(--text-tertiary);
+  background: var(--bg-secondary);
+  opacity: 0.7;
+}
+.time-btn small {
+  font-size: var(--text-xs);
+  color: inherit;
+}
 
 .channel-select-grid {
   display: grid;

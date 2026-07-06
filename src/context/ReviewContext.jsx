@@ -295,6 +295,7 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
       (user && isMockUser(user)) ||
       !UUID_PATTERN.test(String(psychologistId))
     ) {
+      if (!import.meta.env.DEV) return [];
       const localReviews = getLocalReviewsForPsychologist(psychologistId);
       return localReviews.map(normalizeReview);
     }
@@ -319,16 +320,17 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
 
       if (error) {
         console.warn('Psikolog değerlendirmeleri çekilemedi:', error);
-        // Graceful fallback to local store
-        const localReviews = getLocalReviewsForPsychologist(psychologistId);
-        return localReviews.map(normalizeReview);
+        return import.meta.env.DEV
+          ? getLocalReviewsForPsychologist(psychologistId).map(normalizeReview)
+          : [];
       }
 
       return (data || []).map(normalizeReview);
     } catch (err) {
       console.warn('fetchReviewsForPsychologist hatası:', err);
-      const localReviews = getLocalReviewsForPsychologist(psychologistId);
-      return localReviews.map(normalizeReview);
+      return import.meta.env.DEV
+        ? getLocalReviewsForPsychologist(psychologistId).map(normalizeReview)
+        : [];
     }
   }, [user]);
 

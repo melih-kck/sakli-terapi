@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useReview } from '../context/ReviewContext';
 import { useSession } from '../context/SessionContext';
 import { useToast } from '../context/ToastContext';
-import { mockReviews } from '../data/mock-reviews';
 import { getSessionJoinState } from '../lib/session-flow';
-import { getLocalReviewsForPsychologist } from '../lib/local-reviews';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import RatingStars from '../components/RatingStars';
@@ -26,12 +25,27 @@ const paymentDetails = {
 
 export default function PsychDashboard() {
   const { user, isPsychologist } = useAuth();
+  const { fetchReviewsForPsychologist } = useReview();
   const { updateSession, sessions } = useSession();
   const { success } = useToast();
   const [activeTab, setActiveTab] = useState('today');
   const [updatingSessionId, setUpdatingSessionId] = useState(null);
+  const [myReviews, setMyReviews] = useState([]);
+  const currentPsychologistId = user?.psychologistId || user?.psychologistProfile?.id || user?.id;
 
+  useEffect(() => {
+    let isMounted = true;
 
+    if (!currentPsychologistId) return undefined;
+
+    fetchReviewsForPsychologist(currentPsychologistId).then((loadedReviews) => {
+      if (isMounted) setMyReviews(loadedReviews.slice(0, 3));
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentPsychologistId, fetchReviewsForPsychologist]);
 
   useEffect(() => {
     if (!user || (!isPsychologist && user.role !== 'admin')) return undefined;
@@ -227,13 +241,6 @@ export default function PsychDashboard() {
     };
   });
 
-  const currentPsychologistId = user.psychologistId || user.psychologistProfile?.id || user.id;
-  const myReviews = [
-    ...getLocalReviewsForPsychologist(currentPsychologistId),
-    ...mockReviews.filter(r => String(r.psychologistId) === String(currentPsychologistId)),
-  ]
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 3);
   const psychologistProfile = user.psychologistProfile || {};
   const profileChecks = [
     { label: 'Unvan', done: Boolean(psychologistProfile.title) },

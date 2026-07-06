@@ -23,6 +23,25 @@ export const getSessionDateTime = (session) => {
   return date;
 };
 
+export const getSessionSlotKey = (date, time) => (
+  date && time ? `${date}|${time}` : ''
+);
+
+export const isSessionSlotInPast = (date, time, now = new Date()) => {
+  const startsAt = getSessionDateTime({ date, time });
+  return !startsAt || startsAt <= now;
+};
+
+export const isSessionSlotBookable = ({
+  date,
+  time,
+  bookedSlotKeys = [],
+  now = new Date(),
+}) => (
+  !isSessionSlotInPast(date, time, now)
+  && !bookedSlotKeys.includes(getSessionSlotKey(date, time))
+);
+
 export const getSessionJoinState = (session, now = new Date()) => {
   if (!session) {
     return {
