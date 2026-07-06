@@ -318,9 +318,14 @@
 /* Profile Layout */
 .psy-profile-layout {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: minmax(0, 1fr) 380px;
   gap: var(--space-3xl);
   align-items: start;
+}
+
+.psy-profile-main,
+.psy-profile-sidebar {
+  min-width: 0;
 }
 
 .psy-section {
@@ -489,6 +494,7 @@
 .date-picker-scroll {
   display: flex;
   gap: var(--space-sm);
+  max-width: 100%;
   overflow-x: auto;
   padding-bottom: var(--space-xs);
   scrollbar-width: thin;
@@ -612,7 +618,7 @@
 @media (max-width: 1024px) {
   .sidebar-layout { grid-template-columns: 1fr; }
   .psy-filters { position: static; }
-  .psy-profile-layout { grid-template-columns: 1fr; }
+  .psy-profile-layout { grid-template-columns: minmax(0, 1fr); }
   .psy-profile-sidebar { order: -1; margin-bottom: var(--space-2xl); }
   .sticky-sidebar { position: static; }
 }
