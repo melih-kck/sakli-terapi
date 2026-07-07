@@ -21,7 +21,7 @@ CREATE OR REPLACE FUNCTION public.handle_auth_user_profile()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
 DECLARE
   metadata jsonb := COALESCE(NEW.raw_user_meta_data, '{}'::jsonb);

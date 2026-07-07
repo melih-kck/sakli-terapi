@@ -64,10 +64,10 @@ export default function Landing() {
 
   const faqs = [
     { q: 'GizliBiriz nasıl çalışır?', a: 'Anonim bir rumuz ile kayıt olursunuz, psikologlarımızı inceler ve size uygun olanı seçersiniz. Seanslarınızda yüzünüz blur efektiyle gizlenir, psikologunuz gerçek kimliğinizi bilemez. Kendinizi hazır hissettiğinizde blur seviyesini kademeli olarak azaltabilirsiniz.' },
-    { q: 'Gerçekten anonim miyim?', a: 'Evet. Psikologunuz gerçek adınızı, yüzünüzü veya kişisel bilgilerinizi göremez. Siz yalnızca seçtiğiniz rumuz ile tanınırsınız. Kişisel bilgileriniz yalnızca platform tarafından güvenli bir kasada saklanır ve hiçbir koşulda psikologla paylaşılmaz.' },
-    { q: 'Psikologlar nasıl doğrulanıyor?', a: 'Tüm psikologlarımız kimlik, diploma ve mesleki sertifika doğrulamasından geçer. Aday psikologlar ise üniversite onay belgesi ve süpervizör bilgisiyle kayıt olur. Doğrulanmamış hiçbir psikolog platformda yer alamaz.' },
+    { q: 'Gerçekten anonim miyim?', a: 'Psikolog ekranlarında danışanlar rumuzlarıyla görünür. Hesap e-postası ve acil durum kişisi gibi özel alanlar psikolog profillerine ve herkese açık sayfalara açılmaz.' },
+    { q: 'Psikologlar nasıl yayımlanıyor?', a: 'Psikolog başvuruları yönetici incelemesine alınır. Yalnızca onay durumu verilen profiller psikolog kataloğunda yayımlanır.' },
     { q: 'Acil durumda ne olur?', a: 'Kayıt sırasında verdiğiniz acil durum bilgileri güvenli bir kasada saklanır. Psikologunuz bir kriz tespit ettiğinde, platform yönetimi bu bilgilere kontrollü erişim sağlayarak gerekli acil müdahaleyi koordine eder.' },
-    { q: 'Seans ücreti ne kadardır?', a: 'GizliBiriz\'de seans ücretleri psikologlarımızın uzmanlık seviyelerine göre değişiklik göstermektedir. Tüm ödemeleriniz %100 güvenli ödeme altyapısıyla şifrelenerek tahsil edilir.' },
+    { q: 'Seans ücreti ne kadardır?', a: 'Seans ücretleri psikolog profillerinde gösterilir. Ödeme entegrasyonu henüz etkin değildir; randevular panelde ödeme bekliyor durumunda görünür.' },
     { q: 'Aday psikolog nedir?', a: 'Aday psikologlar, psikoloji bölümü son sınıf öğrencileridir ve bir süpervizör (danışman hoca) gözetiminde seans yaparlar. Deneyim kazanmak isteyen, eğitimli ve denetim altında çalışan genç profesyonellerdir.' },
   ];
 
@@ -95,7 +95,7 @@ export default function Landing() {
             </p>
             <div className="hero-actions fade-in delay-2">
               {user ? (
-                <Link to={user.role === 'psychologist' ? '/psikolog-panel' : '/panel'} className="btn btn-primary btn-xl" id="hero-cta-start">
+                <Link to={user.role === 'admin' ? '/admin' : user.role === 'psychologist' ? '/psikolog-panel' : '/panel'} className="btn btn-primary btn-xl" id="hero-cta-start">
                   Panele Git
                 </Link>
               ) : (
@@ -109,18 +109,18 @@ export default function Landing() {
             </div>
             <div className="hero-stats fade-in delay-3">
               <div className="hero-stat">
-                <span className="hero-stat-value">820+</span>
-                <span className="hero-stat-label">Seans</span>
+                <span className="hero-stat-value">Rumuz</span>
+                <span className="hero-stat-label">Temelli Profil</span>
               </div>
               <div className="hero-stat-divider"></div>
               <div className="hero-stat">
-                <span className="hero-stat-value">15</span>
-                <span className="hero-stat-label">Uzman Psikolog</span>
+                <span className="hero-stat-value">3</span>
+                <span className="hero-stat-label">Görüşme Kanalı</span>
               </div>
               <div className="hero-stat-divider"></div>
               <div className="hero-stat">
-                <span className="hero-stat-value">%98</span>
-                <span className="hero-stat-label">Memnuniyet</span>
+                <span className="hero-stat-value">1-5</span>
+                <span className="hero-stat-label">Gizlilik Seviyesi</span>
               </div>
             </div>
           </div>
@@ -163,10 +163,10 @@ export default function Landing() {
             </div>
             <div className="grid grid-2 gap-xl">
               {[
-                { icon: '🛡️', title: 'Tam Anonimlik', desc: 'Psikologunuz gerçek kimliğinizi asla bilmez. Rumuzunuzla güvenle iletişim kurun.' },
-                { icon: '👨‍⚕️', title: 'Lisanslı Uzmanlar', desc: 'Tüm psikologlarımız kimlik ve diploma doğrulamasından geçer.' },
+                { icon: '🛡️', title: 'Rumuz Temelli İletişim', desc: 'Danışan profilleri psikolog ekranlarında seçilen rumuzla görünür.' },
+                { icon: '👨‍⚕️', title: 'Onaylı Profiller', desc: 'Yalnızca yönetici incelemesinden geçen psikolog profilleri katalogda yayımlanır.' },
                 { icon: '🎚️', title: 'Kademeli Açılma', desc: 'Hazır hissettiğinizde blur efektini kademeli olarak kaldırın.' },
-                { icon: '🔒', title: 'Uçtan Uca Güvenlik', desc: 'KVKK uyumlu, şifreli altyapı ile verileriniz güvende.' },
+                { icon: '🔒', title: 'Sınırlandırılmış Erişim', desc: 'Özel veriler, kullanıcı rolüne ve işlem ihtiyacına göre ayrıştırılır.' },
               ].map((feat, i) => (
                 <div key={i} className="card feature-card animate-on-scroll">
                   <div className="card-body">
@@ -222,13 +222,13 @@ export default function Landing() {
           <div className="container">
             <div className="card text-center p-xl w-full">
               <div className="donation-icon mb-md">🔒</div>
-              <h3 className="mb-sm">Tam Güvenlik & Gizlilik</h3>
+              <h3 className="mb-sm">Mahremiyet Odaklı Tasarım</h3>
               <p className="donation-desc" style={{ maxWidth: '800px' }}>
-              GizliBiriz altyapısındaki tüm görüşmeleriniz ve ödeme işlemleriniz uçtan uca şifrelenir. 
-              Psikologunuz dahil kimse gerçek kimliğinizi veya finansal verilerinizi göremez.
-            </p>
-            <div className="donation-amount">%100</div>
-              <p style={{ color: 'var(--primary)', fontWeight: 600 }}>Güvenli Ödeme Garantisi</p>
+                Profil, seans ve değerlendirme verileri rol bazlı erişim kurallarıyla ayrılır.
+                Ödeme özelliği güvenli sunucu doğrulaması tamamlanana kadar kapalı tutulur.
+              </p>
+              <div className="donation-amount">Rol Bazlı</div>
+              <p style={{ color: 'var(--primary)', fontWeight: 600 }}>Erişim Kontrolü</p>
               <Link to="/hakkinda" className="btn btn-primary mt-lg" id="donation-details">
                 Altyapımızı İnceleyin
               </Link>

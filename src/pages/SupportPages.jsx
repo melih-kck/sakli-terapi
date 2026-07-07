@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import RatingStars from '../components/RatingStars';
@@ -123,8 +123,8 @@ export function ReviewPage() {
         {submitted ? (
           <div className="content-success-box">
             <h2>Teşekkürler</h2>
-            <p>Değerlendirmeniz kaydedildi. Moderasyon sonrası psikolog profilindeki değerlendirme alanına yansıtılır.</p>
-            <Link className="btn btn-primary" to={user?.role === 'client' || user?.role === 'admin' ? '/panel' : '/psikologlar'}>
+            <p>Değerlendirmeniz kaydedildi ve psikolog profilindeki değerlendirme alanına yansıtıldı.</p>
+            <Link className="btn btn-primary" to={user?.role === 'client' ? '/panel' : user?.role === 'admin' ? '/admin' : '/psikologlar'}>
               Devam Et
             </Link>
           </div>
@@ -270,13 +270,13 @@ export function ReviewsPage() {
 const faqGroups = {
   genel: [
     ['GizliBiriz nasıl çalışır?', 'Danışan rumuzla kayıt olur, uygun psikoloğu seçer ve metin, ses veya blurlu görüntülü görüşme seçeneklerinden biriyle randevu alır.'],
-    ['Gerçek kimliğim psikologla paylaşılır mı?', 'Hayır. Psikolog yalnızca platformdaki rumuzunuzu ve seans için gerekli tercihlerinizi görür.'],
-    ['Acil durumda ne olur?', 'Platform acil krizlerde danışanın kayıt sırasında paylaştığı güvenli acil durum bilgisini yetkili destek akışı için kullanabilir.'],
+    ['Hangi bilgiler psikolog ekranında görünür?', 'Psikolog, seans kaydında rumuzunuzu ve görüşme tercihlerinizi görür; hesap e-postası ile acil durum kişisi psikolog ekranına açılmaz.'],
+    ['Acil durumda ne yapmalıyım?', 'GizliBiriz acil müdahale hizmeti değildir. Hayati risk veya acil durum varsa 112 Acil Çağrı Merkezi aranmalıdır.'],
   ],
   randevu: [
     ['Randevu aldıktan sonra nereden katılırım?', 'Danışan ve psikolog panellerinde randevu kartı görünür. Seans saati geldiğinde karttaki seans butonundan odaya geçilir.'],
     ['Görüşme tipini değiştirebilir miyim?', 'Randevu öncesinde psikolog profili üzerinden uygun kanal seçilir. Varsayılan tercihler ayarlar sayfasından güncellenebilir.'],
-    ['Ödeme durumunu nereden görürüm?', 'Randevu kartlarında ödeme durumu ve kısa randevu kodu gösterilir.'],
+    ['Ödeme durumunu nereden görürüm?', 'Randevu kartlarında ödeme durumu gösterilir. Ödeme entegrasyonu henüz etkin değildir.'],
   ],
   hesap: [
     ['Şifremi unuttum, ne yapmalıyım?', 'Giriş sayfasındaki Şifremi Unuttum bağlantısından e-posta adresinizi girerek sıfırlama isteği oluşturabilirsiniz.'],
@@ -339,26 +339,26 @@ export function PrivacyPolicyPage() {
       aside={(
         <div className="content-info-panel">
           <h3>Kısa Özet</h3>
-          <p>Kimlik, sağlık ve ödeme bilgileri farklı amaçlarla işlenir; psikologlar danışanın gerçek kimliğini görmez.</p>
-          <span className="content-date">Son güncelleme: 3 Haziran 2026</span>
+          <p>Hesap, tercih ve seans verileri amaçlarına göre ayrılır; özel hesap alanları psikolog ekranlarına açılmaz.</p>
+          <span className="content-date">Son güncelleme: 6 Temmuz 2026</span>
         </div>
       )}
     >
       <ContentSection title="Toplanan Bilgiler">
-        <p>Hesap oluşturma, randevu planlama, ödeme güvenliği ve acil durum desteği için gerekli minimum bilgiler alınır. Danışanlar psikologlarla rumuz üzerinden iletişim kurar.</p>
+        <p>Hesap e-postası, rumuz, danışmanlık tercihleri, isteğe bağlı acil durum kişisi, ruh hali kayıtları, randevular ve değerlendirmeler işlenir. Ödeme entegrasyonu kapalı olduğu için platform ödeme bilgisi toplamaz.</p>
       </ContentSection>
 
       <ContentSection title="Bilgilerin Kullanımı">
         <div className="legal-table">
           <div><strong>Hesap bilgileri</strong><span>Giriş, kimlik doğrulama ve hesap güvenliği</span></div>
-          <div><strong>Randevu bilgileri</strong><span>Seans planlama, hatırlatma ve panel gösterimi</span></div>
-          <div><strong>Ödeme bilgileri</strong><span>Ödeme doğrulama ve finansal kayıtların tutulması</span></div>
+          <div><strong>Randevu bilgileri</strong><span>Seans planlama, katılımcı erişimi ve panel gösterimi</span></div>
+          <div><strong>Ruh hali ve değerlendirmeler</strong><span>Danışanın kendi takibi ve hizmet geri bildirimi</span></div>
           <div><strong>Acil durum bilgileri</strong><span>Yalnızca ciddi risk ve güvenlik durumlarında kontrollü erişim</span></div>
         </div>
       </ContentSection>
 
       <ContentSection title="Paylaşım İlkeleri">
-        <p>GizliBiriz, kullanıcı verilerini reklam amaçlı satmaz. Psikologlar yalnızca seans yürütmek için gerekli anonim bilgileri görür. Yasal zorunluluklar ve hayati riskler dışında gerçek kimlik bilgileri paylaşılmaz.</p>
+        <p>GizliBiriz kullanıcı verilerini reklam amaçlı satmaz. Psikologlar seans yürütmek için gereken rumuz ve randevu alanlarını görür. Yetkili yönetici erişimi, başvuru inceleme ve destek sorumluluklarıyla sınırlandırılır.</p>
       </ContentSection>
 
       <ContentSection title="Haklarınız">
@@ -377,13 +377,13 @@ export function TermsPage() {
       aside={(
         <div className="content-info-panel">
           <h3>Önemli</h3>
-          <p>GizliBiriz acil kriz müdahalesi yerine geçmez. Hayati risk varsa yerel acil yardım hatlarına başvurulmalıdır.</p>
-          <span className="content-date">Son güncelleme: 3 Haziran 2026</span>
+          <p>GizliBiriz acil kriz müdahalesi yerine geçmez. Hayati risk varsa 112 Acil Çağrı Merkezi aranmalıdır.</p>
+          <span className="content-date">Son güncelleme: 6 Temmuz 2026</span>
         </div>
       )}
     >
       <ContentSection title="Hizmetin Kapsamı">
-        <p>GizliBiriz, danışanların doğrulanmış psikologlarla anonim biçimde randevu planlamasına ve seansa katılmasına yardımcı olan dijital bir platformdur.</p>
+        <p>GizliBiriz, danışanların yönetici onaylı psikolog profilleriyle rumuz temelli randevu planlamasına yardımcı olan dijital bir platformdur.</p>
       </ContentSection>
 
       <ContentSection title="Kullanıcı Sorumlulukları">
@@ -399,7 +399,7 @@ export function TermsPage() {
       </ContentSection>
 
       <ContentSection title="Ödeme ve Randevu">
-        <p>Randevu, seçilen tarih ve saat için oluşturulur. Ödeme durumu panelde gösterilir. İptal ve iade süreçleri destek ekibi üzerinden değerlendirilir.</p>
+        <p>Randevu, seçilen tarih ve saat için oluşturulur. Ödeme entegrasyonu henüz etkin değildir; finansal koşullar özellik devreye alınmadan önce ayrıca yayımlanacaktır.</p>
       </ContentSection>
     </PageShell>
   );
@@ -418,7 +418,7 @@ export function ForgotPasswordPage() {
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/giris`,
+        redirectTo: `${window.location.origin}/sifre-yenile`,
       });
 
       if (error) throw error;
@@ -466,6 +466,145 @@ export function ForgotPasswordPage() {
               <Link className="btn btn-ghost" to="/giris">Geri Dön</Link>
               <button className="btn btn-primary" type="submit" disabled={isLoading}>
                 {isLoading ? 'Gönderiliyor...' : 'Sıfırlama Bağlantısı Gönder'}
+              </button>
+            </div>
+          </>
+        )}
+      </form>
+    </PageShell>
+  );
+}
+
+export function ResetPasswordPage() {
+  const navigate = useNavigate();
+  const { success, error: showError } = useToast();
+  const [status, setStatus] = useState('checking');
+  const [password, setPassword] = useState('');
+  const [confirmation, setConfirmation] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const searchParams = new URLSearchParams(window.location.search);
+    let isRecoveryFlow = hashParams.get('type') === 'recovery' || searchParams.has('code');
+
+    const markReady = (session) => {
+      if (isMounted && isRecoveryFlow && session) {
+        setStatus('ready');
+      }
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        isRecoveryFlow = true;
+      }
+      markReady(session);
+    });
+
+    supabase.auth.getSession().then(({ data }) => {
+      markReady(data.session);
+    });
+
+    const timeout = window.setTimeout(() => {
+      if (isMounted) {
+        setStatus(current => current === 'checking' ? 'invalid' : current);
+      }
+    }, 4000);
+
+    return () => {
+      isMounted = false;
+      window.clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (password.length < 8) {
+      showError('Şifre Güncellenemedi', 'Yeni şifre en az 8 karakter olmalıdır.');
+      return;
+    }
+
+    if (password !== confirmation) {
+      showError('Şifre Güncellenemedi', 'Şifre alanları birbiriyle eşleşmiyor.');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+
+      await supabase.auth.signOut();
+      success('Şifre Güncellendi', 'Yeni şifrenizle giriş yapabilirsiniz.');
+      navigate('/giris', { replace: true });
+    } catch (err) {
+      showError('Şifre Güncellenemedi', err.message || 'Bağlantı geçersiz veya süresi dolmuş olabilir.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <PageShell
+      eyebrow="Hesap Güvenliği"
+      title="Yeni Şifre Belirle"
+      subtitle="Hesabınız için güçlü ve daha önce kullanmadığınız bir şifre seçin."
+      aside={(
+        <div className="content-info-panel">
+          <h3>Şifre Güvenliği</h3>
+          <p>En az 8 karakter kullanın ve bu şifreyi başka hesaplarınızla paylaşmayın.</p>
+        </div>
+      )}
+    >
+      <form className="content-form-panel" onSubmit={handleSubmit}>
+        {status === 'checking' && (
+          <div className="content-empty-box">
+            <h3>Bağlantı doğrulanıyor</h3>
+            <p>Şifre yenileme oturumunuz hazırlanıyor.</p>
+          </div>
+        )}
+
+        {status === 'invalid' && (
+          <div className="content-empty-box">
+            <h3>Bağlantı geçersiz veya süresi dolmuş</h3>
+            <p>Yeni bir şifre sıfırlama bağlantısı isteyin.</p>
+            <Link className="btn btn-primary" to="/sifremi-unuttum">Yeni Bağlantı İste</Link>
+          </div>
+        )}
+
+        {status === 'ready' && (
+          <>
+            <div className="input-group">
+              <label htmlFor="reset-password">Yeni şifre</label>
+              <input
+                id="reset-password"
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                minLength="8"
+                autoComplete="new-password"
+                required
+              />
+            </div>
+            <div className="input-group">
+              <label htmlFor="reset-password-confirmation">Yeni şifre tekrar</label>
+              <input
+                id="reset-password-confirmation"
+                type="password"
+                value={confirmation}
+                onChange={(event) => setConfirmation(event.target.value)}
+                minLength="8"
+                autoComplete="new-password"
+                required
+              />
+            </div>
+            <div className="content-actions">
+              <Link className="btn btn-ghost" to="/giris">Vazgeç</Link>
+              <button className="btn btn-primary" type="submit" disabled={isSaving}>
+                {isSaving ? 'Güncelleniyor...' : 'Şifreyi Güncelle'}
               </button>
             </div>
           </>

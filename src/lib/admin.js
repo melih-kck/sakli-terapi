@@ -13,10 +13,8 @@ export async function getPendingPsychologists() {
         id,
         display_name,
         title,
-        short_bio,
         experience,
         approval_status,
-        document_url,
         created_at,
         profiles!inner(email, role)
       `)

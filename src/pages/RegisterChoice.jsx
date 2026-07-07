@@ -18,9 +18,9 @@ export default function RegisterChoice() {
               <div className="card-body text-center">
                 <span className="register-choice-icon">🧑</span>
                 <h3>Danışan Olarak</h3>
-                <p>Anonim olarak profesyonel psikolojik destek alın. Kimliğiniz her zaman gizli kalacaktır.</p>
+                <p>Rumuz temelli bir profille psikolojik destek sürecinizi yönetin.</p>
                 <div className="register-choice-features">
-                  <span>🔒 Tam Anonimlik</span>
+                  <span>🔒 Rumuz Temelli Profil</span>
                   <span>💬 Çoklu İletişim</span>
                   <span>⭐ Psikolog Seçimi</span>
                 </div>
@@ -34,7 +34,7 @@ export default function RegisterChoice() {
                 <h3>Psikolog Olarak</h3>
                 <p>Platformumuza katılarak danışanlara anonim psikolojik destek sunun.</p>
                 <div className="register-choice-features">
-                  <span>✅ Kimlik Doğrulaması</span>
+                  <span>✅ Yönetici İncelemesi</span>
                   <span>📊 Değerlendirme Sistemi</span>
                   <span>💜 Sosyal Sorumluluk</span>
                 </div>

@@ -29,6 +29,7 @@ const normalizeSession = (session) => ({
   paidAt: session.paid_at || session.paidAt || null,
   completedAt: session.completed_at || session.completedAt || null,
   cancellationReason: session.cancellation_reason || session.cancellationReason || '',
+  peerRoomToken: session.peer_room_token || session.peerRoomToken || null,
   createdAt: session.created_at || session.createdAt,
 });
 
@@ -38,18 +39,8 @@ const normalizeSession = (session) => ({
 const toSessionUpdatePayload = (updates) => {
   const payload = {};
   if (updates.status !== undefined) payload.status = updates.status;
-  if (updates.paymentStatus !== undefined) payload.payment_status = updates.paymentStatus;
-  if (updates.reviewed !== undefined) payload.reviewed = updates.reviewed;
-  if (updates.date !== undefined) payload.scheduled_date = updates.date;
-  if (updates.time !== undefined) payload.scheduled_time = updates.time;
-  if (updates.channel !== undefined) payload.channel = updates.channel;
-  if (updates.fee !== undefined) payload.fee = updates.fee;
-  if (updates.clientAlias !== undefined) payload.client_alias = updates.clientAlias;
-  if (updates.psychologistName !== undefined) payload.psychologist_name = updates.psychologistName;
-  if (updates.psychologistInitials !== undefined) payload.psychologist_initials = updates.psychologistInitials;
   if (updates.cancellationReason !== undefined) payload.cancellation_reason = updates.cancellationReason;
   if (updates.completedAt !== undefined) payload.completed_at = updates.completedAt;
-  if (updates.paidAt !== undefined) payload.paid_at = updates.paidAt;
   return payload;
 };
 
@@ -251,18 +242,10 @@ export function SessionProvider({ user, children }) {
 
     // Real Supabase insert
     const payload = {
-      client_id: user.id,
       psychologist_id: sessionData.psychologistId,
-      client_alias: sessionData.clientAlias || user.alias || 'Anonim Danışan',
-      psychologist_name: sessionData.psychologistName || null,
-      psychologist_initials: sessionData.psychologistInitials || null,
       scheduled_date: sessionData.date,
       scheduled_time: sessionData.time,
       channel: sessionData.channel,
-      status: 'upcoming',
-      payment_status: sessionData.paymentStatus || 'pending',
-      reviewed: false,
-      fee: sessionData.fee || null,
     };
 
     try {
@@ -323,9 +306,9 @@ export function SessionProvider({ user, children }) {
     const payload = toSessionUpdatePayload(updates);
 
     if (Object.keys(payload).length === 0) {
-      // Nothing to update in Supabase, apply locally only
-      applyLocalUpdate(updates);
-      return { success: true, session: updates };
+      const message = 'Bu randevu alanı tarayıcıdan güncellenemez.';
+      showError('Randevu Güncellenemedi', message);
+      return { success: false, error: message };
     }
 
     try {

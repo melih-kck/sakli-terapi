@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.2",
-    "iyzipay": "^2.0.69",
     "peerjs": "^1.5.5",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",

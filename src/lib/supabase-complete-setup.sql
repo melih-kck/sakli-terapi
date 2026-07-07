@@ -82,7 +82,7 @@ RETURNS boolean
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
   SELECT EXISTS (
     SELECT 1
@@ -97,7 +97,7 @@ RETURNS boolean
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
   SELECT EXISTS (
     SELECT 1
@@ -112,7 +112,7 @@ RETURNS text
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
   SELECT role
   FROM public.profiles
@@ -124,7 +124,7 @@ RETURNS text
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
   SELECT approval_status
   FROM public.psychologists
@@ -819,7 +819,7 @@ CREATE OR REPLACE FUNCTION public.mark_session_reviewed_from_review()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
 BEGIN
   UPDATE public.sessions
@@ -856,7 +856,7 @@ CREATE OR REPLACE FUNCTION public.handle_auth_user_profile()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
 DECLARE
   metadata jsonb := COALESCE(NEW.raw_user_meta_data, '{}'::jsonb);
@@ -987,9 +987,9 @@ EXECUTE FUNCTION public.handle_auth_user_profile();
 --   approval_status = 'approved',
 --   availability = '{
 --     "Pazartesi": ["09:00", "10:00", "11:00", "14:00", "15:00"],
---     "Sali": ["09:00", "10:00", "14:00", "15:00"],
---     "Carsamba": ["10:00", "11:00", "14:00"],
---     "Persembe": ["09:00", "10:00", "11:00", "14:00"],
+--     "Salı": ["09:00", "10:00", "14:00", "15:00"],
+--     "Çarşamba": ["10:00", "11:00", "14:00"],
+--     "Perşembe": ["09:00", "10:00", "11:00", "14:00"],
 --     "Cuma": ["09:00", "10:00", "11:00"],
 --     "Cumartesi": ["10:00", "11:00"],
 --     "Pazar": ["14:00", "15:00"]

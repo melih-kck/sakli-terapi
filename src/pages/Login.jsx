@@ -7,7 +7,6 @@ import '../styles/pages/Auth.css';
 export default function Login() {
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
-  const [role, setRole] = useState('client');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -19,7 +18,7 @@ export default function Login() {
       setError('Lütfen tüm alanları doldurun.');
       return;
     }
-    const result = await login(email, password, role);
+    const result = await login(email, password);
     if (result.success) {
       if (result.role === 'admin') {
         navigate('/admin');
@@ -44,7 +43,7 @@ export default function Login() {
               <p>Kimliğiniz gizli, sesiniz duyulur.</p>
               <div className="auth-deco-features">
                 <div className="auth-deco-feat">🔒 Anonim Seanslar</div>
-                <div className="auth-deco-feat">👨‍⚕️ Lisanslı Psikologlar</div>
+                <div className="auth-deco-feat">👨‍⚕️ Onaylı Psikolog Profilleri</div>
                 <div className="auth-deco-feat">💜 Sosyal Sorumluluk</div>
               </div>
             </div>
@@ -53,23 +52,6 @@ export default function Login() {
             <div className="auth-form-wrapper">
               <h2>Giriş Yap</h2>
               <p className="auth-subtitle">Hesabınıza giriş yaparak devam edin</p>
-
-              <div className="auth-role-tabs">
-                <button
-                  className={`auth-role-tab ${role === 'client' ? 'active' : ''}`}
-                  onClick={() => setRole('client')}
-                  id="login-role-client"
-                >
-                  🧑 Danışan
-                </button>
-                <button
-                  className={`auth-role-tab ${role === 'psychologist' ? 'active' : ''}`}
-                  onClick={() => setRole('psychologist')}
-                  id="login-role-psychologist"
-                >
-                  👨‍⚕️ Psikolog
-                </button>
-              </div>
 
               <form onSubmit={handleSubmit} className="auth-form">
                 <div className="input-group">
@@ -94,9 +76,7 @@ export default function Login() {
                 </div>
 
                 <div className="auth-options">
-                  <label className="checkbox-group">
-                    <input type="checkbox" id="login-remember" /> Beni hatırla
-                  </label>
+                  <span className="input-hint">Hesap türünüz otomatik olarak belirlenir.</span>
                   <Link to="/sifremi-unuttum" className="auth-forgot" id="login-forgot">Şifremi Unuttum</Link>
                 </div>
 

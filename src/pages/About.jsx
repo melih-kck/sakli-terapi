@@ -33,8 +33,8 @@ export default function About() {
           <div className="container">
             <h1 className="fade-in">GizliBiriz Nedir?</h1>
             <p className="fade-in delay-1">
-              Toplumun yargılarından uzak, tamamen anonim, güvenilir ve profesyonel psikolojik
-              destek sağlayan Türkiye'nin ilk karanlık-odaklı terapi platformu.
+              Rumuz temelli profiller ve bulanık görüntü seçenekleriyle mahremiyeti
+              önceleyen bir psikolojik danışmanlık platformu.
             </p>
           </div>
         </section>
@@ -52,9 +52,8 @@ export default function About() {
                   görüşebileceğiniz güvenli bir dijital alan yaratmaktır.
                 </p>
                 <p>
-                  Sıfır veri tutma politikamız ve blur teknolojimiz sayesinde, odanın 
-                  karşısındaki psikolog dahi gerçekte kim olduğunuzu bilmez. Yalnızca sesiniz 
-                  ve ruhunuzla orada olursunuz.
+                  Veri minimizasyonu yaklaşımımız ve blur teknolojimiz, danışanların
+                  görüşme sırasında ne kadar görünür olacaklarını seçmesine yardımcı olur.
                 </p>
               </div>
               <div className="card p-xl" style={{ borderStyle: 'dashed', borderColor: 'var(--border-medium)' }}>
@@ -62,7 +61,7 @@ export default function About() {
                 <ul style={{ color: 'var(--text-secondary)', lineHeight: '1.8', listStyleType: 'square', paddingLeft: '20px' }}>
                   <li>Toplumsal baskı ve önyargılardan arınma</li>
                   <li>Kendini çok daha açık ve dürüst ifade edebilme</li>
-                  <li>Sıfır veri sızıntısı ve %100 dijital mahremiyet</li>
+                  <li>Rol bazlı erişim ve veri minimizasyonu</li>
                   <li>Kariyer veya statü endişesi taşımadan tedavi olma</li>
                 </ul>
               </div>
@@ -82,13 +81,13 @@ export default function About() {
             <div className="values-grid animate-on-scroll">
               <div className="card value-card">
                 <div className="value-icon">🛡️</div>
-                <h4>Mutlak Gizlilik</h4>
-                <p>Verileriniz şifrelenir, kimliğiniz asla kimseyle paylaşılmaz.</p>
+                <h4>Mahremiyet</h4>
+                <p>Özel veriler amaçlarına göre ayrıştırılır ve erişim kullanıcı rolleriyle sınırlandırılır.</p>
               </div>
               <div className="card value-card">
                 <div className="value-icon">👨‍⚕️</div>
                 <h4>Yetkinlik</h4>
-                <p>Sadece diploması ve yeterliliği kanıtlanmış uzmanlar sistemde yer alır.</p>
+                <p>Yalnızca yönetici incelemesinden geçen psikolog profilleri katalogda yer alır.</p>
               </div>
               <div className="card value-card">
                 <div className="value-icon">🌍</div>

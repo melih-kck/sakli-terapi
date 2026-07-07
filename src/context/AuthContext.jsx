@@ -15,6 +15,23 @@ const isDevMockEmail = (email = '') => {
   );
 };
 
+const clearLegacySensitiveCaches = () => {
+  if (import.meta.env.DEV) return;
+
+  const sensitivePrefixes = [
+    'gizlibiriz-client-profile-',
+    'gizlibiriz-client-mood-',
+    'gizlibiriz-client-reviews-',
+    'gizlibiriz-settings-',
+  ];
+
+  Object.keys(localStorage).forEach((key) => {
+    if (key === 'gizlibiriz-global-reviews' || sensitivePrefixes.some(prefix => key.startsWith(prefix))) {
+      localStorage.removeItem(key);
+    }
+  });
+};
+
 const getInitials = (name = '') => {
   const words = name.trim().split(/\s+/).filter(Boolean);
   return words
@@ -55,15 +72,6 @@ const normalizeClientProfile = (profile = {}) => ({
   privacyLevel: Number(profile.privacyLevel || profile.privacy_level || 5),
 });
 
-const readLocalJson = (key, fallback) => {
-  try {
-    const saved = localStorage.getItem(key);
-    return saved ? JSON.parse(saved) : fallback;
-  } catch {
-    return fallback;
-  }
-};
-
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
@@ -79,8 +87,8 @@ export function AuthProvider({ children }) {
   const fetchClientProfile = useCallback(async (userId) => {
     const { data, error } = await supabase.from('client_profiles').select('*').eq('id', userId).single();
     if (error || !data) {
-      // Fallback: localStorage'dan oku (eski veriler için)
-      return normalizeClientProfile(readLocalJson(`gizlibiriz-client-profile-${userId}`, {}));
+      console.warn('Danışan profili yüklenemedi:', error);
+      return normalizeClientProfile();
     }
     return normalizeClientProfile(data);
   }, []);
@@ -92,7 +100,8 @@ export function AuthProvider({ children }) {
       .eq('client_id', userId)
       .order('date', { ascending: true });
     if (error || !data) {
-      return readLocalJson(`gizlibiriz-client-mood-${userId}`, []);
+      console.warn('Ruh hali geçmişi yüklenemedi:', error);
+      return [];
     }
     return data;
   }, []);
@@ -102,29 +111,11 @@ export function AuthProvider({ children }) {
       const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
 
       if (error || !data) {
-        // Auto-repair: If auth user exists but profile is missing, recreate it
-        const fallbackRole = 'client';
-        const fallbackAlias = 'Onarılmış Hesap';
-        
-        const { error: repairError } = await supabase.from('profiles').insert([{
-          id: userId,
-          email,
-          role: fallbackRole,
-          alias: fallbackAlias,
-        }]);
-
-        if (repairError) {
-          console.error('Profil otomatik onarılamadı:', repairError);
-        }
-
-        setUser({
-          id: userId, email, role: fallbackRole, alias: fallbackAlias,
-          sessions: [], moodHistory: [], reviews: [],
-          clientProfile: normalizeClientProfile({}),
-          psychologistProfile: null,
-          privacyLevel: 5,
-        });
-        return;
+        const message = 'Hesap profili bulunamadı. Lütfen destek ekibiyle iletişime geçin.';
+        console.error('Hesap profili yüklenemedi:', error);
+        setUser(null);
+        showError('Profil Yüklenemedi', message);
+        return { success: false, error: message };
       }
 
       const psychologistProfile = data.role === 'psychologist' ? await fetchPsychologistProfile(userId) : null;
@@ -143,18 +134,22 @@ export function AuthProvider({ children }) {
         privacyLevel: data.privacy_level || clientProfile?.privacyLevel || 5,
         psychologistProfile,
       });
+      return { success: true, role: data.role };
     } catch (err) {
-      console.warn('Profil çekilemedi:', err);
+      console.error('Profil çekilemedi:', err);
       setUser(null);
+      showError('Profil Yüklenemedi', 'Hesap bilgileriniz alınamadı. Lütfen tekrar deneyin.');
+      return { success: false, error: err.message };
     } finally {
       setIsLoading(false);
     }
-  }, [fetchPsychologistProfile, fetchClientProfile, fetchMoodHistory]);
+  }, [fetchPsychologistProfile, fetchClientProfile, fetchMoodHistory, showError]);
 
   useEffect(() => {
     let isMounted = true;
 
     const initAuth = async () => {
+      clearLegacySensitiveCaches();
       const { data } = await supabase.auth.getSession();
       if (!isMounted) return;
 
@@ -196,11 +191,11 @@ export function AuthProvider({ children }) {
     return () => { isMounted = false; subscription.unsubscribe(); };
   }, [fetchUserProfile]);
 
-  const login = useCallback(async (email, password, requestedRole = null) => {
+  const login = useCallback(async (email, password) => {
     setIsLoading(true);
     try {
       if (isDevMockEmail(email)) {
-        const mockRole = requestedRole || (email === 'psikolog@gizlibiriz.com' ? 'psychologist' : 'client');
+        const mockRole = email.toLowerCase() === 'psikolog@gizlibiriz.com' ? 'psychologist' : 'client';
         const mockUser = {
           id: `mock-${crypto.randomUUID()}`, email, role: mockRole,
           alias: mockRole === 'psychologist' ? null : 'Test Danışanı',
@@ -226,10 +221,14 @@ export function AuthProvider({ children }) {
         return { success: false, error: error.message };
       }
 
-      await fetchUserProfile(data.user.id, email);
+      const profileResult = await fetchUserProfile(data.user.id, email);
+      if (!profileResult?.success) {
+        await supabase.auth.signOut();
+        return profileResult;
+      }
+
       success('Giriş Başarılı', 'Panele yönlendiriliyorsunuz...');
-      const profileRes = await supabase.from('profiles').select('role').eq('id', data.user.id).single();
-      return { success: true, role: profileRes.data?.role || 'client' };
+      return { success: true, role: profileResult.role };
     } catch (err) {
       console.error('Giriş hatası:', err);
       showError('Sistem Hatası', 'Beklenmeyen bir hata oluştu.');
@@ -365,7 +364,7 @@ export function AuthProvider({ children }) {
   const value = {
     user, setUser, session,
     isAuthenticated: !!user,
-    isClient: user?.role === 'client' || user?.role === 'admin',
+    isClient: user?.role === 'client',
     isPsychologist: user?.role === 'psychologist',
     isLoading, login, register, logout,
   };

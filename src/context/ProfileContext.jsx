@@ -17,16 +17,7 @@ const getInitials = (name = '') => {
     .join('') || 'GB';
 };
 
-// ─── Local-storage utilities ──────────────────────────────────────────────────
-
-
-
-const writeLocalJson = (key, value) => {
-  localStorage.setItem(key, JSON.stringify(value));
-};
-
-const getClientProfileKey = (userId) => `gizlibiriz-client-profile-${userId}`;
-const getClientMoodKey = (userId) => `gizlibiriz-client-mood-${userId}`;
+const isDevMockUser = (user) => import.meta.env.DEV && Boolean(user?.id?.startsWith('mock-'));
 
 // ─── Default shapes ──────────────────────────────────────────────────────────
 
@@ -149,11 +140,6 @@ const toClientProfileUpsertPayload = (userId, updates) => {
   return payload;
 };
 
-const isMissingPrivacyLevelColumn = (err) =>
-  err?.message?.includes('privacy_level') ||
-  err?.details?.includes('privacy_level') ||
-  err?.hint?.includes('privacy_level');
-
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function ProfileProvider({ user, setUser, children }) {
@@ -176,10 +162,9 @@ export function ProfileProvider({ user, setUser, children }) {
       };
 
       // ── Mock / dev fallback ───────────────────────────────────────────────
-      if (user.id.startsWith('mock-')) {
+      if (isDevMockUser(user)) {
         setUser(nextUser);
         localStorage.setItem('mock_user_session', JSON.stringify(nextUser));
-        success('Profil Güncellendi', 'Değişiklikler kaydedildi.');
         return { success: true, profile: nextUser, isLocalFallback: true };
       }
 
@@ -193,22 +178,7 @@ export function ProfileProvider({ user, setUser, children }) {
           .single();
 
       const payload = toProfileUpdatePayload(updates);
-      let { data, error } = await saveProfile(payload);
-      let missingPrivacyColumn = false;
-
-      // Retry without privacy_level if the column doesn't exist yet
-      if (error && payload.privacy_level !== undefined && isMissingPrivacyLevelColumn(error)) {
-        missingPrivacyColumn = true;
-        const fallbackPayload = { ...payload };
-        delete fallbackPayload.privacy_level;
-
-        if (Object.keys(fallbackPayload).length > 0) {
-          ({ data, error } = await saveProfile(fallbackPayload));
-        } else {
-          data = user;
-          error = null;
-        }
-      }
+      const { data, error } = await saveProfile(payload);
 
       if (error) {
         showError('Profil Güncellenemedi', error.message);
@@ -233,7 +203,6 @@ export function ProfileProvider({ user, setUser, children }) {
       const updatedUser = {
         ...user,
         ...data,
-        ...(missingPrivacyColumn ? updates : {}),
         privacyLevel:
           updates.privacyLevel !== undefined
             ? Number(updates.privacyLevel)
@@ -249,10 +218,9 @@ export function ProfileProvider({ user, setUser, children }) {
       };
 
       setUser(updatedUser);
-      success('Profil Güncellendi', 'Değişiklikler kaydedildi.');
-      return { success: true, profile: updatedUser, missingPrivacyColumn };
+      return { success: true, profile: updatedUser };
     },
-    [user, setUser, success, showError],
+    [user, setUser, showError],
   );
 
   // ── updatePsychologistProfile ─────────────────────────────────────────────
@@ -274,11 +242,10 @@ export function ProfileProvider({ user, setUser, children }) {
       });
 
       // ── Mock / dev fallback ───────────────────────────────────────────────
-      if (user.id.startsWith('mock-')) {
+      if (isDevMockUser(user)) {
         const nextUser = { ...user, psychologistProfile: nextPsychologistProfile };
         setUser(nextUser);
         localStorage.setItem('mock_user_session', JSON.stringify(nextUser));
-        success('Psikolog Profili Güncellendi', 'Değişiklikler kaydedildi.');
         return {
           success: true,
           psychologistProfile: nextPsychologistProfile,
@@ -305,10 +272,9 @@ export function ProfileProvider({ user, setUser, children }) {
 
       const updatedPsychologistProfile = normalizePsychologistProfile(data);
       setUser((prev) => (prev ? { ...prev, psychologistProfile: updatedPsychologistProfile } : prev));
-      success('Psikolog Profili Güncellendi', 'Değişiklikler kaydedildi.');
       return { success: true, psychologistProfile: updatedPsychologistProfile };
     },
-    [user, setUser, success, showError],
+    [user, setUser, showError],
   );
 
   // ── updateClientProfile ───────────────────────────────────────────────────
@@ -331,9 +297,7 @@ export function ProfileProvider({ user, setUser, children }) {
             : user.privacyLevel,
       };
 
-      if (user.id.startsWith('mock-')) {
-        writeLocalJson(getClientProfileKey(user.id), nextClientProfile);
-
+      if (isDevMockUser(user)) {
         setUser((prev) => {
           if (!prev) return prev;
           const nextUser = {
@@ -345,7 +309,6 @@ export function ProfileProvider({ user, setUser, children }) {
           return nextUser;
         });
 
-        success('Danışan Profili Güncellendi', 'Tercihleriniz kaydedildi.');
         return { success: true, clientProfile: nextClientProfile, isLocalFallback: true };
       }
 
@@ -361,7 +324,6 @@ export function ProfileProvider({ user, setUser, children }) {
       }
 
       const updatedClientProfile = normalizeClientProfile(data);
-      writeLocalJson(getClientProfileKey(user.id), updatedClientProfile);
 
       setUser((prev) => {
         if (!prev) return prev;
@@ -372,32 +334,48 @@ export function ProfileProvider({ user, setUser, children }) {
         };
       });
 
-      success('Danışan Profili Güncellendi', 'Tercihleriniz kaydedildi.');
       return { success: true, clientProfile: updatedClientProfile };
     },
-    [user, setUser, success, showError],
+    [user, setUser, showError],
   );
 
   // ── updatePassword ────────────────────────────────────────────────────────
   const updatePassword = useCallback(
-    async (newPassword) => {
+    async (currentPassword, newPassword) => {
       if (!user) {
         return { success: false, error: 'Şifre güncellemek için giriş yapmalısınız.' };
       }
 
-      if (!newPassword || newPassword.length < 6) {
-        const message = 'Yeni şifre en az 6 karakter olmalıdır.';
+      if (!currentPassword) {
+        const message = 'Mevcut şifrenizi yazmalısınız.';
+        showError('Şifre Güncellenemedi', message);
+        return { success: false, error: message };
+      }
+
+      if (!newPassword || newPassword.length < 8) {
+        const message = 'Yeni şifre en az 8 karakter olmalıdır.';
         showError('Şifre Güncellenemedi', message);
         return { success: false, error: message };
       }
 
       // ── Mock / dev fallback ───────────────────────────────────────────────
-      if (user.id.startsWith('mock-')) {
+      if (isDevMockUser(user)) {
         success('Şifre Güncellendi', 'Test hesabı için şifre değişikliği simüle edildi.');
         return { success: true, isLocalFallback: true };
       }
 
       // ── Supabase ──────────────────────────────────────────────────────────
+      const { error: verificationError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      });
+
+      if (verificationError) {
+        const message = 'Mevcut şifreniz doğrulanamadı.';
+        showError('Şifre Güncellenemedi', message);
+        return { success: false, error: message };
+      }
+
       const { error } = await supabase.auth.updateUser({ password: newPassword });
 
       if (error) {
@@ -428,8 +406,7 @@ export function ProfileProvider({ user, setUser, children }) {
       ].sort((a, b) => a.date.localeCompare(b.date));
 
       // ── Mock / dev fallback — always use localStorage ─────────────────────
-      if (user.id.startsWith('mock-')) {
-        writeLocalJson(getClientMoodKey(user.id), nextMoodHistory);
+      if (isDevMockUser(user)) {
         setUser((prev) => {
           if (!prev) return prev;
           const nextUser = { ...prev, moodHistory: nextMoodHistory };
@@ -453,12 +430,11 @@ export function ProfileProvider({ user, setUser, children }) {
         );
 
       if (error) {
-        // Fall back to localStorage on Supabase error
-        console.warn("Ruh hali kaydı Supabase'e yazılamadı, localStorage'a düşülüyor:", error);
-        writeLocalJson(getClientMoodKey(user.id), nextMoodHistory);
+        console.error("Ruh hali kaydı Supabase'e yazılamadı:", error);
+        showError('Ruh Hali Kaydedilemedi', error.message);
+        return { success: false, error: error.message };
       }
 
-      // Always update local state regardless of where persisted
       setUser((prev) => {
         if (!prev) return prev;
         return { ...prev, moodHistory: nextMoodHistory };
@@ -467,7 +443,7 @@ export function ProfileProvider({ user, setUser, children }) {
       success('Ruh Hali Kaydedildi', 'Bugünkü ruh hali notunuz güncellendi.');
       return { success: true, moodHistory: nextMoodHistory };
     },
-    [user, setUser, success],
+    [user, setUser, success, showError],
   );
 
   // ── Context value (memoised) ──────────────────────────────────────────────

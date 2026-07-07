@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { SPECIALIZATIONS } from '../data/constants';
 import Navbar from '../components/Navbar';
@@ -14,7 +14,7 @@ export default function RegisterPsychologist() {
 
   // Form State
   const [formData, setFormData] = useState({
-    name: '', email: '', password: '', passwordConfirm: '', phone: '', tcNo: '',
+    name: '', email: '', password: '', passwordConfirm: '',
     university: '', graduationYear: '',
     supervisorName: '',
     specializations: [], approaches: [],
@@ -67,7 +67,7 @@ export default function RegisterPsychologist() {
             <div key={num} className="register-step-item">
               <div className={`step-circle ${step >= num ? 'active' : ''}`}>{num}</div>
               <span className={`step-label ${step >= num ? 'active' : ''}`}>
-                {num === 1 ? 'Kişisel' : num === 2 ? 'Mesleki' : num === 3 ? 'Profil' : 'Sözleşme'}
+                {num === 1 ? 'Hesap' : num === 2 ? 'Mesleki' : num === 3 ? 'Profil' : 'Onay'}
               </span>
               {num < 4 && <div className={`step-connector ${step > num ? 'active' : ''}`}></div>}
             </div>
@@ -81,30 +81,19 @@ export default function RegisterPsychologist() {
               {/* Step 1: Personal Info */}
               {step === 1 && (
                 <div className="register-step-content slide-up">
-                  <h3>1. Kişisel Bilgiler</h3>
+                  <h3>1. Hesap Bilgileri</h3>
                   <div className="auth-info-box mb-lg">
-                    🔒 Bu bilgiler yalnızca doğrulama süreçleri için kullanılacak olup, platform üzerinde tam isminiz görüntülenecektir.
+                    Profil adınız yalnızca başvurunuz onaylandıktan sonra katalogda görünür.
                   </div>
-                  
+
                   <div className="grid grid-2 gap-md mb-md">
                     <div className="input-group">
                       <label>Ad Soyad</label>
                       <input type="text" name="name" className="input" placeholder="Örn: Ayşe Yılmaz" value={formData.name} onChange={handleChange} required />
                     </div>
                     <div className="input-group">
-                      <label>TC Kimlik No</label>
-                      <input type="text" name="tcNo" className="input" placeholder="Doğrulama için" value={formData.tcNo} onChange={handleChange} required />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-2 gap-md mb-lg">
-                    <div className="input-group">
                       <label>E-posta Adresi</label>
                       <input type="email" name="email" className="input" value={formData.email} onChange={handleChange} required />
-                    </div>
-                    <div className="input-group">
-                      <label>Telefon Numarası</label>
-                      <input type="tel" name="phone" className="input" value={formData.phone} onChange={handleChange} required />
                     </div>
                   </div>
 
@@ -149,18 +138,15 @@ export default function RegisterPsychologist() {
 
                   {isCandidate && (
                     <div className="input-group mb-md">
-                      <label>Süpervizör (Danışman) Adı ve İletişimi</label>
-                      <input type="text" name="supervisorName" className="input" placeholder="Örn: Prof. Dr. Ahmet Yılmaz - ahmetyilmaz@uni.edu.tr" value={formData.supervisorName} onChange={handleChange} required />
+                      <label>Süpervizör (Danışman) Adı</label>
+                      <input type="text" name="supervisorName" className="input" placeholder="Örn: Prof. Dr. Ayşe Yılmaz" value={formData.supervisorName} onChange={handleChange} required />
+                      <span className="input-hint">Bu alan yönetici incelemesi içindir ve herkese açık profilde gösterilmez.</span>
                     </div>
                   )}
 
-                  <div className="input-group mb-md">
-                    <label>Belge Yükleme (PDF/JPG)</label>
-                    <div className="upload-box" style={{ padding: 'var(--space-xl)', border: '2px dashed var(--border-medium)', borderRadius: 'var(--radius-md)', textAlign: 'center', cursor: 'pointer' }}>
-                      <span style={{ fontSize: '2rem' }}>📄</span>
-                      <p className="mt-xs">{isCandidate ? 'Öğrenci Belgesi & Süpervizör Onayı' : 'Diploma & E-Devlet Kaydı'}</p>
-                      <span className="btn btn-outline btn-sm mt-sm">Dosya Seç</span>
-                    </div>
+                  <div className="auth-info-box mb-md">
+                    Başvurunuz yönetici incelemesine alınır. Gerekli mesleki belgeler,
+                    herkese açık formda toplanmak yerine kayıtlı e-posta adresiniz üzerinden istenir.
                   </div>
                 </div>
               )}
@@ -210,31 +196,30 @@ export default function RegisterPsychologist() {
                 </div>
               )}
 
-              {/* Step 4: Contract & Payment Terms (B2B) */}
+              {/* Step 4: Application confirmation */}
               {step === 4 && (
                 <div className="register-step-content slide-up">
-                  <h3>4. İş Ortaklığı ve Komisyon Sözleşmesi</h3>
-                  
+                  <h3>4. Başvuru Onayı</h3>
+
                   <div className="contract-box">
                     <div className="contract-text">
-                      <p><strong>GİZLİBİRİZ UZMAN/PSİKOLOG HİZMET SÖZLEŞMESİ</strong></p>
-                      <p>1. TARAFLAR<br/>Bu sözleşme GizliBiriz Platformu ile sisteme kayıt olan Psikolog arasında akdedilmiştir.</p>
-                      <p>2. KOMİSYON VE HAKEDİŞ MODELİ<br/>Platform üzerinden gerçekleşen her başarılı seans için, psikoloğun belirlediği taban seans ücreti üzerinden <strong>%20 Platform Hizmet Bedeli (Komisyon)</strong> kesilir. Kalan %80 tutar (Hakediş), seansın tamamlanmasını takip eden 3 iş günü içerisinde psikoloğun kayıtlı IBAN adresine yatırılır.</p>
-                      <p>Örnek Hesaplama:<br/>Seans Ücreti: 1.000 ₺<br/>Platform Kesintisi (%20): 200 ₺<br/><strong>Psikolog Net Hakediş: 800 ₺</strong></p>
-                      <p>3. GİZLİLİK VE GÜVENLİK (WebRTC/Blur)<br/>Psikolog, platform üzerinde danışanların bulanıklaştırılmış (blur) veya sesli görüntülerini hiçbir şekilde kaydetmemeyi, ekran görüntüsü almamayı kabul ve taahhüt eder. Gizlilik ihlali durumunda yasal süreç başlatılır.</p>
+                      <p><strong>PSİKOLOG BAŞVURU BEYANI</strong></p>
+                      <p>Başvuruda verdiğim mesleki bilgilerin doğru olduğunu ve gerektiğinde doğrulayıcı belge sunacağımı beyan ederim.</p>
+                      <p>Danışan mahremiyetini koruyacağımı; görüşme içeriğini, görüntüsünü veya sesini izinsiz kaydetmeyeceğimi kabul ederim.</p>
+                      <p>Ödeme ve komisyon altyapısının henüz etkin olmadığını; finansal koşullar devreye alınmadan önce ayrıca bilgilendirileceğimi kabul ederim.</p>
                     </div>
                   </div>
 
                   <div className="input-group mb-md">
                     <label className="checkbox-group">
                       <input type="checkbox" required />
-                      <span>B2B İş Ortaklığı ve Hakediş Sözleşmesini okudum, kabul ediyorum.</span>
+                      <span><Link to="/kullanim-kosullari">Kullanım Koşullarını</Link> okudum, kabul ediyorum.</span>
                     </label>
                   </div>
                   <div className="input-group mb-lg">
                     <label className="checkbox-group">
                       <input type="checkbox" required />
-                      <span>Danışan Gizliliği (Zero-Knowledge) manifestosuna ve KVKK kurallarına uyacağımı taahhüt ederim.</span>
+                      <span><Link to="/gizlilik-politikasi">Gizlilik Politikasını</Link> okudum ve danışan mahremiyetine uyacağımı taahhüt ederim.</span>
                     </label>
                   </div>
                 </div>

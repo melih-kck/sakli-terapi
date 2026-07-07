@@ -8,8 +8,13 @@ const readSource = (relativePath) => readFileSync(
 
 const migration = readSource('./migration-009-privacy-boundaries.sql');
 const bookingMigration = readSource('./migration-010-booking-availability.sql');
+const sessionInsertMigration = readSource('./migration-011-session-insert-hardening.sql');
 const psychologistQueries = readSource('./psychologists.js');
 const reviewQueries = readSource('../context/ReviewContext.jsx');
+const sessionContext = readSource('../context/SessionContext.jsx');
+const profileContext = readSource('../context/ProfileContext.jsx');
+const supportPages = readSource('../pages/SupportPages.jsx');
+const createPayment = readSource('../../api/create-payment.js');
 const paymentCallback = readSource('../../api/payment-callback.js');
 
 describe('Supabase privacy boundaries', () => {
@@ -60,9 +65,13 @@ describe('Supabase privacy boundaries', () => {
     expect(reviewQueries).toContain(".from('public_reviews')");
   });
 
-  it('never falls back to the anonymous key for payment updates', () => {
-    expect(paymentCallback).toContain('SUPABASE_SERVICE_ROLE_KEY');
-    expect(paymentCallback).not.toContain('process.env.VITE_SUPABASE_ANON_KEY');
+  it('keeps incomplete payment endpoints explicitly disabled', () => {
+    expect(createPayment).toContain("code: 'payments_disabled'");
+    expect(paymentCallback).toContain("code: 'payments_disabled'");
+    expect(createPayment).toContain('status(503)');
+    expect(paymentCallback).toContain('status(503)');
+    expect(createPayment).not.toContain('Iyzipay');
+    expect(paymentCallback).not.toContain('SUPABASE_SERVICE_ROLE_KEY');
   });
 
   it('keeps occupied-slot lookup authenticated and free of client identifiers', () => {
@@ -88,6 +97,51 @@ describe('Supabase privacy boundaries', () => {
     expect(bookingMigration).toContain("WHERE status <> 'cancelled'");
     expect(bookingMigration).toContain("scheduled_time::time");
     expect(bookingMigration).toContain("timezone('Europe/Istanbul', now())");
+  });
+
+  it('derives sensitive booking fields and room credentials in PostgreSQL', () => {
+    expect(sessionInsertMigration).toContain('private.prepare_session_insert()');
+    expect(sessionInsertMigration).toContain('NEW.client_id := actor_id');
+    expect(sessionInsertMigration).toContain('NEW.fee := GREATEST');
+    expect(sessionInsertMigration).toContain("NEW.payment_status := 'pending'");
+    expect(sessionInsertMigration).toContain('NEW.peer_room_token := pg_catalog.gen_random_uuid()');
+    expect(sessionInsertMigration).toContain("psychologists.approval_status = 'approved'");
+  });
+
+  it('derives review identity and aggregate rating in PostgreSQL', () => {
+    expect(sessionInsertMigration).toContain('private.prepare_review_insert()');
+    expect(sessionInsertMigration).toContain('NEW.client_id := actor_id');
+    expect(sessionInsertMigration).toContain('NEW.psychologist_id := session_psychologist_id');
+    expect(sessionInsertMigration).toContain("WHEN NEW.anonymous THEN 'Anonim Danisan'");
+    expect(sessionInsertMigration).toContain('NEW.rating := ROUND');
+    expect(sessionInsertMigration).toContain('NEW.comment := LEFT');
+  });
+
+  it('sends only user-selectable booking fields from the browser', () => {
+    const realInsertBlock = sessionContext.match(
+      /\/\/ Real Supabase insert[\s\S]*?try \{/,
+    )?.[0];
+
+    expect(realInsertBlock).toBeTruthy();
+    expect(realInsertBlock).toContain('psychologist_id');
+    expect(realInsertBlock).toContain('scheduled_date');
+    expect(realInsertBlock).toContain('scheduled_time');
+    expect(realInsertBlock).toContain('channel');
+    expect(realInsertBlock).not.toContain('client_id');
+    expect(realInsertBlock).not.toContain('payment_status');
+    expect(realInsertBlock).not.toContain('fee:');
+    expect(realInsertBlock).not.toContain('peer_room_token');
+  });
+
+  it('requires current-password verification for in-session password changes', () => {
+    expect(profileContext).toContain('supabase.auth.signInWithPassword');
+    expect(profileContext).toContain('password: currentPassword');
+  });
+
+  it('provides a complete password recovery destination', () => {
+    expect(supportPages).toContain("redirectTo: `${window.location.origin}/sifre-yenile`");
+    expect(supportPages).toContain("event === 'PASSWORD_RECOVERY'");
+    expect(supportPages).toContain('supabase.auth.updateUser({ password })');
   });
 
   it('keeps demo psychologist data development-only', () => {

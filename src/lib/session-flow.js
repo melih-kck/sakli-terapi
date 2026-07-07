@@ -74,8 +74,8 @@ export const getSessionJoinState = (session, now = new Date()) => {
     return {
       canJoin: false,
       code: 'payment',
-      label: 'Ödeme gerekli',
-      helper: 'Seans odası ödeme tamamlandıktan sonra açılır.',
+      label: 'Ödeme entegrasyonu bekleniyor',
+      helper: 'Ödeme özelliği etkinleştirilene kadar seans odası açılamaz.',
     };
   }
 
