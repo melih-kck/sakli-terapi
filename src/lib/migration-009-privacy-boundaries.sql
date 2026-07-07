@@ -343,7 +343,6 @@ SELECT
   availability,
   languages,
   university,
-  supervisor,
   created_at
 FROM public.psychologists
 WHERE approval_status = 'approved';

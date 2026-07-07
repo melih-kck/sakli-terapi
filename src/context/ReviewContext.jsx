@@ -74,21 +74,17 @@ const normalizeCategoriesRating = (raw = {}) => ({
  */
 const toReviewInsertPayload = (review) => ({
   session_id: review.sessionId,
-  psychologist_id: review.psychologistId,
-  client_id: review.clientId,
-  client_alias: review.clientAlias,
   rating: review.rating,
   categories: review.categoriesRating,
   comment: review.comment,
   anonymous: review.anonymous,
-  channel: review.channel,
 });
 
 // ---------------------------------------------------------------------------
 // Helper — mock user detection
 // ---------------------------------------------------------------------------
 
-const isMockUser = (user) => Boolean(user?.id?.startsWith('mock-'));
+const isDevMockUser = (user) => import.meta.env.DEV && Boolean(user?.id?.startsWith('mock-'));
 
 // ---------------------------------------------------------------------------
 // Provider
@@ -109,7 +105,7 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
       return;
     }
 
-    if (isMockUser(user) && (user.role === 'client' || user.role === 'admin')) {
+    if (isDevMockUser(user) && user.role === 'client') {
       const stored = readLocalJson(getClientReviewsKey(user.id), []);
       setReviews(stored.map(normalizeReview));
       return;
@@ -125,7 +121,7 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
   // -----------------------------------------------------------------------
   const submitReview = useCallback(async ({ sessionId, ratings, rating, comment, anonymous }) => {
     // --- Guard: must be a logged-in client ---------------------------------
-    if (!user || (user.role !== 'client' && user.role !== 'admin')) {
+    if (!user || user.role !== 'client') {
       showError('Değerlendirme Gönderilemedi', 'Değerlendirme göndermek için danışan hesabıyla giriş yapmalısınız.');
       return { success: false, error: 'Değerlendirme göndermek için danışan hesabıyla giriş yapmalısınız.' };
     }
@@ -133,7 +129,7 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
     // --- Find the target session -------------------------------------------
     let sessions = sessionContextSessions.length > 0 ? sessionContextSessions : (user.sessions || []);
     
-    if (isMockUser(user)) {
+    if (isDevMockUser(user)) {
        const stored = readLocalJson('mock_user_session', null);
        if (stored && stored.sessions) {
           sessions = stored.sessions;
@@ -145,7 +141,7 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
     );
 
     // Eğer session yerelde bulunamadıysa (gerçek Supabase user ise), Supabase'e soralım
-    if (!sessionToReview && !isMockUser(user)) {
+    if (!sessionToReview && !isDevMockUser(user)) {
       try {
         const { data, error } = await supabase
           .from('sessions')
@@ -186,6 +182,18 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
       return { success: false, error: message };
     }
 
+    if (!isDevMockUser(user) && !UUID_PATTERN.test(String(sessionId))) {
+      const message = 'Geçersiz seans kaydı.';
+      showError('Değerlendirme Gönderilemedi', message);
+      return { success: false, error: message };
+    }
+
+    if ((comment || '').trim().length < 10) {
+      const message = 'Değerlendirme en az 10 karakter olmalıdır.';
+      showError('Değerlendirme Gönderilemedi', message);
+      return { success: false, error: message };
+    }
+
     // --- Build the review object -------------------------------------------
     const categoriesRating = normalizeCategoriesRating({
       listening: ratings?.listening ?? rating,
@@ -207,6 +215,19 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
         ),
     );
 
+    const ratingValues = [
+      overallRating,
+      categoriesRating.listening,
+      categoriesRating.empathy,
+      categoriesRating.clarity,
+      categoriesRating.trust,
+    ];
+    if (ratingValues.some(value => !Number.isFinite(value) || value < 1 || value > 5)) {
+      const message = 'Puanlar 1 ile 5 arasında olmalıdır.';
+      showError('Değerlendirme Gönderilemedi', message);
+      return { success: false, error: message };
+    }
+
     const newReview = {
       id: `review-${crypto.randomUUID()}`,
       sessionId,
@@ -223,7 +244,7 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
     };
 
     // --- Mock path (localStorage) ------------------------------------------
-    if (isMockUser(user)) {
+    if (isDevMockUser(user)) {
       // Per-user reviews store
       const storedReviews = readLocalJson(getClientReviewsKey(user.id), []);
       const nextReviews = [...storedReviews, newReview];
@@ -261,13 +282,6 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
 
       const normalized = normalizeReview(data);
 
-      // Add to global reviews store (used by psychologist profile pages)
-      appendLocalReview(normalized);
-
-      // Also persist to per-user localStorage as a local cache
-      const storedReviews = readLocalJson(getClientReviewsKey(user.id), []);
-      writeLocalJson(getClientReviewsKey(user.id), [...storedReviews, normalized]);
-
       setReviews((prev) => [...prev, normalized]);
 
       // Mark session as reviewed in SessionContext
@@ -292,7 +306,7 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
 
     // --- Mock / non-UUID psychologist IDs → read from global local store ---
     if (
-      (user && isMockUser(user)) ||
+      (user && isDevMockUser(user)) ||
       !UUID_PATTERN.test(String(psychologistId))
     ) {
       if (!import.meta.env.DEV) return [];
@@ -341,7 +355,7 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
     if (!user) return [];
 
     // --- Mock users: always read from localStorage -------------------------
-    if (isMockUser(user)) {
+    if (isDevMockUser(user)) {
       const stored = readLocalJson(getClientReviewsKey(user.id), []);
       const normalized = stored.map(normalizeReview);
       setReviews(normalized);
@@ -358,26 +372,18 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
 
       if (error) {
         console.warn('Değerlendirmeler çekilemedi:', error);
-        // Fallback to local cache
-        const stored = readLocalJson(getClientReviewsKey(user.id), []);
-        const normalized = stored.map(normalizeReview);
-        setReviews(normalized);
-        return normalized;
+        setReviews([]);
+        return [];
       }
 
       const normalized = (data || []).map(normalizeReview);
       setReviews(normalized);
 
-      // Sync to local cache
-      writeLocalJson(getClientReviewsKey(user.id), normalized);
-
       return normalized;
     } catch (err) {
       console.warn('getMyReviews hatası:', err);
-      const stored = readLocalJson(getClientReviewsKey(user.id), []);
-      const normalized = stored.map(normalizeReview);
-      setReviews(normalized);
-      return normalized;
+      setReviews([]);
+      return [];
     }
   }, [user]);
 

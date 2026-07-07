@@ -42,6 +42,7 @@ For a fresh Supabase project, run:
 src/lib/supabase-complete-setup.sql
 src/lib/migration-009-privacy-boundaries.sql
 src/lib/migration-010-booking-availability.sql
+src/lib/migration-011-session-insert-hardening.sql
 ```
 
 For an already-created database, run the latest incremental migrations in order:
@@ -52,6 +53,7 @@ src/lib/migration-007-session-update-hardening.sql
 src/lib/migration-008-auth-profile-trigger.sql
 src/lib/migration-009-privacy-boundaries.sql
 src/lib/migration-010-booking-availability.sql
+src/lib/migration-011-session-insert-hardening.sql
 ```
 
 `migration-008-auth-profile-trigger.sql` keeps profile creation working when Supabase Auth email confirmation is enabled.
@@ -61,8 +63,11 @@ rating fields.
 `migration-010-booking-availability.sql` exposes occupied slots only to
 authenticated booking participants and enforces one active appointment per
 psychologist, date, and time.
+`migration-011-session-insert-hardening.sql` derives participant display
+fields, price, workflow state, and the private room token inside PostgreSQL
+instead of trusting browser input.
 
-After Migration 009, run `src/lib/verify-rls.sql` in the SQL Editor. The final
+After the migrations, run `src/lib/verify-rls.sql` in the SQL Editor. The final
 block raises an exception if a protected table has RLS disabled or a public
 view exposes a private identifier.
 
@@ -78,22 +83,20 @@ SET role = 'admin'
 WHERE email = 'your-admin-email@example.com';
 ```
 
-Demoting or deleting temporary test users:
-
-```text
-src/lib/cleanup-test-users.sql
-```
-
 ## Payment Status
 
-Payment is intentionally deferred. Browser-authenticated users cannot mark sessions as `paid`; that status must be set later by a server-side payment callback using a Supabase service role key.
+Payment is intentionally deferred. The payment API routes return
+`503 payments_disabled`, the production UI does not offer an active payment
+button, and browser-authenticated users cannot mark sessions as `paid`.
+A future implementation must authenticate the caller, read the canonical
+session price from Supabase, and update payment state only after provider-side
+verification.
 
 ## Pre-Deploy Checklist
 
 - Run `npm run lint`.
 - Run `npm run build`.
 - Confirm only real admins have `role = 'admin'`.
-- Run `cleanup-test-users.sql` after test rounds.
-- Verify Supabase Auth redirect URLs for the production domain.
+- Verify Supabase Auth redirect URLs include `/sifre-yenile` for the production domain.
 - Keep email confirmation policy consistent with `migration-008`.
 - Configure payment env keys only when payment implementation begins.

@@ -13,9 +13,9 @@ export default function RegisterClient() {
 
   const [form, setForm] = useState({
     alias: '', email: '', password: '', passwordConfirm: '',
-    feeling: 3, topics: [], style: 'video-blur',
-    emergencyName: '', emergencyPhone: '', city: '',
-    kvkk: false, terms: false, emergency: false,
+    topics: [], style: 'video-blur',
+    emergencyName: '', emergencyPhone: '',
+    privacy: false, terms: false,
     privacyLevel: 5,
   });
 
@@ -31,10 +31,13 @@ export default function RegisterClient() {
 
   const canProceed = () => {
     switch (step) {
-      case 1: return form.alias && form.email && form.password && form.password === form.passwordConfirm;
+      case 1: return form.alias.trim().length >= 3
+        && form.email.includes('@')
+        && form.password.length >= 8
+        && form.password === form.passwordConfirm;
       case 2: return form.topics.length > 0;
-      case 3: return form.emergencyName && form.emergencyPhone && form.city;
-      case 4: return form.kvkk && form.terms && form.emergency;
+      case 3: return true;
+      case 4: return form.privacy && form.terms;
       case 5: return true;
       default: return false;
     }
@@ -47,9 +50,8 @@ export default function RegisterClient() {
     }
   };
 
-  const blurLabels = ['Açık İletişim', 'Düşük Gizlilik', 'Orta Gizlilik', 'Yüksek Gizlilik', 'Maksimum Gizlilik'];
-  const blurValues = [0, 4, 8, 14, 24];
-  const cities = ['İstanbul', 'Ankara', 'İzmir', 'Bursa', 'Antalya', 'Adana', 'Konya', 'Gaziantep', 'Mersin', 'Diyarbakır', 'Kayseri', 'Eskişehir', 'Samsun', 'Trabzon', 'Erzurum', 'Diğer'];
+  const blurLabels = ['Hafif', 'Dengeli', 'Güçlü', 'Yüksek', 'Maksimum'];
+  const blurValues = [8, 12, 16, 22, 28];
 
   return (
     <div className="page">
@@ -81,7 +83,7 @@ export default function RegisterClient() {
                 <div className="register-step-content slide-up">
                   <h3>Temel Bilgiler</h3>
                   <div className="auth-info-box">
-                    🔒 Gerçek isminiz hiçbir zaman psikologunuzla paylaşılmayacaktır.
+                    Kayıtta gerçek adınız istenmez; psikolog ekranında seçtiğiniz rumuz görünür.
                   </div>
                   <div className="auth-form">
                     <div className="input-group">
@@ -96,11 +98,11 @@ export default function RegisterClient() {
                     <div className="grid grid-2 gap-md">
                       <div className="input-group">
                         <label htmlFor="reg-password">Şifre</label>
-                        <input type="password" id="reg-password" value={form.password} onChange={(e) => update('password', e.target.value)} placeholder="••••••••" />
+                        <input type="password" id="reg-password" value={form.password} onChange={(e) => update('password', e.target.value)} minLength="8" placeholder="En az 8 karakter" />
                       </div>
                       <div className="input-group">
                         <label htmlFor="reg-password2">Şifre Tekrar</label>
-                        <input type="password" id="reg-password2" value={form.passwordConfirm} onChange={(e) => update('passwordConfirm', e.target.value)} placeholder="••••••••" />
+                        <input type="password" id="reg-password2" value={form.passwordConfirm} onChange={(e) => update('passwordConfirm', e.target.value)} minLength="8" placeholder="Şifrenizi tekrar yazın" />
                       </div>
                     </div>
                     {form.password && form.passwordConfirm && form.password !== form.passwordConfirm && (
@@ -118,16 +120,6 @@ export default function RegisterClient() {
                   </p>
                   <div className="auth-form">
                     <div className="input-group">
-                      <label>Şu an kendinizi nasıl hissediyorsunuz?</label>
-                      <div className="mood-select">
-                        {[{ v: 1, e: '😢', l: 'Çok Kötü' }, { v: 2, e: '😞', l: 'Kötü' }, { v: 3, e: '😐', l: 'Normal' }, { v: 4, e: '🙂', l: 'İyi' }, { v: 5, e: '😄', l: 'Çok İyi' }].map(m => (
-                          <button key={m.v} type="button" className={`mood-btn ${form.feeling === m.v ? 'selected' : ''}`} onClick={() => update('feeling', m.v)} id={`reg-mood-${m.v}`}>
-                            <span className="mood-emoji">{m.e}</span><span className="mood-label">{m.l}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="input-group">
                       <label>Hangi konularda destek arıyorsunuz? (Birden fazla seçebilirsiniz)</label>
                       <div className="topic-grid">
                         {SPECIALIZATIONS.map(spec => (
@@ -143,7 +135,7 @@ export default function RegisterClient() {
                         {[
                           { id: 'video-blur', label: '👤 Görüntülü (Blur)', desc: 'Yüzünüz gizlenerek kameralı görüşme' }, 
                           { id: 'voice', label: '🎙️ Sadece Sesli', desc: 'Kamera kapalı, sesli arama' }, 
-                          { id: 'text', label: '💬 Metin / Yazışma', desc: 'Gerçek zamanlı şifreli mesajlaşma' }
+                          { id: 'text', label: '💬 Metin / Yazışma', desc: 'Seans odasında gerçek zamanlı mesajlaşma' }
                         ].map(s => (
                           <label key={s.id} className={`style-option ${form.style === s.id ? 'selected' : ''}`}>
                             <input type="radio" name="style" value={s.id} checked={form.style === s.id} onChange={() => update('style', s.id)} />
@@ -161,7 +153,7 @@ export default function RegisterClient() {
                 <div className="register-step-content slide-up">
                   <h3>Acil Durum Bilgileri</h3>
                   <div className="auth-warning-box">
-                    ⚠️ Bu bilgiler yalnızca kriz durumunda kullanılacak ve güvenli bir kasada saklanacaktır. Psikologunuz bu bilgilere erişemez.
+                    Bu alan isteğe bağlıdır. GizliBiriz acil müdahale hizmeti değildir; hayati riskte 112 aranmalıdır.
                   </div>
                   <div className="auth-form">
                     <div className="input-group">
@@ -172,15 +164,8 @@ export default function RegisterClient() {
                       <label htmlFor="reg-emergency-phone">Yakın Kişi Telefonu</label>
                       <input type="tel" id="reg-emergency-phone" value={form.emergencyPhone} onChange={(e) => update('emergencyPhone', e.target.value)} placeholder="0555 555 55 55" />
                     </div>
-                    <div className="input-group">
-                      <label htmlFor="reg-city">Şehir / İl</label>
-                      <select id="reg-city" value={form.city} onChange={(e) => update('city', e.target.value)}>
-                        <option value="">Seçiniz</option>
-                        {cities.map(c => <option key={c} value={c}>{c}</option>)}
-                      </select>
-                    </div>
                     <div className="auth-info-box">
-                      ℹ️ Bu bilgilere yalnızca acil durumlarda, platform yönetimi tarafından erişilebilir.
+                      Acil kişi alanları psikolog ekranlarında görünmez; yetkili yönetici erişimiyle sınırlandırılır.
                     </div>
                   </div>
                 </div>
@@ -190,27 +175,23 @@ export default function RegisterClient() {
                 <div className="register-step-content slide-up">
                   <h3>Sözleşme Onayı</h3>
                   <div className="contract-box">
-                    <h4>GizliBiriz Hizmet Sözleşmesi ve Aydınlatma Metni</h4>
+                    <h4>GizliBiriz Hizmet Özeti</h4>
                     <div className="contract-text">
-                      <p><strong>1. Veri Gizliliği:</strong> GizliBiriz platformu, danışanların kişisel verilerini 6698 sayılı KVKK kapsamında korumaktadır. Gerçek kimlik bilgileriniz yalnızca platform tarafından güvenli ortamda saklanır ve psikologlarla paylaşılmaz.</p>
-                      <p><strong>2. Anonimlik:</strong> Seanslarınızda yalnızca seçtiğiniz rumuz ile tanınırsınız. Blur efekti, ses filtresi gibi gizlilik araçları tamamen sizin kontrolünüzdedir.</p>
-                      <p><strong>3. Acil Durum Protokolü:</strong> İntihar riski, kendine zarar verme veya başkasına zarar verme durumlarında, platform yönetimi acil durum bilgilerinize erişerek gerekli müdahaleyi koordine etme hakkına sahiptir.</p>
-                      <p><strong>4. Sosyal Sorumluluk:</strong> Seans ücretleri, her iki tarafın rızasıyla kız çocuklarına yardım derneğine bağışlanır.</p>
-                      <p><strong>5. Veri Saklama:</strong> Seans içerikleri şifreli olarak saklanır. Hesap silme talebinizde tüm verileriniz kalıcı olarak silinir.</p>
+                      <p><strong>1. Profil ayrımı:</strong> Psikolog ekranlarında danışan rumuzu ve randevu için gerekli tercihler gösterilir; e-posta ve acil kişi alanları gösterilmez.</p>
+                      <p><strong>2. Görüntü tercihi:</strong> Görüntülü seanslarda blur seviyesi danışan tarafından değiştirilebilir. Sesli ve metin kanalları ayrıca seçilebilir.</p>
+                      <p><strong>3. Acil durum:</strong> Platform acil kriz müdahalesi yerine geçmez. Hayati risk veya acil durumda 112 Acil Çağrı Merkezi aranmalıdır.</p>
+                      <p><strong>4. Ödeme:</strong> Ödeme entegrasyonu henüz etkin değildir ve finansal bilgi toplanmaz.</p>
+                      <p><strong>5. Seans içeriği:</strong> Uygulama görüntü, ses veya yazışma içeriğini veritabanında kaydetmez.</p>
                     </div>
                   </div>
                   <div className="auth-form">
                     <label className="checkbox-group">
-                      <input type="checkbox" checked={form.kvkk} onChange={(e) => update('kvkk', e.target.checked)} id="reg-kvkk" />
-                      KVKK Aydınlatma Metnini okudum ve onaylıyorum
+                      <input type="checkbox" checked={form.privacy} onChange={(e) => update('privacy', e.target.checked)} id="reg-privacy-policy" />
+                      <span><Link to="/gizlilik-politikasi">Gizlilik Politikasını</Link> okudum.</span>
                     </label>
                     <label className="checkbox-group">
                       <input type="checkbox" checked={form.terms} onChange={(e) => update('terms', e.target.checked)} id="reg-terms" />
-                      Hizmet Sözleşmesini kabul ediyorum
-                    </label>
-                    <label className="checkbox-group">
-                      <input type="checkbox" checked={form.emergency} onChange={(e) => update('emergency', e.target.checked)} id="reg-emergency-agree" />
-                      Acil durum protokolünü anladım ve onaylıyorum
+                      <span><Link to="/kullanim-kosullari">Kullanım Koşullarını</Link> kabul ediyorum.</span>
                     </label>
                   </div>
                 </div>
@@ -242,7 +223,7 @@ export default function RegisterClient() {
                           <span className="privacy-level-num">{level}</span>
                           <span className="privacy-level-name">{blurLabels[level - 1]}</span>
                           <span className="privacy-level-desc">
-                            {level === 5 ? 'Yüz tamamen bulanık' : level === 4 ? 'Yüksek blur' : level === 3 ? 'Orta blur' : level === 2 ? 'Hafif blur' : 'Blur yok'}
+                            {level === 5 ? 'Maksimum blur' : level === 4 ? 'Yüksek blur' : level === 3 ? 'Güçlü blur' : level === 2 ? 'Dengeli blur' : 'Hafif blur'}
                           </span>
                         </button>
                       ))}

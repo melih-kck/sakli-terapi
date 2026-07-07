@@ -20,7 +20,7 @@ const statusDetails = {
 };
 
 const paymentDetails = {
-  pending: { label: 'Ödeme bekliyor', className: 'is-pending' },
+  pending: { label: 'Ödeme entegrasyonu bekleniyor', className: 'is-pending' },
   paid: { label: 'Ödeme alındı', className: 'is-paid' },
   failed: { label: 'Ödeme başarısız', className: 'is-failed' },
   refunded: { label: 'İade sürecinde', className: 'is-refunded' },
@@ -30,26 +30,13 @@ const getLocalDateIso = () => new Date().toISOString().split('T')[0];
 
 export default function ClientDashboard() {
   const { user, isClient } = useAuth();
-  const { updateSession, refreshSessions, sessions } = useSession();
+  const { updateSession, sessions } = useSession();
   const { addMoodEntry } = useProfile();
-  const { success, error: showError } = useToast();
+  const { success } = useToast();
   const [sessionToCancel, setSessionToCancel] = useState(null);
   const [cancelReason, setCancelReason] = useState('');
   const [updatingSessionId, setUpdatingSessionId] = useState(null);
   const [psychologists, setPsychologists] = useState([]);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('payment') === 'success') {
-      success('Ödeme Başarılı', 'Randevunuz için ödeme başarıyla alındı.');
-      void refreshSessions();
-      window.history.replaceState({}, '', '/panel');
-    } else if (params.get('payment') === 'failed') {
-      const reason = params.get('reason') || 'Bilinmeyen Hata';
-      showError('Ödeme Başarısız', 'Ödeme alınamadı: ' + reason);
-      window.history.replaceState({}, '', '/panel');
-    }
-  }, [success, showError, refreshSessions]);
 
   useEffect(() => {
     let isMounted = true;
@@ -71,7 +58,7 @@ export default function ClientDashboard() {
 
 
   useEffect(() => {
-    if (!user || (!isClient && user.role !== 'admin')) return undefined;
+    if (!user || !isClient) return undefined;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -88,7 +75,7 @@ export default function ClientDashboard() {
     return () => observer.disconnect();
   }, [user, isClient]);
 
-  if (!user || (!isClient && user.role !== 'admin')) return null;
+  if (!user || !isClient) return null;
 
   const getPsychologist = (id) => psychologists.find(p => String(p.id) === String(id));
   const getChannel = (channelId) => COMMUNICATION_CHANNELS.find(channel => channel.id === channelId);
@@ -135,7 +122,7 @@ export default function ClientDashboard() {
     if (result.success) {
       setSessionToCancel(null);
       setCancelReason('');
-      success('Randevu İptal Edildi', session.paymentStatus === 'paid' ? 'Randevu arşive taşındı. İade süreci ödeme sistemi üzerinden yönetilecek.' : 'Randevu arşive taşındı.');
+      success('Randevu İptal Edildi', session.paymentStatus === 'paid' ? 'Randevu arşive taşındı. İade değerlendirmesi için destek ekibiyle iletişime geçin.' : 'Randevu arşive taşındı.');
     }
   };
 
@@ -151,52 +138,6 @@ export default function ClientDashboard() {
 
     if (result.success) {
       success('Test Ödemesi Geçildi', 'Bu işlem yalnızca yerel test randevusunu seansa açar.');
-    }
-  };
-
-  const handlePaySession = async (session, psych) => {
-    setUpdatingSessionId(session.id);
-    
-    try {
-      const response = await fetch('/api/create-payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionId: session.id,
-          psychologistName: psych?.name || session.psychologistName,
-          amount: getSessionFee(psych, session),
-          buyerDetails: {
-            id: user.id,
-            name: user.alias || 'Gizli Danışan',
-            email: user.email,
-            phone: user.clientProfile?.emergencyPhone || '+905555555555',
-            city: user.clientProfile?.city || 'İstanbul'
-          }
-        })
-      });
-
-      const data = await response.json();
-      
-      if (!data.success) {
-        throw new Error(data.error || 'Ödeme başlatılamadı');
-      }
-
-      if (data.paymentPageUrl) {
-        // Gerçek Iyzico sayfasına yönlendirme veya Mock URL'ye gitme
-        window.location.assign(data.paymentPageUrl);
-      } else {
-        showError('Ödeme Hazırlanıyor', 'Ödeme altyapısı son aşamada bağlanacak; randevu şimdilik beklemede kalır.');
-      }
-    } catch (error) {
-      console.error('Ödeme hatası:', error);
-      // Payment is intentionally deferred; do not mark real sessions as paid locally.
-      if (error.message.includes('Unexpected token') || error.message.includes('Unexpected end of JSON') || error.message.includes('404') || error.message.includes('Failed to execute \'json\'')) {
-        showError('Ödeme Hazırlanıyor', 'Ödeme API bağlantısı henüz aktif değil; randevu ödeme bekliyor olarak kalır.');
-      } else {
-        showError('Ödeme Başarısız', 'Hata: ' + error.message);
-      }
-    } finally {
-      setUpdatingSessionId(null);
     }
   };
 
@@ -218,7 +159,7 @@ export default function ClientDashboard() {
           <div className="dash-header mb-2xl">
             <div>
               <h1 className="dash-title">Merhaba, {user.alias}</h1>
-              <p className="dash-subtitle">Bugün {upcomingSessions.length} yaklaşan randevunuz ve {pendingPayments.length} ödeme bekleyen işlem var.</p>
+              <p className="dash-subtitle">Bugün {upcomingSessions.length} yaklaşan randevunuz var. {pendingPayments.length} randevu ödeme entegrasyonunu bekliyor.</p>
             </div>
             <div className="dash-actions">
               <Link to="/psikologlar" className="btn btn-primary">Yeni Randevu Al</Link>
@@ -248,7 +189,7 @@ export default function ClientDashboard() {
                     <div>
                       <h3 className="m-0">Yaklaşan Randevularınız</h3>
                       <p className="appointment-section-subtitle">
-                        {upcomingSessions.length} aktif randevu • {pendingPayments.length} ödeme bekleyen
+                        {upcomingSessions.length} aktif randevu • {pendingPayments.length} ödeme entegrasyonu bekleyen
                       </p>
                     </div>
                   </div>
@@ -305,15 +246,14 @@ export default function ClientDashboard() {
                                 <div>
                                   <span className="appointment-eyebrow">Ödeme Özeti</span>
                                   <strong>{formatCurrency(fee)}</strong>
-                                  <p>Seans odası ödeme tamamlandıktan sonra açılır.</p>
+                                  <p>Ödeme entegrasyonu etkinleştirilene kadar seans odası kapalıdır.</p>
                                 </div>
                                 <button
                                   type="button"
                                   className="btn btn-warning btn-sm"
-                                  disabled={isUpdating}
-                                  onClick={() => handlePaySession(session, psych)}
+                                  disabled
                                 >
-                                  {isUpdating ? 'İşleniyor...' : 'Ödemeyi Tamamla'}
+                                  Ödeme Entegrasyonu Bekleniyor
                                 </button>
                                 {canUseDevPaymentBypass && (
                                   <button
@@ -352,7 +292,7 @@ export default function ClientDashboard() {
 
                             <div className="appointment-card-footer">
                               <span className="appointment-code">
-                                {requiresPayment ? 'Ödeme tamamlanınca seans giriş kontrolü yapılır.' : joinState.helper}
+                                {requiresPayment ? 'Ödeme özelliği henüz etkin değil.' : joinState.helper}
                               </span>
                               <div className="appointment-action-group">
                                 <button
@@ -365,8 +305,8 @@ export default function ClientDashboard() {
                                 </button>
                                 {requiresPayment ? (
                                   <>
-                                    <button type="button" className="btn btn-primary btn-sm" disabled={isUpdating} onClick={() => handlePaySession(session, psych)}>
-                                      Ödemeyi Tamamla
+                                    <button type="button" className="btn btn-primary btn-sm" disabled>
+                                      Ödeme Entegrasyonu Bekleniyor
                                     </button>
                                     {canUseDevPaymentBypass && (
                                       <button type="button" className="btn btn-outline btn-sm" disabled={isUpdating} onClick={() => handleDevPaymentBypass(session)}>

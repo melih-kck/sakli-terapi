@@ -16,21 +16,14 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const SessionRoom = lazy(() => import('./pages/SessionRoom'));
 const About = lazy(() => import('./pages/About'));
 const Settings = lazy(() => import('./pages/Settings'));
-
-// SupportPages exports multiple components, lazy load doesn't easily support named exports
-// So we import it normally or create wrapper files. Given its size, normal import is fine for now,
-// or we can lazy load a wrapper. For simplicity, we lazy load the wrapper.
-// Actually, let's keep normal import for SupportPages if we don't want to split them up right now.
-// Since performance is a goal, we can create a small lazy wrapper trick or just import them normally.
-// For now, let's import normally as they are relatively small text pages.
-import {
-  FaqPage,
-  ForgotPasswordPage,
-  PrivacyPolicyPage,
-  ReviewPage,
-  ReviewsPage,
-  TermsPage,
-} from './pages/SupportPages';
+const lazyNamed = (loader, exportName) => lazy(() => loader().then(module => ({ default: module[exportName] })));
+const FaqPage = lazyNamed(() => import('./pages/SupportPages'), 'FaqPage');
+const ForgotPasswordPage = lazyNamed(() => import('./pages/SupportPages'), 'ForgotPasswordPage');
+const PrivacyPolicyPage = lazyNamed(() => import('./pages/SupportPages'), 'PrivacyPolicyPage');
+const ResetPasswordPage = lazyNamed(() => import('./pages/SupportPages'), 'ResetPasswordPage');
+const ReviewPage = lazyNamed(() => import('./pages/SupportPages'), 'ReviewPage');
+const ReviewsPage = lazyNamed(() => import('./pages/SupportPages'), 'ReviewsPage');
+const TermsPage = lazyNamed(() => import('./pages/SupportPages'), 'TermsPage');
 
 const NotFound = () => (
   <div style={{ padding: '100px', textAlign: 'center' }}>
@@ -49,28 +42,20 @@ const PageLoader = () => (
 );
 
 const ProtectedRoute = ({ children, role }) => {
-  const { isAuthenticated, user, isClient, isPsychologist } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const location = useLocation();
 
   if (!isAuthenticated) {
     return <Navigate to="/giris" replace state={{ from: location }} />;
   }
 
-  if (role === 'admin' && user?.role !== 'admin') {
-    return <Navigate to="/" replace />;
-  }
-
-  // Admin kullanıcıları her sayfaya (Danışan veya Psikolog paneli) serbestçe girebilir
-  if (user?.role === 'admin') {
-    return children;
-  }
-
-  if (role === 'client' && !isClient) {
-    return <Navigate to="/psikolog-panel" replace />;
-  }
-
-  if (role === 'psychologist' && !isPsychologist) {
-    return <Navigate to="/panel" replace />;
+  if (role && user?.role !== role) {
+    const dashboardPath = user?.role === 'admin'
+      ? '/admin'
+      : user?.role === 'psychologist'
+        ? '/psikolog-panel'
+        : '/panel';
+    return <Navigate to={dashboardPath} replace />;
   }
 
   return children;
@@ -104,6 +89,7 @@ function App() {
         <Route path="/gizlilik-politikasi" element={<PrivacyPolicyPage />} />
         <Route path="/kullanim-kosullari" element={<TermsPage />} />
         <Route path="/sifremi-unuttum" element={<ForgotPasswordPage />} />
+        <Route path="/sifre-yenile" element={<ResetPasswordPage />} />
 
         {/* Catch all route */}
         <Route path="*" element={<NotFound />} />

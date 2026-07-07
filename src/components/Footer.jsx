@@ -26,11 +26,6 @@ export default function Footer() {
             <p className="footer-description">
               Kimliğiniz gizli, sesiniz duyulur. Anonim psikolojik danışmanlık platformu.
             </p>
-            <div className="footer-social">
-              <span className="social-link" aria-label="Twitter" id="footer-twitter">𝕏</span>
-              <span className="social-link" aria-label="Instagram" id="footer-instagram">📷</span>
-              <span className="social-link" aria-label="LinkedIn" id="footer-linkedin">in</span>
-            </div>
           </div>
 
           {/* Quick Links */}
@@ -62,15 +57,15 @@ export default function Footer() {
               <div className="emergency-card">
                 <span className="emergency-icon">🚨</span>
                 <div>
-                  <strong>Acil Yardım Hattı</strong>
-                  <p>182 (İntihar Önleme)</p>
+                  <strong>Hayati risk veya acil durum</strong>
+                  <p>112 Acil Çağrı Merkezi</p>
                 </div>
               </div>
               <div className="emergency-card">
                 <span className="emergency-icon">📞</span>
                 <div>
-                  <strong>ALO 182</strong>
-                  <p>7/24 Psikolojik Destek</p>
+                  <strong>Hastane randevusu</strong>
+                  <p>MHRS veya ALO 182</p>
                 </div>
               </div>
             </div>
@@ -81,9 +76,9 @@ export default function Footer() {
         <div className="footer-bottom">
           <p>© 2026 GizliBiriz. Tüm hakları saklıdır.</p>
           <div className="footer-badges">
-            <span className="footer-badge">🔒 256-bit SSL</span>
-            <span className="footer-badge">🛡️ KVKK Uyumlu</span>
-            <span className="footer-badge">⚡ %100 Uçtan Uca Şifreli</span>
+            <span className="footer-badge">🔒 TLS bağlantısı</span>
+            <span className="footer-badge">🛡️ Rol bazlı erişim</span>
+            <span className="footer-badge">⚡ Veri minimizasyonu</span>
           </div>
         </div>
       </div>

@@ -27,6 +27,16 @@ export default function Navbar() {
   };
 
   const isActive = (path) => location.pathname === path;
+  const dashboardPath = user?.role === 'admin'
+    ? '/admin'
+    : user?.role === 'psychologist'
+      ? '/psikolog-panel'
+      : '/panel';
+  const dashboardLabel = user?.role === 'admin'
+    ? 'Admin Paneli'
+    : user?.role === 'psychologist'
+      ? 'Psikolog Paneli'
+      : 'Panelim';
 
   return (
     <nav className={`navbar ${isScrolled ? 'navbar-scrolled' : ''}`} id="main-navbar">
@@ -63,14 +73,9 @@ export default function Navbar() {
             Hakkında
           </Link>
 
-          {isAuthenticated && user?.role === 'client' && (
-            <Link to="/panel" className={`nav-link ${isActive('/panel') ? 'active' : ''}`} id="nav-dashboard">
-              Panelim
-            </Link>
-          )}
-          {isAuthenticated && user?.role === 'psychologist' && (
-            <Link to="/psikolog-panel" className={`nav-link ${isActive('/psikolog-panel') ? 'active' : ''}`} id="nav-psych-dashboard">
-              Panelim
+          {isAuthenticated && (
+            <Link to={dashboardPath} className={`nav-link ${isActive(dashboardPath) ? 'active' : ''}`} id="nav-dashboard">
+              {dashboardLabel}
             </Link>
           )}
 
@@ -78,11 +83,8 @@ export default function Navbar() {
           <div className="navbar-auth-mobile">
             {isAuthenticated ? (
               <>
-                {user?.role === 'admin' && (
-                  <Link to="/admin" className="nav-link" onClick={() => setIsMobileOpen(false)} style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>Admin Paneli</Link>
-                )}
-                <Link to={user?.role === 'psychologist' ? '/psikolog-panel' : '/panel'} className="nav-link" onClick={() => setIsMobileOpen(false)}>
-                  {user?.role === 'psychologist' ? 'Psikolog Paneli' : 'Panelim'}
+                <Link to={dashboardPath} className="nav-link" onClick={() => setIsMobileOpen(false)}>
+                  {dashboardLabel}
                 </Link>
                 <Link to="/ayarlar" className="nav-link" onClick={() => setIsMobileOpen(false)}>Ayarlar</Link>
                 <button onClick={() => { handleLogout(); setIsMobileOpen(false); }} className="btn btn-outline" style={{ width: '100%' }}>Çıkış Yap</button>
@@ -100,13 +102,8 @@ export default function Navbar() {
         <div className="navbar-auth">
           {isAuthenticated ? (
             <div className="navbar-user flex items-center gap-md">
-              {user?.role === 'admin' && (
-                <Link to="/admin" className="nav-link font-semibold" style={{ color: 'var(--primary-color)' }}>
-                  Admin Paneli
-                </Link>
-              )}
-              <Link to={user?.role === 'psychologist' ? '/psikolog-panel' : '/panel'} className="btn btn-outline btn-sm">
-                {user?.role === 'psychologist' ? 'Psikolog Paneli' : 'Panelim'}
+              <Link to={dashboardPath} className="btn btn-outline btn-sm">
+                {dashboardLabel}
               </Link>
               <button onClick={handleLogout} className="btn btn-text btn-sm text-secondary">
                 Çıkış Yap

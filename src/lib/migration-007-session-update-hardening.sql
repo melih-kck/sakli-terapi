@@ -30,7 +30,7 @@ CREATE OR REPLACE FUNCTION public.mark_session_reviewed_from_review()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
 BEGIN
   UPDATE public.sessions

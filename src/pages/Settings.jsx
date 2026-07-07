@@ -7,7 +7,6 @@ import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
 import { APPROACHES, COMMUNICATION_CHANNELS, DAYS_TR, SPECIALIZATIONS } from '../data/constants';
 
-const getSettingsKey = (userId) => `gizlibiriz-settings-${userId}`;
 const EDITABLE_CHANNELS = COMMUNICATION_CHANNELS.filter(channel => ['text', 'voice', 'video-blur'].includes(channel.id));
 
 const getDefaultAvailability = () => (
@@ -60,7 +59,7 @@ const getPsychologistSettings = (user) => {
 const getInitialTab = (search, user) => {
   const requestedTab = new URLSearchParams(search).get('tab');
   if (requestedTab === 'profile' && user?.role === 'psychologist') return 'profile';
-  if (requestedTab === 'privacy' || requestedTab === 'notifications' || requestedTab === 'account') return requestedTab;
+  if (requestedTab === 'privacy' || requestedTab === 'account') return requestedTab;
   return 'account';
 };
 
@@ -70,41 +69,10 @@ const getDefaultSettings = (user) => ({
   emergencyPhone: user?.clientProfile?.emergencyPhone || '',
   privacyLevel: user?.privacyLevel || 5,
   channel: user?.clientProfile?.preferredChannel || 'video-blur',
-  blurLevel: user?.privacyLevel || 5,
-  notifications: {
-    reminders: true,
-    system: true,
-    promotions: false,
-  },
   psychologistProfile: getPsychologistSettings(user),
 });
 
-const getSavedSettings = (user) => {
-  if (!user) return {};
-
-  try {
-    const saved = localStorage.getItem(getSettingsKey(user.id));
-    return saved ? JSON.parse(saved) : {};
-  } catch {
-    return {};
-  }
-};
-
-const getInitialSettings = (user) => {
-  const saved = getSavedSettings(user);
-  const defaults = getDefaultSettings(user);
-  return {
-    ...defaults,
-    ...saved,
-    displayName: user?.role === 'client' ? user?.alias || saved.displayName || '' : user?.name || saved.displayName || '',
-    privacyLevel: user?.privacyLevel || saved.privacyLevel || defaults.privacyLevel,
-    notifications: {
-      ...defaults.notifications,
-      ...(saved.notifications || {}),
-    },
-    psychologistProfile: getPsychologistSettings(user),
-  };
-};
+const getInitialSettings = (user) => getDefaultSettings(user);
 
 export default function Settings() {
   const location = useLocation();
@@ -119,13 +87,6 @@ export default function Settings() {
 
   const updateForm = (key, value) => {
     setForm(prev => ({ ...prev, [key]: value }));
-  };
-
-  const updateNotification = (key, value) => {
-    setForm(prev => ({
-      ...prev,
-      notifications: { ...prev.notifications, [key]: value },
-    }));
   };
 
   const updatePsychologistForm = (key, value) => {
@@ -156,17 +117,6 @@ export default function Settings() {
         ...prev.psychologistProfile,
         availability: { ...prev.psychologistProfile.availability, [day]: value },
       },
-    }));
-  };
-
-  const persistLocalSettings = (nextForm) => {
-    localStorage.setItem(getSettingsKey(user.id), JSON.stringify({
-      emergencyName: nextForm.emergencyName,
-      emergencyPhone: nextForm.emergencyPhone,
-      privacyLevel: Number(nextForm.privacyLevel),
-      channel: nextForm.channel,
-      blurLevel: Number(nextForm.blurLevel),
-      notifications: nextForm.notifications,
     }));
   };
 
@@ -217,18 +167,26 @@ export default function Settings() {
         : { success: true };
       if (!psychologistResult.success) return;
 
-      const clientResult = user.role === 'client'
-        ? await updateClientProfile({
-          emergencyName: form.emergencyName.trim(),
-          emergencyPhone: form.emergencyPhone.trim(),
-          preferredChannel: form.channel,
-          privacyLevel: Number(form.privacyLevel),
-        })
+      const clientUpdates = user.role !== 'client'
+        ? null
+        : activeTab === 'account'
+          ? {
+              emergencyName: form.emergencyName.trim(),
+              emergencyPhone: form.emergencyPhone.trim(),
+            }
+          : activeTab === 'privacy'
+            ? {
+                preferredChannel: form.channel,
+                privacyLevel: Number(form.privacyLevel),
+              }
+            : null;
+
+      const clientResult = clientUpdates
+        ? await updateClientProfile(clientUpdates)
         : { success: true };
 
       if (clientResult.success) {
-        persistLocalSettings(form);
-      success('Ayarlar Kaydedildi', 'Hesap ve tercih bilgileriniz güncellendi.');
+        success('Ayarlar Kaydedildi', 'Hesap ve tercih bilgileriniz güncellendi.');
       }
 
     } finally {
@@ -237,8 +195,13 @@ export default function Settings() {
   };
 
   const handlePasswordUpdate = async () => {
-    if (!passwordForm.next || passwordForm.next.length < 6) {
-      showError('Şifre Güncellenemedi', 'Yeni şifre en az 6 karakter olmalıdır.');
+    if (!passwordForm.current) {
+      showError('Şifre Güncellenemedi', 'Mevcut şifrenizi yazmalısınız.');
+      return;
+    }
+
+    if (!passwordForm.next || passwordForm.next.length < 8) {
+      showError('Şifre Güncellenemedi', 'Yeni şifre en az 8 karakter olmalıdır.');
       return;
     }
 
@@ -247,7 +210,7 @@ export default function Settings() {
       return;
     }
 
-    const result = await updatePassword(passwordForm.next);
+    const result = await updatePassword(passwordForm.current, passwordForm.next);
     if (result.success) {
       setPasswordForm({ current: '', next: '', confirm: '' });
     }
@@ -272,7 +235,7 @@ export default function Settings() {
       <main className="page-content container mt-xl mb-3xl">
         <div className="text-center mb-xl">
           <h2>Hesap Ayarları</h2>
-          <p className="text-tertiary">Gizlilik, güvenlik ve bildirim tercihlerinizi yönetin.</p>
+          <p className="text-tertiary">Hesap, profil ve gizlilik tercihlerinizi yönetin.</p>
         </div>
 
         <div className="grid grid-4 gap-lg">
@@ -305,14 +268,6 @@ export default function Settings() {
                 >
                   Gizlilik & Güvenlik
                 </button>
-                <button
-                  type="button"
-                  className={`tab-item ${activeTab === 'notifications' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('notifications')}
-                  style={{ textAlign: 'left', borderLeft: activeTab === 'notifications' ? '4px solid var(--primary)' : '4px solid transparent', borderBottom: 'none' }}
-                >
-                  Bildirimler
-                </button>
               </div>
             </div>
           </div>
@@ -323,7 +278,6 @@ export default function Settings() {
                 {activeTab === 'account' && 'Hesap Bilgileri'}
                 {activeTab === 'profile' && 'Psikolog Profilim'}
                 {activeTab === 'privacy' && 'Gizlilik & Güvenlik'}
-                {activeTab === 'notifications' && 'Bildirim Tercihleri'}
               </h3>
             </div>
 
@@ -563,7 +517,7 @@ export default function Settings() {
                             type="password"
                             value={passwordForm.next}
                             onChange={(event) => setPasswordForm(prev => ({ ...prev, next: event.target.value }))}
-                            placeholder="En az 6 karakter"
+                            placeholder="En az 8 karakter"
                             autoComplete="new-password"
                           />
                         </div>
@@ -602,10 +556,7 @@ export default function Settings() {
                           min="1"
                           max="5"
                           value={form.privacyLevel}
-                          onChange={(event) => {
-                            updateForm('privacyLevel', Number(event.target.value));
-                            updateForm('blurLevel', Number(event.target.value));
-                          }}
+                          onChange={(event) => updateForm('privacyLevel', Number(event.target.value))}
                         />
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: '4px' }}>
                           <span>Açık İletişim</span>
@@ -617,39 +568,14 @@ export default function Settings() {
                     <div className="card p-md mt-md" style={{ background: 'rgba(255, 82, 82, 0.05)', border: '1px solid var(--danger)' }}>
                       <h4 className="mb-sm text-danger">Tehlikeli Bölge</h4>
                       <p className="text-sm mb-md">Hesap silme talebi destek onayıyla ilerler; ani ve geri alınamaz silme burada yapılmaz.</p>
-                      <button type="button" className="btn btn-danger btn-sm" onClick={() => warning('Hesap Silme', 'Hesap silme talebi için destek ekibine yazın.')}>
+                      <a
+                        className="btn btn-danger btn-sm"
+                        href="mailto:destek@gizlibiriz.com?subject=Hesap%20silme%20talebi"
+                        onClick={() => warning('Hesap Silme', 'Talebinizi tamamlamak için destek ekibine e-posta gönderin.')}
+                      >
                         Hesap Silme Talebi
-                      </button>
+                      </a>
                     </div>
-                  </div>
-                )}
-
-                {activeTab === 'notifications' && (
-                  <div className="grid gap-md">
-                    <label className="checkbox-group p-sm card" style={{ background: 'var(--bg-secondary)' }}>
-                      <input
-                        type="checkbox"
-                        checked={form.notifications.reminders}
-                        onChange={(event) => updateNotification('reminders', event.target.checked)}
-                      />
-                      <span><strong>Randevu Hatırlatmaları:</strong> Seansıma 24 saat ve 1 saat kala bana e-posta gönder.</span>
-                    </label>
-                    <label className="checkbox-group p-sm card" style={{ background: 'var(--bg-secondary)' }}>
-                      <input
-                        type="checkbox"
-                        checked={form.notifications.system}
-                        onChange={(event) => updateNotification('system', event.target.checked)}
-                      />
-                      <span><strong>Sistem Bildirimleri:</strong> Önemli güvenlik ve sistem güncellemelerinden haberdar olmak istiyorum.</span>
-                    </label>
-                    <label className="checkbox-group p-sm card" style={{ background: 'var(--bg-secondary)' }}>
-                      <input
-                        type="checkbox"
-                        checked={form.notifications.promotions}
-                        onChange={(event) => updateNotification('promotions', event.target.checked)}
-                      />
-                      <span><strong>Promosyonlar:</strong> İndirim ve kampanyalardan haberdar olmak istiyorum.</span>
-                    </label>
                   </div>
                 )}
 

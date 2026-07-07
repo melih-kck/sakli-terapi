@@ -17,7 +17,7 @@ const statusDetails = {
 };
 
 const paymentDetails = {
-  pending: { label: 'Ödeme bekliyor', className: 'is-pending' },
+  pending: { label: 'Ödeme entegrasyonu bekleniyor', className: 'is-pending' },
   paid: { label: 'Ödeme alındı', className: 'is-paid' },
   failed: { label: 'Ödeme başarısız', className: 'is-failed' },
   refunded: { label: 'İade edildi', className: 'is-refunded' },
@@ -48,7 +48,7 @@ export default function PsychDashboard() {
   }, [currentPsychologistId, fetchReviewsForPsychologist]);
 
   useEffect(() => {
-    if (!user || (!isPsychologist && user.role !== 'admin')) return undefined;
+    if (!user || !isPsychologist) return undefined;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -65,7 +65,7 @@ export default function PsychDashboard() {
     return () => observer.disconnect();
   }, [user, isPsychologist]);
 
-  if (!user || (!isPsychologist && user.role !== 'admin')) return null;
+  if (!user || !isPsychologist) return null;
 
   const formatLocalDateIso = (date) => {
     const year = date.getFullYear();
@@ -190,7 +190,7 @@ export default function PsychDashboard() {
             },
             'Randevu İptal Edildi',
             appointment.paymentStatus === 'paid'
-              ? 'Randevu arşive taşındı. İade süreci ödeme sistemi üzerinden yönetilecek.'
+              ? 'Randevu arşive taşındı. İade değerlendirmesi için destek ekibiyle iletişime geçin.'
               : 'Randevu arşive taşındı ve iptal edildi olarak işaretlendi.'
           )}
         >
@@ -212,7 +212,7 @@ export default function PsychDashboard() {
           </button>
         )}
         {appointment.paymentStatus !== 'paid' ? (
-          <button type="button" className="btn btn-outline btn-sm" disabled>Ödeme Bekleniyor</button>
+          <button type="button" className="btn btn-outline btn-sm" disabled>Ödeme Entegrasyonu Bekleniyor</button>
         ) : joinState.canJoin ? (
           <Link to={`/seans/${appointment.id}`} className="btn btn-primary btn-sm">Randevuya Git</Link>
         ) : (
@@ -278,7 +278,7 @@ export default function PsychDashboard() {
                     <div>
                       <h3 className="m-0">Randevu Programı</h3>
                       <p className="appointment-section-subtitle">
-                        {activeAppointments.length} aktif randevu • Bugün {todayAppointments.length} • Yarın {tomorrowAppointments.length} • Ödeme bekleyen {unpaidAppointments.length}
+                        {activeAppointments.length} aktif randevu • Bugün {todayAppointments.length} • Yarın {tomorrowAppointments.length} • Entegrasyon bekleyen {unpaidAppointments.length}
                       </p>
                     </div>
                     <div className="tabs-simple">
@@ -342,7 +342,7 @@ export default function PsychDashboard() {
 
                               <div className="appointment-card-footer">
                                 <span className="appointment-code">
-                                  Durum akışı: Planlandı → Ödeme → Seans → Arşiv
+                                  Durum akışı: Planlandı → Ödeme entegrasyonu → Seans → Arşiv
                                 </span>
                                 <div className="appointment-action-group">
                                   {renderAppointmentActions(appointment)}
@@ -418,7 +418,7 @@ export default function PsychDashboard() {
                 <div className="dash-stat-card">
                   <div className="dash-stat-icon">💳</div>
                   <div className="dash-stat-value">{unpaidAppointments.length}</div>
-                  <div className="dash-stat-label">Ödeme Bekleyen</div>
+                  <div className="dash-stat-label">Entegrasyon Bekleyen</div>
                 </div>
                 <div className="dash-stat-card">
                   <div className="dash-stat-icon">⛔</div>

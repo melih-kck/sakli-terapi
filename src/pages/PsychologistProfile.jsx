@@ -257,7 +257,7 @@ export default function PsychologistProfile() {
                 {psych.isCandidate && (
                   <div className="psy-candidate-info">
                     <span className="badge badge-accent">Aday Psikolog</span>
-                    <span className="psy-supervisor">Süpervizör: {psych.supervisor} | {psych.university}</span>
+                    <span className="psy-supervisor">Aday psikolog • {psych.university || 'Eğitim bilgisi inceleniyor'}</span>
                   </div>
                 )}
                 <div className="psy-profile-stats">
@@ -484,7 +484,7 @@ export default function PsychologistProfile() {
                   <div className="booking-summary mt-xl">
                     <div className="donation-notice mb-md">
                       <span className="donation-icon-small">🔒</span>
-                      <p className="text-xs m-0">Tüm ödemeler SSL güvencesi altındadır.</p>
+                      <p className="text-xs m-0">Ödeme entegrasyonu henüz etkin değildir.</p>
                     </div>
                     {selectedDate && selectedTime && (
                       <div className="booking-confirm-box mb-md">
@@ -498,7 +498,7 @@ export default function PsychologistProfile() {
                         </div>
                         <div className="content-metric">
                           <span>Ödeme Durumu</span>
-                          <strong>Onay bekliyor</strong>
+                          <strong>Entegrasyon bekleniyor</strong>
                         </div>
                         <label className="checkbox-group content-checkbox">
                           <input
@@ -506,7 +506,7 @@ export default function PsychologistProfile() {
                             checked={acceptedBookingTerms}
                             onChange={(event) => setAcceptedBookingTerms(event.target.checked)}
                           />
-                          <span>Randevu ve ödeme koşullarını onaylıyorum.</span>
+                          <span>Randevu oluşturma ve iptal koşullarını onaylıyorum.</span>
                         </label>
                       </div>
                     )}
