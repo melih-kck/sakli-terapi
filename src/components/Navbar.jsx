@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import './Navbar.css';
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
+  const { unreadCount } = useNotifications();
   const location = useLocation();
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -87,6 +89,10 @@ export default function Navbar() {
                   {dashboardLabel}
                 </Link>
                 <Link to="/ayarlar" className="nav-link" onClick={() => setIsMobileOpen(false)}>Ayarlar</Link>
+                <Link to="/bildirimler" className="nav-link nav-notifications-mobile" onClick={() => setIsMobileOpen(false)}>
+                  Bildirimler
+                  {unreadCount > 0 && <span className="notification-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>}
+                </Link>
                 <button onClick={() => { handleLogout(); setIsMobileOpen(false); }} className="btn btn-outline" style={{ width: '100%' }}>Çıkış Yap</button>
               </>
             ) : (
@@ -102,6 +108,10 @@ export default function Navbar() {
         <div className="navbar-auth">
           {isAuthenticated ? (
             <div className="navbar-user flex items-center gap-md">
+              <Link to="/bildirimler" className="notification-button" aria-label={`Bildirimler${unreadCount ? `, ${unreadCount} okunmamış` : ''}`}>
+                <span aria-hidden="true">🔔</span>
+                {unreadCount > 0 && <span className="notification-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>}
+              </Link>
               <Link to={dashboardPath} className="btn btn-outline btn-sm">
                 {dashboardLabel}
               </Link>

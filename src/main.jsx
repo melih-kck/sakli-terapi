@@ -7,6 +7,9 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { SessionProvider, useSession } from './context/SessionContext';
 import { ReviewProvider } from './context/ReviewContext';
 import { ProfileProvider } from './context/ProfileContext';
+import { NotificationProvider } from './context/NotificationContext';
+import AppErrorBoundary from './components/AppErrorBoundary';
+import { initializeMonitoring } from './lib/monitoring';
 import App from './App.jsx';
 
 // Import design system and styles
@@ -21,11 +24,13 @@ import './index.css';
 function InnerProviders() {
   const { user, setUser } = useAuth();
   return (
-    <ProfileProvider user={user} setUser={setUser}>
-      <SessionProvider user={user}>
-        <ReviewBridge user={user} />
-      </SessionProvider>
-    </ProfileProvider>
+    <NotificationProvider user={user}>
+      <ProfileProvider user={user} setUser={setUser}>
+        <SessionProvider user={user}>
+          <ReviewBridge user={user} />
+        </SessionProvider>
+      </ProfileProvider>
+    </NotificationProvider>
   );
 }
 
@@ -39,14 +44,18 @@ function ReviewBridge({ user }) {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <ToastProvider>
-        <AuthProvider>
-          <InnerProviders />
-        </AuthProvider>
-      </ToastProvider>
-    </BrowserRouter>
-  </React.StrictMode>,
-);
+initializeMonitoring().finally(() => {
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    <React.StrictMode>
+      <AppErrorBoundary>
+        <BrowserRouter>
+          <ToastProvider>
+            <AuthProvider>
+              <InnerProviders />
+            </AuthProvider>
+          </ToastProvider>
+        </BrowserRouter>
+      </AppErrorBoundary>
+    </React.StrictMode>,
+  );
+});

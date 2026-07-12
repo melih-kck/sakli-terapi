@@ -1,6 +1,6 @@
 # Supabase Security Model
 
-Migrations 009 through 011 are the canonical authorization boundary for
+Migrations 009 through 012 are the canonical authorization boundary for
 application tables. Run `src/lib/verify-rls.sql` after applying them to a
 Supabase project.
 
@@ -9,9 +9,9 @@ Supabase project.
 | Role | Allowed access |
 | --- | --- |
 | `anon` | Read `public_psychologists` and `public_reviews` only |
-| `client` | Read/update own profile, client profile, mood entries, sessions, and reviews |
-| `psychologist` | Read/update own profile and application; read/update participant sessions |
-| `admin` | Review profiles and applications through admin policies |
+| `client` | Read/update own profile, client profile, mood entries, sessions, reviews, and notifications |
+| `psychologist` | Read/update own profile and application; read/update participant sessions and own notifications |
+| `admin` | Review profiles and applications; read the admin audit log and own notifications |
 | `service_role` | Reserved for future trusted server operations |
 
 ## Public Projections
@@ -33,6 +33,10 @@ Browser-authenticated users cannot change:
 - session payment fields, participant IDs, schedule, fee, or room token;
 - existing review rows.
 
+Notification rows can only be created by trusted database triggers. Users can
+read their own rows and update only the `read_at` column. The admin audit log is
+append-only from trigger functions and visible only to admins.
+
 Migration 011 also derives session aliases, psychologist display fields, fee,
 initial workflow state, and room token in PostgreSQL. The browser supplies only
 the target psychologist, schedule, and requested channel.
@@ -42,7 +46,7 @@ implemented. No service-role key is required by the current deployment.
 
 ## Verification
 
-1. Apply migrations 009, 010, and 011 in order.
+1. Apply migrations 009, 010, 011, and 012 in order.
 2. Run `src/lib/verify-rls.sql`.
 3. Test with separate client, psychologist, and admin accounts.
 4. Confirm anonymous requests can query only the two public views.

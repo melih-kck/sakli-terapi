@@ -1,0 +1,121 @@
+.notifications-page {
+  background: var(--bg-secondary);
+  padding-bottom: var(--space-3xl);
+}
+
+.notifications-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  padding: var(--space-2xl) 0 var(--space-lg);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.notifications-header h1 {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--text-3xl);
+}
+
+.notifications-header p,
+.notifications-state p {
+  color: var(--text-secondary);
+}
+
+.notifications-list {
+  border-top: 1px solid var(--border-light);
+}
+
+.notification-item {
+  width: 100%;
+  min-height: 92px;
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-light);
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.notification-item.read {
+  opacity: 0.72;
+}
+
+.notification-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.notification-item.unread .notification-dot {
+  background: var(--primary);
+}
+
+.notification-copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.notification-copy strong,
+.notification-copy span {
+  overflow-wrap: anywhere;
+}
+
+.notification-copy span {
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.notification-copy time {
+  color: var(--text-tertiary);
+  font-size: var(--text-xs);
+}
+
+.notification-arrow {
+  color: var(--text-tertiary);
+  font-size: var(--text-lg);
+}
+
+.notifications-state {
+  padding: var(--space-3xl) 0;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.notifications-state h2 {
+  margin: var(--space-sm) 0;
+  font-size: var(--text-xl);
+}
+
+.notifications-empty-icon {
+  display: block;
+  font-size: 2rem;
+}
+
+.notifications-error {
+  color: var(--danger-dark);
+}
+
+@media (max-width: 640px) {
+  .notifications-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .notifications-header .btn {
+    width: 100%;
+  }
+}

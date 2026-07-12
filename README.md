@@ -19,6 +19,8 @@ VITE_SUPABASE_ANON_KEY=
 ```
 
 Do not put `SUPABASE_SERVICE_ROLE_KEY` in frontend env files.
+`VITE_SENTRY_DSN` and `VITE_APP_RELEASE` are optional. When a Sentry DSN is
+configured, production errors are reported without sending default user PII.
 
 ## Quality Checks
 
@@ -43,6 +45,7 @@ src/lib/supabase-complete-setup.sql
 src/lib/migration-009-privacy-boundaries.sql
 src/lib/migration-010-booking-availability.sql
 src/lib/migration-011-session-insert-hardening.sql
+src/lib/migration-012-notifications-operations.sql
 ```
 
 For an already-created database, run the latest incremental migrations in order:
@@ -54,6 +57,7 @@ src/lib/migration-008-auth-profile-trigger.sql
 src/lib/migration-009-privacy-boundaries.sql
 src/lib/migration-010-booking-availability.sql
 src/lib/migration-011-session-insert-hardening.sql
+src/lib/migration-012-notifications-operations.sql
 ```
 
 `migration-008-auth-profile-trigger.sql` keeps profile creation working when Supabase Auth email confirmation is enabled.
@@ -66,6 +70,8 @@ psychologist, date, and time.
 `migration-011-session-insert-hardening.sql` derives participant display
 fields, price, workflow state, and the private room token inside PostgreSQL
 instead of trusting browser input.
+`migration-012-notifications-operations.sql` adds private in-app notifications,
+review reasons, suspended psychologist accounts, and an admin-only audit log.
 
 After the migrations, run `src/lib/verify-rls.sql` in the SQL Editor. The final
 block raises an exception if a protected table has RLS disabled or a public
@@ -99,4 +105,6 @@ verification.
 - Confirm only real admins have `role = 'admin'`.
 - Verify Supabase Auth redirect URLs include `/sifre-yenile` for the production domain.
 - Keep email confirmation policy consistent with `migration-008`.
+- Apply `migration-012` before deploying the notification UI.
+- Configure `VITE_SENTRY_DSN` when the production monitoring project is ready.
 - Configure payment env keys only when payment implementation begins.

@@ -9,6 +9,7 @@ const readSource = (relativePath) => readFileSync(
 const migration = readSource('./migration-009-privacy-boundaries.sql');
 const bookingMigration = readSource('./migration-010-booking-availability.sql');
 const sessionInsertMigration = readSource('./migration-011-session-insert-hardening.sql');
+const operationsMigration = readSource('./migration-012-notifications-operations.sql');
 const psychologistQueries = readSource('./psychologists.js');
 const reviewQueries = readSource('../context/ReviewContext.jsx');
 const sessionContext = readSource('../context/SessionContext.jsx');
@@ -16,6 +17,8 @@ const profileContext = readSource('../context/ProfileContext.jsx');
 const supportPages = readSource('../pages/SupportPages.jsx');
 const createPayment = readSource('../../api/create-payment.js');
 const paymentCallback = readSource('../../api/payment-callback.js');
+const notificationContext = readSource('../context/NotificationContext.jsx');
+const monitoring = readSource('./monitoring.js');
 
 describe('Supabase privacy boundaries', () => {
   it('removes legacy policies before recreating the canonical policy set', () => {
@@ -146,5 +149,26 @@ describe('Supabase privacy boundaries', () => {
 
   it('keeps demo psychologist data development-only', () => {
     expect(psychologistQueries).toContain('import.meta.env.DEV');
+  });
+
+  it('keeps notifications private and limits users to read-state updates', () => {
+    expect(operationsMigration).toContain('ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY');
+    expect(operationsMigration).toContain('(SELECT auth.uid()) = user_id');
+    expect(operationsMigration).toContain('GRANT UPDATE (read_at) ON TABLE public.notifications');
+    expect(operationsMigration).toContain('REVOKE ALL ON TABLE public.notifications FROM PUBLIC, anon, authenticated');
+    expect(notificationContext).toContain("filter: `user_id=eq.${userId}`");
+  });
+
+  it('records admin review actions and requires reasons for negative decisions', () => {
+    expect(operationsMigration).toContain("NEW.approval_status IN ('rejected', 'suspended')");
+    expect(operationsMigration).toContain('a review reason is required');
+    expect(operationsMigration).toContain('INSERT INTO public.admin_audit_log');
+    expect(operationsMigration).toContain('USING ((SELECT private.is_admin_user()))');
+  });
+
+  it('keeps production monitoring optional and disables default PII', () => {
+    expect(monitoring).toContain('VITE_SENTRY_DSN');
+    expect(monitoring).toContain('sendDefaultPii: false');
+    expect(monitoring).toContain('delete sanitized.user');
   });
 });

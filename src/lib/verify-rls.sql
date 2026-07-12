@@ -14,7 +14,9 @@ WHERE n.nspname = 'public'
       'sessions',
       'client_profiles',
       'mood_entries',
-      'reviews'
+      'reviews',
+      'notifications',
+      'admin_audit_log'
     ]
   )
 ORDER BY c.relname;
@@ -33,7 +35,9 @@ WHERE schemaname = 'public'
       'sessions',
       'client_profiles',
       'mood_entries',
-      'reviews'
+      'reviews',
+      'notifications',
+      'admin_audit_log'
     ]
   )
 ORDER BY tablename, policyname;
@@ -59,6 +63,8 @@ WHERE table_schema = 'public'
     'client_profiles',
     'mood_entries',
     'reviews',
+    'notifications',
+    'admin_audit_log',
     'public_psychologists',
     'public_reviews'
   )
@@ -91,7 +97,9 @@ BEGIN
           'sessions',
           'client_profiles',
           'mood_entries',
-          'reviews'
+          'reviews',
+          'notifications',
+          'admin_audit_log'
         ]
       )
       AND NOT c.relrowsecurity
@@ -125,5 +133,13 @@ BEGIN
     'EXECUTE'
   ) THEN
     RAISE EXCEPTION 'anon can execute the public admin helper';
+  END IF;
+
+  IF has_table_privilege('anon', 'public.notifications', 'SELECT') THEN
+    RAISE EXCEPTION 'anon can read notifications';
+  END IF;
+
+  IF has_table_privilege('authenticated', 'public.admin_audit_log', 'INSERT') THEN
+    RAISE EXCEPTION 'authenticated users can insert admin audit rows';
   END IF;
 END $$;
