@@ -24,7 +24,7 @@ const paymentDetails = {
 };
 
 export default function PsychDashboard() {
-  const { user, isPsychologist } = useAuth();
+  const { user, isPsychologist, refreshUserProfile } = useAuth();
   const { fetchReviewsForPsychologist } = useReview();
   const { updateSession, sessions } = useSession();
   const { success } = useToast();
@@ -32,6 +32,10 @@ export default function PsychDashboard() {
   const [updatingSessionId, setUpdatingSessionId] = useState(null);
   const [myReviews, setMyReviews] = useState([]);
   const currentPsychologistId = user?.psychologistId || user?.psychologistProfile?.id || user?.id;
+
+  useEffect(() => {
+    refreshUserProfile();
+  }, [refreshUserProfile]);
 
   useEffect(() => {
     let isMounted = true;
@@ -242,6 +246,7 @@ export default function PsychDashboard() {
   });
 
   const psychologistProfile = user.psychologistProfile || {};
+  const approvalStatus = psychologistProfile.approvalStatus || 'pending';
   const profileChecks = [
     { label: 'Unvan', done: Boolean(psychologistProfile.title) },
     { label: 'Kısa tanıtım', done: Boolean(psychologistProfile.shortBio) },
@@ -269,6 +274,25 @@ export default function PsychDashboard() {
               <Link to="/ayarlar" className="btn btn-outline">Takvim Ayarları</Link>
             </div>
           </div>
+
+          {approvalStatus !== 'approved' && (
+            <section className={`psychologist-review-notice is-${approvalStatus}`}>
+              <div>
+                <strong>
+                  {approvalStatus === 'pending' && 'Başvurunuz inceleniyor'}
+                  {approvalStatus === 'rejected' && 'Başvurunuz onaylanmadı'}
+                  {approvalStatus === 'suspended' && 'Profiliniz askıya alındı'}
+                </strong>
+                <p>
+                  {psychologistProfile.reviewReason
+                    || (approvalStatus === 'pending'
+                      ? 'İnceleme tamamlandığında bildirim alacaksınız.'
+                      : 'Ayrıntılı bilgi için destek ekibiyle iletişime geçebilirsiniz.')}
+                </p>
+              </div>
+              <Link to="/ayarlar?tab=profile" className="btn btn-outline btn-sm">Profili gözden geçir</Link>
+            </section>
+          )}
 
           <div className="dash-grid">
             <div className="dash-main">

@@ -16,6 +16,7 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const SessionRoom = lazy(() => import('./pages/SessionRoom'));
 const About = lazy(() => import('./pages/About'));
 const Settings = lazy(() => import('./pages/Settings'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 const lazyNamed = (loader, exportName) => lazy(() => loader().then(module => ({ default: module[exportName] })));
 const FaqPage = lazyNamed(() => import('./pages/SupportPages'), 'FaqPage');
 const ForgotPasswordPage = lazyNamed(() => import('./pages/SupportPages'), 'ForgotPasswordPage');
@@ -85,6 +86,7 @@ function App() {
         <Route path="/degerlendirmeler" element={<ProtectedRoute role="psychologist"><ReviewsPage /></ProtectedRoute>} />
         <Route path="/hakkinda" element={<About />} />
         <Route path="/ayarlar" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path="/bildirimler" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
         <Route path="/sss" element={<FaqPage />} />
         <Route path="/gizlilik-politikasi" element={<PrivacyPolicyPage />} />
         <Route path="/kullanim-kosullari" element={<TermsPage />} />

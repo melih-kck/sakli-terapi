@@ -77,6 +77,8 @@ const normalizePsychologistProfile = (profile = {}) => ({
   isCandidate: Boolean(profile.is_candidate ?? profile.isCandidate),
   approvalStatus:
     profile.approval_status || profile.approvalStatus || DEFAULT_PSYCHOLOGIST_PROFILE.approvalStatus,
+  reviewReason: profile.review_reason || profile.reviewReason || '',
+  reviewedAt: profile.reviewed_at || profile.reviewedAt || null,
   rating: Number(profile.rating || 0),
   reviewCount: Number(profile.review_count ?? profile.reviewCount ?? 0),
   sessionCount: Number(profile.session_count ?? profile.sessionCount ?? 0),

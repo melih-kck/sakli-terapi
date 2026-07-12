@@ -58,6 +58,8 @@ const normalizePsychologistProfile = (profile = {}) => ({
   supervisor: profile.supervisor || '',
   isCandidate: Boolean(profile.is_candidate ?? profile.isCandidate),
   approvalStatus: profile.approval_status || profile.approvalStatus || 'pending',
+  reviewReason: profile.review_reason || profile.reviewReason || '',
+  reviewedAt: profile.reviewed_at || profile.reviewedAt || null,
   rating: Number(profile.rating || 0),
   reviewCount: Number(profile.review_count ?? profile.reviewCount ?? 0),
   sessionCount: Number(profile.session_count ?? profile.sessionCount ?? 0),
@@ -76,6 +78,8 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const currentUserId = user?.id;
+  const currentUserEmail = user?.email;
   const { success, error: showError } = useToast();
 
   const fetchPsychologistProfile = useCallback(async (userId) => {
@@ -361,12 +365,17 @@ export function AuthProvider({ children }) {
     success('Çıkış', 'Başarıyla çıkış yapıldı.');
   }, [success]);
 
+  const refreshUserProfile = useCallback(async () => {
+    if (!currentUserId || currentUserId.startsWith('mock-')) return { success: false };
+    return fetchUserProfile(currentUserId, currentUserEmail);
+  }, [currentUserEmail, currentUserId, fetchUserProfile]);
+
   const value = {
     user, setUser, session,
     isAuthenticated: !!user,
     isClient: user?.role === 'client',
     isPsychologist: user?.role === 'psychologist',
-    isLoading, login, register, logout,
+    isLoading, login, register, logout, refreshUserProfile,
   };
 
   return <AuthContext.Provider value={value}>{!isLoading && children}</AuthContext.Provider>;

@@ -1,105 +1,84 @@
 import { supabase } from './supabase';
 
-/**
- * Onay bekleyen psikologları getirir.
- * Bu sorgunun başarılı olması için çağrı yapan kullanıcının 'admin' yetkisine sahip olması gerekir.
- * (RLS policy tarafından korunmaktadır).
- */
-export async function getPendingPsychologists() {
-  try {
-    const { data, error } = await supabase
-      .from('psychologists')
-      .select(`
-        id,
-        display_name,
-        title,
-        experience,
-        approval_status,
-        created_at,
-        profiles!inner(email, role)
-      `)
-      .eq('approval_status', 'pending')
-      .order('created_at', { ascending: false });
+const ADMIN_PSYCHOLOGIST_FIELDS = `
+  id,
+  display_name,
+  title,
+  experience,
+  approval_status,
+  review_reason,
+  reviewed_at,
+  created_at,
+  profiles!inner(email, role)
+`;
 
-    if (error) throw error;
-    
-    // profiles ilişkisini düzleştirip veriyoruz
-    return data.map(item => ({
-      ...item,
-      email: item.profiles?.email
-    }));
-  } catch (error) {
-    console.error('getPendingPsychologists hatası:', error);
-    throw error;
-  }
+const flattenProfile = (item) => ({
+  ...item,
+  email: item.profiles?.email,
+});
+
+async function getPsychologistsByStatus(statuses) {
+  let query = supabase
+    .from('psychologists')
+    .select(ADMIN_PSYCHOLOGIST_FIELDS)
+    .order('created_at', { ascending: false });
+
+  query = statuses.length === 1
+    ? query.eq('approval_status', statuses[0])
+    : query.in('approval_status', statuses);
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data || []).map(flattenProfile);
 }
 
-/**
- * Sistemdeki onaylı psikologları getirir (Admin tarafı için).
- */
-export async function getApprovedPsychologistsForAdmin() {
-  try {
-    const { data, error } = await supabase
-      .from('psychologists')
-      .select(`
-        id,
-        display_name,
-        title,
-        approval_status,
-        created_at,
-        profiles!inner(email)
-      `)
-      .eq('approval_status', 'approved')
-      .order('created_at', { ascending: false });
+export const getPendingPsychologists = () => getPsychologistsByStatus(['pending']);
 
-    if (error) throw error;
-    
-    return data.map(item => ({
-      ...item,
-      email: item.profiles?.email
-    }));
-  } catch (error) {
-    console.error('getApprovedPsychologistsForAdmin hatası:', error);
-    throw error;
-  }
+export const getApprovedPsychologistsForAdmin = () => getPsychologistsByStatus(['approved']);
+
+export const getInactivePsychologistsForAdmin = () => (
+  getPsychologistsByStatus(['rejected', 'suspended'])
+);
+
+export async function getAdminAuditLog() {
+  const { data, error } = await supabase
+    .from('admin_audit_log')
+    .select('id, actor_id, psychologist_id, action, metadata, created_at')
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  if (error) throw error;
+  return data || [];
 }
 
-/**
- * Psikoloğun başvurusunu onaylar.
- */
-export async function approvePsychologist(psychologistId) {
+async function updatePsychologistStatus(psychologistId, status, reason = null) {
   try {
     const { data, error } = await supabase
       .from('psychologists')
-      .update({ approval_status: 'approved' })
+      .update({
+        approval_status: status,
+        review_reason: reason,
+      })
       .eq('id', psychologistId)
-      .select()
+      .select('id, display_name, approval_status, review_reason, reviewed_at')
       .single();
 
     if (error) throw error;
     return { success: true, data };
   } catch (error) {
-    console.error('approvePsychologist hatası:', error);
+    console.error('Psikolog durumu güncellenemedi:', error);
     return { success: false, error: error.message };
   }
 }
 
-/**
- * Psikoloğun başvurusunu reddeder (veya onaylanmış psikoloğu askıya alır).
- */
-export async function rejectPsychologist(psychologistId) {
-  try {
-    const { data, error } = await supabase
-      .from('psychologists')
-      .update({ approval_status: 'rejected' })
-      .eq('id', psychologistId)
-      .select()
-      .single();
+export const approvePsychologist = (psychologistId) => (
+  updatePsychologistStatus(psychologistId, 'approved')
+);
 
-    if (error) throw error;
-    return { success: true, data };
-  } catch (error) {
-    console.error('rejectPsychologist hatası:', error);
-    return { success: false, error: error.message };
-  }
-}
+export const rejectPsychologist = (psychologistId, reason) => (
+  updatePsychologistStatus(psychologistId, 'rejected', reason)
+);
+
+export const suspendPsychologist = (psychologistId, reason) => (
+  updatePsychologistStatus(psychologistId, 'suspended', reason)
+);
