@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -6,8 +6,15 @@ import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
 import { APPROACHES, COMMUNICATION_CHANNELS, DAYS_TR, SPECIALIZATIONS } from '../data/constants';
+import { supabase } from '../lib/supabase';
+import '../styles/pages/Settings.css';
 
 const EDITABLE_CHANNELS = COMMUNICATION_CHANNELS.filter(channel => ['text', 'voice', 'video-blur'].includes(channel.id));
+const DEFAULT_EMAIL_PREFERENCES = {
+  emailSessionUpdates: false,
+  emailReviewUpdates: false,
+  emailAccountUpdates: false,
+};
 
 const getDefaultAvailability = () => (
   DAYS_TR.reduce((acc, day) => {
@@ -59,7 +66,7 @@ const getPsychologistSettings = (user) => {
 const getInitialTab = (search, user) => {
   const requestedTab = new URLSearchParams(search).get('tab');
   if (requestedTab === 'profile' && user?.role === 'psychologist') return 'profile';
-  if (requestedTab === 'privacy' || requestedTab === 'account') return requestedTab;
+  if (['account', 'notifications', 'privacy'].includes(requestedTab)) return requestedTab;
   return 'account';
 };
 
@@ -83,7 +90,42 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState(() => getInitialTab(location.search, user));
   const [form, setForm] = useState(() => getInitialSettings(user));
   const [passwordForm, setPasswordForm] = useState({ current: '', next: '', confirm: '' });
+  const [emailPreferences, setEmailPreferences] = useState(DEFAULT_EMAIL_PREFERENCES);
+  const [preferencesError, setPreferencesError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadEmailPreferences = async () => {
+      if (!user?.id || user.id.startsWith('mock-')) return;
+
+      const { data, error } = await supabase
+        .from('notification_preferences')
+        .select('email_session_updates, email_review_updates, email_account_updates')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!isMounted) return;
+      if (error) {
+        console.error('E-posta bildirim tercihleri yüklenemedi:', error);
+        setPreferencesError('E-posta tercihleri şu anda yüklenemiyor.');
+        return;
+      }
+
+      if (data) {
+        setEmailPreferences({
+          emailSessionUpdates: data.email_session_updates,
+          emailReviewUpdates: data.email_review_updates,
+          emailAccountUpdates: data.email_account_updates,
+        });
+      }
+      setPreferencesError('');
+    };
+
+    loadEmailPreferences();
+    return () => { isMounted = false; };
+  }, [user?.id]);
 
   const updateForm = (key, value) => {
     setForm(prev => ({ ...prev, [key]: value }));
@@ -125,6 +167,32 @@ export default function Settings() {
     setIsSaving(true);
 
     try {
+      if (activeTab === 'notifications') {
+        if (user.id.startsWith('mock-')) {
+          success('Bildirim Tercihleri Kaydedildi', 'Test hesabı tercihleri bu tarayıcı oturumu için güncellendi.');
+          return;
+        }
+
+        const { error } = await supabase
+          .from('notification_preferences')
+          .update({
+            email_session_updates: emailPreferences.emailSessionUpdates,
+            email_review_updates: emailPreferences.emailReviewUpdates,
+            email_account_updates: emailPreferences.emailAccountUpdates,
+          })
+          .eq('user_id', user.id);
+
+        if (error) {
+          console.error('E-posta bildirim tercihleri kaydedilemedi:', error);
+          showError('Tercihler Kaydedilemedi', 'E-posta bildirim tercihlerinizi güncelleyemedik.');
+          return;
+        }
+
+        setPreferencesError('');
+        success('Bildirim Tercihleri Kaydedildi', 'E-posta bildirim seçimleriniz güncellendi.');
+        return;
+      }
+
       const profileUpdates = {};
 
       if (activeTab === 'profile' && form.psychologistProfile.channels.length === 0) {
@@ -262,6 +330,14 @@ export default function Settings() {
                 )}
                 <button
                   type="button"
+                  className={`tab-item ${activeTab === 'notifications' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('notifications')}
+                  style={{ textAlign: 'left', borderLeft: activeTab === 'notifications' ? '4px solid var(--primary)' : '4px solid transparent', borderBottom: 'none' }}
+                >
+                  Bildirim Tercihleri
+                </button>
+                <button
+                  type="button"
                   className={`tab-item ${activeTab === 'privacy' ? 'active' : ''}`}
                   onClick={() => setActiveTab('privacy')}
                   style={{ textAlign: 'left', borderLeft: activeTab === 'privacy' ? '4px solid var(--primary)' : '4px solid transparent', borderBottom: 'none' }}
@@ -272,11 +348,12 @@ export default function Settings() {
             </div>
           </div>
 
-          <div className="card" style={{ gridColumn: 'span 3' }}>
+          <div className="card settings-content-card">
             <div className="card-header">
               <h3 style={{ margin: 0 }}>
                 {activeTab === 'account' && 'Hesap Bilgileri'}
                 {activeTab === 'profile' && 'Psikolog Profilim'}
+                {activeTab === 'notifications' && 'Bildirim Tercihleri'}
                 {activeTab === 'privacy' && 'Gizlilik & Güvenlik'}
               </h3>
             </div>
@@ -492,6 +569,68 @@ export default function Settings() {
                         ))}
                       </div>
                       <span className="input-hint">Saatleri virgülle ayırın. Boş bıraktığınız gün randevuya kapalı görünür.</span>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'notifications' && (
+                  <div className="grid gap-lg">
+                    <div className="input-group">
+                      <label>Uygulama İçi Bildirimler</label>
+                      <span className="input-hint">Randevu ve hesap işlemleri uygulama içinde her zaman gösterilir.</span>
+                    </div>
+
+                    {preferencesError && <p className="text-sm text-danger">{preferencesError}</p>}
+
+                    <label className="checkbox-group notification-preference-option">
+                      <input
+                        type="checkbox"
+                        checked={emailPreferences.emailSessionUpdates}
+                        onChange={(event) => setEmailPreferences(current => ({
+                          ...current,
+                          emailSessionUpdates: event.target.checked,
+                        }))}
+                      />
+                      <span>
+                        <strong>Randevu e-postaları</strong><br />
+                        <span className="input-hint">Yeni randevu, onay, iptal ve tamamlanma durumlarını e-postayla alın.</span>
+                      </span>
+                    </label>
+
+                    {user.role === 'psychologist' && (
+                      <label className="checkbox-group notification-preference-option">
+                        <input
+                          type="checkbox"
+                          checked={emailPreferences.emailReviewUpdates}
+                          onChange={(event) => setEmailPreferences(current => ({
+                            ...current,
+                            emailReviewUpdates: event.target.checked,
+                          }))}
+                        />
+                        <span>
+                          <strong>Başvuru durumu e-postaları</strong><br />
+                          <span className="input-hint">Psikolog başvurunuz incelendiğinde e-posta alın.</span>
+                        </span>
+                      </label>
+                    )}
+
+                    <label className="checkbox-group notification-preference-option">
+                      <input
+                        type="checkbox"
+                        checked={emailPreferences.emailAccountUpdates}
+                        onChange={(event) => setEmailPreferences(current => ({
+                          ...current,
+                          emailAccountUpdates: event.target.checked,
+                        }))}
+                      />
+                      <span>
+                        <strong>Önemli hesap e-postaları</strong><br />
+                        <span className="input-hint">Güvenlik ve hesap durumu bildirimlerini e-postayla alın.</span>
+                      </span>
+                    </label>
+
+                    <div style={{ padding: 'var(--space-md)', background: 'var(--bg-secondary)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)' }}>
+                      Bu tercihler yalnızca operasyonel e-postaları yönetir. E-posta doğrulama ve şifre sıfırlama gibi zorunlu güvenlik iletileri her zaman gönderilir.
                     </div>
                   </div>
                 )}

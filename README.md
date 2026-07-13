@@ -46,6 +46,7 @@ src/lib/migration-009-privacy-boundaries.sql
 src/lib/migration-010-booking-availability.sql
 src/lib/migration-011-session-insert-hardening.sql
 src/lib/migration-012-notifications-operations.sql
+src/lib/migration-013-email-notification-delivery.sql
 ```
 
 For an already-created database, run the latest incremental migrations in order:
@@ -58,6 +59,7 @@ src/lib/migration-009-privacy-boundaries.sql
 src/lib/migration-010-booking-availability.sql
 src/lib/migration-011-session-insert-hardening.sql
 src/lib/migration-012-notifications-operations.sql
+src/lib/migration-013-email-notification-delivery.sql
 ```
 
 `migration-008-auth-profile-trigger.sql` keeps profile creation working when Supabase Auth email confirmation is enabled.
@@ -72,6 +74,20 @@ fields, price, workflow state, and the private room token inside PostgreSQL
 instead of trusting browser input.
 `migration-012-notifications-operations.sql` adds private in-app notifications,
 review reasons, suspended psychologist accounts, and an admin-only audit log.
+`migration-013-email-notification-delivery.sql` adds opt-in operational email
+preferences and a private delivery queue.
+
+The email worker at `api/process-email-notifications.js` also requires these
+server-only environment variables before delivery is enabled:
+
+```env
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+RESEND_API_KEY=
+EMAIL_FROM=
+EMAIL_WORKER_SECRET=
+PUBLIC_APP_URL=https://gizlibiriz.vercel.app
+```
 
 After the migrations, run `src/lib/verify-rls.sql` in the SQL Editor. The final
 block raises an exception if a protected table has RLS disabled or a public

@@ -46,7 +46,9 @@ export default function RegisterClient() {
   const handleSubmit = async () => {
     const result = await register(form.email, form.password, form, 'client');
     if (result.success) {
-      navigate('/giris');
+      navigate(result.needsEmailConfirmation ? '/e-posta-dogrula' : '/giris', {
+        state: result.needsEmailConfirmation ? { email: result.email } : undefined,
+      });
     }
   };
 

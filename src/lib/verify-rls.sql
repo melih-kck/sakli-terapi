@@ -1,5 +1,5 @@
--- Read-only verification for Migration 009.
--- Run in Supabase SQL Editor after applying the migration.
+-- Read-only verification for Migrations 009-013.
+-- Run in Supabase SQL Editor after applying the migrations.
 
 SELECT
   c.relname AS table_name,
@@ -16,7 +16,9 @@ WHERE n.nspname = 'public'
       'mood_entries',
       'reviews',
       'notifications',
-      'admin_audit_log'
+      'admin_audit_log',
+      'notification_preferences',
+      'email_notification_outbox'
     ]
   )
 ORDER BY c.relname;
@@ -37,7 +39,9 @@ WHERE schemaname = 'public'
       'mood_entries',
       'reviews',
       'notifications',
-      'admin_audit_log'
+      'admin_audit_log',
+      'notification_preferences',
+      'email_notification_outbox'
     ]
   )
 ORDER BY tablename, policyname;
@@ -65,6 +69,8 @@ WHERE table_schema = 'public'
     'reviews',
     'notifications',
     'admin_audit_log',
+    'notification_preferences',
+    'email_notification_outbox',
     'public_psychologists',
     'public_reviews'
   )
@@ -81,7 +87,22 @@ SELECT
     'authenticated',
     'private.is_admin_user()',
     'EXECUTE'
-  ) AS authenticated_can_use_private_admin_helper;
+  ) AS authenticated_can_use_private_admin_helper,
+  has_function_privilege(
+    'anon',
+    'public.claim_email_notification_batch(integer)',
+    'EXECUTE'
+  ) AS anon_can_claim_email_queue,
+  has_function_privilege(
+    'authenticated',
+    'public.claim_email_notification_batch(integer)',
+    'EXECUTE'
+  ) AS authenticated_can_claim_email_queue,
+  has_function_privilege(
+    'service_role',
+    'public.claim_email_notification_batch(integer)',
+    'EXECUTE'
+  ) AS service_role_can_claim_email_queue;
 
 DO $$
 BEGIN
@@ -99,7 +120,9 @@ BEGIN
           'mood_entries',
           'reviews',
           'notifications',
-          'admin_audit_log'
+          'admin_audit_log',
+          'notification_preferences',
+          'email_notification_outbox'
         ]
       )
       AND NOT c.relrowsecurity
@@ -141,5 +164,38 @@ BEGIN
 
   IF has_table_privilege('authenticated', 'public.admin_audit_log', 'INSERT') THEN
     RAISE EXCEPTION 'authenticated users can insert admin audit rows';
+  END IF;
+
+  IF has_table_privilege('anon', 'public.notification_preferences', 'SELECT') THEN
+    RAISE EXCEPTION 'anon can read notification preferences';
+  END IF;
+
+  IF has_table_privilege('authenticated', 'public.notification_preferences', 'INSERT') THEN
+    RAISE EXCEPTION 'authenticated users can create notification preference rows';
+  END IF;
+
+  IF has_table_privilege('anon', 'public.email_notification_outbox', 'SELECT')
+     OR has_table_privilege('authenticated', 'public.email_notification_outbox', 'SELECT') THEN
+    RAISE EXCEPTION 'browser roles can read the email delivery queue';
+  END IF;
+
+  IF has_function_privilege(
+    'anon',
+    'public.claim_email_notification_batch(integer)',
+    'EXECUTE'
+  ) OR has_function_privilege(
+    'authenticated',
+    'public.claim_email_notification_batch(integer)',
+    'EXECUTE'
+  ) THEN
+    RAISE EXCEPTION 'browser roles can claim the email delivery queue';
+  END IF;
+
+  IF NOT has_function_privilege(
+    'service_role',
+    'public.claim_email_notification_batch(integer)',
+    'EXECUTE'
+  ) THEN
+    RAISE EXCEPTION 'service_role cannot claim the email delivery queue';
   END IF;
 END $$;

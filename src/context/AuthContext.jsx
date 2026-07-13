@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { getAuthRedirectUrl, isEmailNotConfirmedError } from '../lib/auth';
 import { useToast } from './ToastContext';
 
 const AuthContext = createContext();
@@ -219,13 +220,19 @@ export function AuthProvider({ children }) {
         localStorage.removeItem('mock_user_session');
       }
 
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const normalizedEmail = email.trim().toLowerCase();
+      const { data, error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
       if (error) {
-        showError('Giriş Başarısız', error.message || 'E-posta veya şifre hatalı.');
+        if (isEmailNotConfirmedError(error)) {
+          showError('E-posta Doğrulanmadı', 'Giriş yapmadan önce e-posta adresinizi doğrulayın.');
+          return { success: false, error: error.message, needsEmailConfirmation: true };
+        }
+
+        showError('Giriş Başarısız', 'E-posta veya şifre hatalı.');
         return { success: false, error: error.message };
       }
 
-      const profileResult = await fetchUserProfile(data.user.id, email);
+      const profileResult = await fetchUserProfile(data.user.id, normalizedEmail);
       if (!profileResult?.success) {
         await supabase.auth.signOut();
         return profileResult;
@@ -283,21 +290,26 @@ export function AuthProvider({ children }) {
         });
       }
 
+      const normalizedEmail = email.trim().toLowerCase();
       const { data, error } = await supabase.auth.signUp({
-        email, password,
-        options: { data: signupMetadata },
+        email: normalizedEmail,
+        password,
+        options: {
+          data: signupMetadata,
+          emailRedirectTo: getAuthRedirectUrl('/hesap-dogrulandi'),
+        },
       });
 
       if (error) { showError('Kayıt Hatası', error.message); return { success: false, error: error.message }; }
 
       if (data?.user) {
         if (!data.session) {
-          success('Kayıt Alındı', 'Hesabınız oluşturuldu. E-posta doğrulaması açıksa lütfen gelen bağlantıyı onaylayın.');
-          return { success: true, needsEmailConfirmation: true };
+          success('E-postanızı Doğrulayın', 'Hesabınızı etkinleştirmek için gönderdiğimiz bağlantıyı açın.');
+          return { success: true, needsEmailConfirmation: true, email: normalizedEmail };
         }
 
         const { error: insertError } = await supabase.from('profiles').upsert([{
-          id: data.user.id, email, role,
+          id: data.user.id, email: normalizedEmail, role,
           name: profileData.name || null, alias: profileData.alias || null,
           privacy_level: Number(profileData.privacyLevel || 5),
         }], { onConflict: 'id' });
@@ -358,6 +370,27 @@ export function AuthProvider({ children }) {
     }
   }, [success, showError]);
 
+  const resendVerification = useCallback(async (email) => {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) {
+      return { success: false, error: 'E-posta adresi gerekli.' };
+    }
+
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: normalizedEmail,
+      options: { emailRedirectTo: getAuthRedirectUrl('/hesap-dogrulandi') },
+    });
+
+    if (error) {
+      showError('E-posta Gönderilemedi', error.message || 'Lütfen kısa bir süre sonra tekrar deneyin.');
+      return { success: false, error: error.message };
+    }
+
+    success('E-posta Gönderildi', 'Yeni doğrulama bağlantısı e-posta adresinize gönderildi.');
+    return { success: true, email: normalizedEmail };
+  }, [showError, success]);
+
   const logout = useCallback(async () => {
     await supabase.auth.signOut();
     localStorage.removeItem('mock_user_session');
@@ -375,7 +408,7 @@ export function AuthProvider({ children }) {
     isAuthenticated: !!user,
     isClient: user?.role === 'client',
     isPsychologist: user?.role === 'psychologist',
-    isLoading, login, register, logout, refreshUserProfile,
+    isLoading, login, register, resendVerification, logout, refreshUserProfile,
   };
 
   return <AuthContext.Provider value={value}>{!isLoading && children}</AuthContext.Provider>;
