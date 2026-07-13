@@ -357,6 +357,10 @@ export function AuthProvider({ children }) {
             return { success: false, error: clientProfileError.message };
           }
         }
+
+        // Auto-confirmed projects return a session during sign-up. Keep the
+        // registration flow deterministic by requiring a normal first login.
+        await supabase.auth.signOut();
       }
 
       success('Kayıt Başarılı', 'Hesabınız oluşturuldu, lütfen giriş yapın.');
