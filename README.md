@@ -47,6 +47,7 @@ src/lib/migration-010-booking-availability.sql
 src/lib/migration-011-session-insert-hardening.sql
 src/lib/migration-012-notifications-operations.sql
 src/lib/migration-013-email-notification-delivery.sql
+src/lib/migration-014-session-room-access.sql
 ```
 
 For an already-created database, run the latest incremental migrations in order:
@@ -60,6 +61,7 @@ src/lib/migration-010-booking-availability.sql
 src/lib/migration-011-session-insert-hardening.sql
 src/lib/migration-012-notifications-operations.sql
 src/lib/migration-013-email-notification-delivery.sql
+src/lib/migration-014-session-room-access.sql
 ```
 
 `migration-008-auth-profile-trigger.sql` keeps profile creation working when Supabase Auth email confirmation is enabled.
@@ -76,6 +78,9 @@ instead of trusting browser input.
 review reasons, suspended psychologist accounts, and an admin-only audit log.
 `migration-013-email-notification-delivery.sql` adds opt-in operational email
 preferences and a private delivery queue.
+`migration-014-session-room-access.sql` keeps deferred payments explicit,
+limits room credentials to the participant and join window, and enforces
+role-based session completion in PostgreSQL.
 
 The email worker at `api/process-email-notifications.js` also requires these
 server-only environment variables before delivery is enabled:

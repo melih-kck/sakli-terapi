@@ -4,6 +4,12 @@ import { useAuth } from '../context/AuthContext';
 import { useSession } from '../context/SessionContext';
 import { Peer } from 'peerjs';
 import { getSessionJoinState } from '../lib/session-flow';
+import {
+  MAX_SESSION_MESSAGE_LENGTH,
+  isExpectedSessionPeer,
+  normalizeIncomingSessionMessage,
+  sanitizeSessionChatText,
+} from '../lib/session-connection';
 import Navbar from '../components/Navbar';
 import '../styles/pages/Session.css';
 
@@ -54,7 +60,13 @@ const createSilentAudioStream = () => {
 
 export default function SessionRoom() {
   const { user, isClient } = useAuth();
-  const { updateSession, sessions, isLoadingSessions } = useSession();
+  const {
+    updateSession,
+    sessions,
+    isLoadingSessions,
+    hasLoadedSessions,
+    getSessionRoomAccess,
+  } = useSession();
   const { sessionId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -63,11 +75,26 @@ export default function SessionRoom() {
   const currentSession = sessions?.find(s => String(s.id) === String(sessionId));
   const sessionChannel = currentSession?.channel || location.state?.channel || 'video-blur';
   const sessionAccess = getSessionJoinState(currentSession);
-  const isWaitingForSession = user && isLoadingSessions && !currentSession;
   const panelPath = user?.role === 'admin' ? '/admin' : isClient ? '/panel' : '/psikolog-panel';
   const isMockUser = import.meta.env.DEV && user?.id?.startsWith('mock-');
-  const roomId = currentSession?.peerRoomToken || (isMockUser ? sessionId || 'gizlibiriz-demo-room' : null);
-  const isRoomIdentityMissing = Boolean(currentSession && sessionAccess.canJoin && !roomId);
+  const [roomAccess, setRoomAccess] = useState(null);
+  const [roomAccessError, setRoomAccessError] = useState('');
+  const [isLoadingRoomAccess, setIsLoadingRoomAccess] = useState(true);
+  const shouldLoadRoomAccess = Boolean(user && currentSession && sessionAccess.canJoin);
+  const isWaitingForSession = Boolean(
+    user
+    && (
+      !hasLoadedSessions
+      || isLoadingSessions
+      || (shouldLoadRoomAccess && isLoadingRoomAccess)
+    )
+  );
+  const isRoomIdentityMissing = Boolean(
+    currentSession
+    && sessionAccess.canJoin
+    && !isLoadingRoomAccess
+    && (!roomAccess?.myPeerId || !roomAccess?.targetPeerId)
+  );
   const isAccessBlocked = user
     && !isWaitingForSession
     && (!currentSession || !sessionAccess.canJoin || isRoomIdentityMissing);
@@ -130,6 +157,7 @@ export default function SessionRoom() {
   const fallbackAudioNodeRef = useRef(null);
   const mediaFallbackNoticeShownRef = useRef(false);
   const demoModeRef = useRef(false);
+  const peerInitRetryRef = useRef(0);
 
   const closeFallbackAudio = useCallback(() => {
     try {
@@ -158,8 +186,10 @@ export default function SessionRoom() {
     }
   }, []);
 
-  const myPeerId = roomId ? `${roomId}-${isClient ? 'client' : 'psychologist'}` : null;
-  const targetPeerId = roomId ? `${roomId}-${isClient ? 'psychologist' : 'client'}` : null;
+  const myPeerId = roomAccess?.myPeerId || null;
+  const targetPeerId = roomAccess?.targetPeerId || null;
+  const participantRole = isClient ? 'client' : 'psychologist';
+  const expectedPeerRole = isClient ? 'psychologist' : 'client';
 
   // Draw loop for Canvas Blur
   const drawToCanvas = useCallback(function drawFrame() {
@@ -231,9 +261,12 @@ export default function SessionRoom() {
     }
 
     conn.on('data', (data) => {
-      setMessages(prev => [...prev, data]);
+      const message = normalizeIncomingSessionMessage(data, expectedPeerRole);
+      if (message) {
+        setMessages(prev => [...prev, message]);
+      }
     });
-  }, [addSystemMessage, sessionChannel]);
+  }, [addSystemMessage, expectedPeerRole, sessionChannel]);
 
   const attachRemoteStream = useCallback((remoteStream) => {
     const remoteElement = remoteVideoRef.current;
@@ -268,6 +301,42 @@ export default function SessionRoom() {
   }, [addSystemMessage, markRemoteUnavailable, sessionChannel]);
 
   useEffect(() => {
+    let isCurrent = true;
+
+    if (!user || !hasLoadedSessions || !currentSession || !sessionAccess.canJoin) {
+      setRoomAccess(null);
+      setRoomAccessError('');
+      setIsLoadingRoomAccess(false);
+      return undefined;
+    }
+
+    setIsLoadingRoomAccess(true);
+    setRoomAccess(null);
+    setRoomAccessError('');
+
+    getSessionRoomAccess(currentSession.id).then((result) => {
+      if (!isCurrent) return;
+
+      const expectedRole = isClient ? 'client' : 'psychologist';
+      if (
+        !result.success
+        || result.access?.participantRole !== expectedRole
+        || result.access?.channel !== currentSession.channel
+      ) {
+        setRoomAccessError(result.error || 'Seans odası kimliği doğrulanamadı.');
+        setRoomAccess(null);
+      } else {
+        setRoomAccess(result.access);
+      }
+      setIsLoadingRoomAccess(false);
+    });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [currentSession, getSessionRoomAccess, hasLoadedSessions, isClient, sessionAccess.canJoin, user]);
+
+  useEffect(() => {
     if (!user) return;
     if (isWaitingForSession) return;
     if (!currentSession && !isMockUser && !location.state?.channel) {
@@ -277,9 +346,13 @@ export default function SessionRoom() {
 
   // Setup Camera and Streams
   useEffect(() => {
-    if (isAccessBlocked) return undefined;
+    if (isAccessBlocked || isWaitingForSession || !myPeerId || !targetPeerId) return undefined;
 
     const isMounted = { current: true };
+    const peerMetadata = {
+      sessionId: String(sessionId),
+      role: participantRole,
+    };
     const initCamera = async () => {
       // Eğer sadece metin (yazışma) ise, kamerayı ve mikrofonu hiç isteme!
       if (sessionChannel === 'text') {
@@ -370,7 +443,7 @@ export default function SessionRoom() {
       clearTimeout(retryTimerRef.current);
       retryTimerRef.current = setTimeout(() => {
         if (!isMounted.current || !peerRef.current || peerRef.current.destroyed) return;
-        if (connRef.current?.open || callRef.current) return;
+        if (connRef.current || callRef.current) return;
         connectToPeer(peerRef.current);
       }, 2000);
     };
@@ -403,25 +476,38 @@ export default function SessionRoom() {
           scheduleClientReconnect();
         }
       });
+      conn.on('error', () => {
+        if (!isMounted.current || connRef.current !== conn) return;
+        connRef.current = null;
+        if (!callRef.current) {
+          markRemoteUnavailable('Sohbet bağlantısı kesildi. Yeniden bağlanması bekleniyor...');
+          scheduleClientReconnect();
+        }
+      });
     };
 
+    const isExpectedPeer = (connection) => isExpectedSessionPeer({
+      connection,
+      targetPeerId,
+      sessionId,
+      expectedRole: expectedPeerRole,
+    });
+
     const initPeer = () => {
-      // Danışan (Client) tarafı rastgele (anonim) ID ile sunucuya bağlanır. 
-      // Böylece sayfa yenilemelerinde "ID is taken" hatası ASLA yaşamaz.
-      // Psikolog ise sabit ID'yi alarak bekleyen (dinleyen) taraf olur.
-      const peerConfig = { debug: 2 };
-      const peer = isClient ? new Peer(peerConfig) : new Peer(myPeerId, peerConfig);
+      const peerConfig = { debug: import.meta.env.DEV ? 2 : 1 };
+      const peer = new Peer(myPeerId, peerConfig);
 
       peerRef.current = peer;
 
       peer.on('open', () => {
+        peerInitRetryRef.current = 0;
         setSessionStatus('ready');
         addSystemMessage("Sunucuya bağlanıldı. Karşı taraf bekleniyor...");
         
         // Client initiates the call to Psychologist
         if (isClient) {
           const tryConnect = () => {
-            if (callRef.current || connRef.current?.open) return; // Zaten bağlıysa iptal
+            if (callRef.current || connRef.current) return;
             connectToPeer(peer);
             retryTimerRef.current = setTimeout(tryConnect, 3000); // 3 saniyede bir yokla
           };
@@ -431,11 +517,22 @@ export default function SessionRoom() {
 
       // When Psychologist receives connection/call from Client
       peer.on('connection', (conn) => {
+        if (!isExpectedPeer(conn)) {
+          conn.close();
+          addSystemMessage('Yetkisiz bir bağlantı isteği reddedildi.');
+          return;
+        }
         handleDataConnection(conn);
         bindConnectionHandlers(conn);
       });
 
       peer.on('call', (call) => {
+        if (!isExpectedPeer(call)) {
+          call.close();
+          addSystemMessage('Yetkisiz bir görüşme isteği reddedildi.');
+          return;
+        }
+
         // Answer with my stream (Eğer video-blur ise blurStream, değilse localStream(sadece ses))
         const myStream = shouldUseBlurStream ? blurStreamRef.current : localStreamRef.current;
         
@@ -450,24 +547,50 @@ export default function SessionRoom() {
         console.error("PeerJS Error:", err);
         // Eğer Psikolog'un sabit ID'si "is taken" ise (sayfa yenileme çakışması) 
         // pes etme, 2 saniye bekle ve sunucu temizlenince tekrar dene.
-        if (err.type === 'unavailable-id' && !isClient) {
-          addSystemMessage("Sunucu eski bağlantınızı temizliyor, 2 saniye içinde tekrar bağlanılacak...");
+        if (err.type === 'unavailable-id' && peerInitRetryRef.current < 2) {
+          peerInitRetryRef.current += 1;
+          addSystemMessage("Sunucu eski bağlantınızı temizliyor. Birkaç saniye içinde yeniden denenecek...");
           setTimeout(() => {
             if (isMounted.current) {
               initPeer();
             }
           }, 2000);
+        } else if (err.type === 'unavailable-id') {
+          addSystemMessage('Bu randevu başka bir sekmede açık. Diğer sekmeyi kapatıp sayfayı yenileyin.');
+        } else if (err.type === 'peer-unavailable' && isClient) {
+          if (connRef.current) {
+            connRef.current.close();
+            connRef.current = null;
+          }
+          scheduleClientReconnect();
+        } else if (err.type !== 'peer-unavailable') {
+          addSystemMessage('Görüşme sunucusuna bağlanılamadı. İnternet bağlantınızı kontrol edin.');
+        }
+      });
+
+      peer.on('disconnected', () => {
+        if (!isMounted.current || peer.destroyed) return;
+        addSystemMessage('Görüşme sunucusuyla bağlantı yenileniyor...');
+        try {
+          peer.reconnect();
+        } catch {
+          // The regular peer error handler will show a stable failure state.
         }
       });
     };
 
     const connectToPeer = (peer) => {
       // Connect Data
-      const conn = peer.connect(targetPeerId);
+      const conn = peer.connect(targetPeerId, {
+        metadata: peerMetadata,
+        serialization: 'json',
+        reliable: true,
+      });
+      connRef.current = conn;
+      bindConnectionHandlers(conn);
       
       conn.on('open', () => {
         handleDataConnection(conn);
-        bindConnectionHandlers(conn);
         connRef.current = conn;
         clearTimeout(retryTimerRef.current);
         
@@ -476,7 +599,7 @@ export default function SessionRoom() {
 
         const myStream = shouldUseBlurStream ? blurStreamRef.current : localStreamRef.current;
         if (myStream && !callRef.current) {
-          const call = peer.call(targetPeerId, myStream);
+          const call = peer.call(targetPeerId, myStream, { metadata: peerMetadata });
           bindCallHandlers(call);
         }
       });
@@ -507,7 +630,7 @@ export default function SessionRoom() {
         peerRef.current.destroy();
       }
     };
-  }, [sessionId, sessionChannel, isClient, myPeerId, targetPeerId, drawToCanvas, handleDataConnection, attachRemoteStream, addSystemMessage, markRemoteUnavailable, isAccessBlocked, shouldUseBlurStream, syncPipPreview, closeFallbackAudio]); // Run correctly with dependencies
+  }, [sessionId, sessionChannel, isClient, myPeerId, targetPeerId, drawToCanvas, handleDataConnection, attachRemoteStream, addSystemMessage, markRemoteUnavailable, isAccessBlocked, isWaitingForSession, shouldUseBlurStream, syncPipPreview, closeFallbackAudio, expectedPeerRole, participantRole]); // Run correctly with dependencies
 
   useEffect(() => {
     pipModeRef.current = pipMode;
@@ -516,11 +639,12 @@ export default function SessionRoom() {
 
   const sendMessage = (e) => {
     e.preventDefault();
-    if (!chatInput.trim()) return;
+    const safeText = sanitizeSessionChatText(chatInput);
+    if (!safeText) return;
 
     const msg = {
       id: crypto.randomUUID(),
-      text: chatInput,
+      text: safeText,
       sender: isClient ? 'client' : 'psychologist',
       time: new Date().toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'})
     };
@@ -582,7 +706,7 @@ export default function SessionRoom() {
       blurStreamRef.current.getTracks().forEach(track => track.stop());
     }
     closeFallbackAudio();
-    if (currentSession?.status === 'upcoming' && sessionStatus === 'active' && !demoModeRef.current) {
+    if (!isClient && currentSession?.status === 'upcoming' && sessionStatus === 'active' && !demoModeRef.current) {
       await updateSession(currentSession.id, { status: 'completed', completedAt: new Date().toISOString() });
     }
     navigate(isClient ? '/panel' : '/psikolog-panel');
@@ -637,10 +761,10 @@ export default function SessionRoom() {
         <main className="session-access-main">
           <section className="session-access-panel">
             <span className="session-access-eyebrow">Seans Girişi</span>
-            <h1>{isRoomIdentityMissing ? 'Seans odası hazırlanamadı' : sessionAccess.label}</h1>
+            <h1>{isRoomIdentityMissing ? 'Seans odası açılamadı' : sessionAccess.label}</h1>
             <p>
               {isRoomIdentityMissing
-                ? 'Bu randevu için güvenli oda anahtarı bulunamadı. Lütfen destek ekibiyle iletişime geçin.'
+                ? (roomAccessError || 'Bu randevu için güvenli oda erişimi doğrulanamadı. Lütfen tekrar deneyin.')
                 : currentSession
                   ? sessionAccess.helper
                   : 'Bu randevu kaydı bulunamadı veya artık erişilebilir değil.'}
@@ -657,7 +781,11 @@ export default function SessionRoom() {
                 </div>
                 <div>
                   <span>Ödeme</span>
-                  <strong>{currentSession.paymentStatus === 'paid' ? 'Alındı' : 'Bekliyor'}</strong>
+                  <strong>
+                    {!currentSession.paymentRequired
+                      ? 'Bu aşamada alınmıyor'
+                      : currentSession.paymentStatus === 'paid' ? 'Alındı' : 'Bekliyor'}
+                  </strong>
                 </div>
               </div>
             )}
@@ -850,8 +978,8 @@ export default function SessionRoom() {
           </div>
           
           <div className="chat-messages">
-            {messages.map((m, i) => (
-              <div key={i} className={`chat-message ${m.sender === 'system' ? 'system' : (m.sender === (isClient ? 'client' : 'psychologist') ? 'client' : 'psychologist')}`} style={{ textAlign: m.sender === 'system' ? 'center' : 'left' }}>
+            {messages.map((m) => (
+              <div key={m.id} className={`chat-message ${m.sender === 'system' ? 'system' : (m.sender === (isClient ? 'client' : 'psychologist') ? 'client' : 'psychologist')}`} style={{ textAlign: m.sender === 'system' ? 'center' : 'left' }}>
                 {m.sender === 'system' ? (
                   <span style={{ fontSize: '10px', color: '#94a3b8', margin: '4px 0' }}>--- {m.text} ---</span>
                 ) : (
@@ -870,6 +998,7 @@ export default function SessionRoom() {
               placeholder="Mesaj yazın..." 
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
+              maxLength={MAX_SESSION_MESSAGE_LENGTH}
             />
             <button type="submit" className="btn btn-primary">Gönder</button>
           </form>

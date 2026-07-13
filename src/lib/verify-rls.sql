@@ -1,4 +1,4 @@
--- Read-only verification for Migrations 009-013.
+-- Read-only verification for Migrations 009-014.
 -- Run in Supabase SQL Editor after applying the migrations.
 
 SELECT
@@ -102,7 +102,29 @@ SELECT
     'service_role',
     'public.claim_email_notification_batch(integer)',
     'EXECUTE'
-  ) AS service_role_can_claim_email_queue;
+  ) AS service_role_can_claim_email_queue,
+  has_function_privilege(
+    'authenticated',
+    'public.get_session_room_access(uuid)',
+    'EXECUTE'
+  ) AS authenticated_can_request_session_room,
+  has_function_privilege(
+    'anon',
+    'public.get_session_room_access(uuid)',
+    'EXECUTE'
+  ) AS anon_can_request_session_room,
+  has_column_privilege(
+    'authenticated',
+    'public.sessions',
+    'peer_room_token',
+    'SELECT'
+  ) AS authenticated_can_read_legacy_room_token,
+  has_column_privilege(
+    'authenticated',
+    'public.sessions',
+    'client_peer_token',
+    'SELECT'
+  ) AS authenticated_can_read_client_peer_token;
 
 DO $$
 BEGIN
@@ -197,5 +219,36 @@ BEGIN
     'EXECUTE'
   ) THEN
     RAISE EXCEPTION 'service_role cannot claim the email delivery queue';
+  END IF;
+
+  IF has_function_privilege(
+    'anon',
+    'public.get_session_room_access(uuid)',
+    'EXECUTE'
+  ) OR NOT has_function_privilege(
+    'authenticated',
+    'public.get_session_room_access(uuid)',
+    'EXECUTE'
+  ) THEN
+    RAISE EXCEPTION 'session room access function privileges are invalid';
+  END IF;
+
+  IF has_column_privilege(
+    'authenticated',
+    'public.sessions',
+    'peer_room_token',
+    'SELECT'
+  ) OR has_column_privilege(
+    'authenticated',
+    'public.sessions',
+    'client_peer_token',
+    'SELECT'
+  ) OR has_column_privilege(
+    'authenticated',
+    'public.sessions',
+    'psychologist_peer_token',
+    'SELECT'
+  ) THEN
+    RAISE EXCEPTION 'ordinary session reads expose room credentials';
   END IF;
 END $$;

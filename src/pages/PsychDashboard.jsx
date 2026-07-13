@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useReview } from '../context/ReviewContext';
 import { useSession } from '../context/SessionContext';
 import { useToast } from '../context/ToastContext';
-import { getSessionJoinState } from '../lib/session-flow';
+import { getSessionDateTime, getSessionJoinState } from '../lib/session-flow';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import RatingStars from '../components/RatingStars';
@@ -22,6 +22,12 @@ const paymentDetails = {
   failed: { label: 'Ödeme başarısız', className: 'is-failed' },
   refunded: { label: 'İade edildi', className: 'is-refunded' },
 };
+
+const getPaymentDetails = (session) => (
+  session.paymentRequired
+    ? (paymentDetails[session.paymentStatus] || paymentDetails.pending)
+    : { label: 'Tahsilat bu aşamada kapalı', className: 'is-deferred' }
+);
 
 export default function PsychDashboard() {
   const { user, isPsychologist, refreshUserProfile } = useAuth();
@@ -111,7 +117,9 @@ export default function PsychDashboard() {
   const tomorrowAppointments = activeAppointments.filter(appointment => appointment.date === tomorrowIso);
   const completedAppointments = allAppointments.filter(appointment => appointment.status === 'completed');
   const cancelledAppointments = allAppointments.filter(appointment => appointment.status === 'cancelled');
-  const unpaidAppointments = activeAppointments.filter(appointment => appointment.paymentStatus === 'pending');
+  const unpaidAppointments = activeAppointments.filter(appointment => (
+    appointment.paymentRequired && appointment.paymentStatus === 'pending'
+  ));
 
   const visibleAppointments = activeTab === 'archive'
     ? archivedAppointments
@@ -158,6 +166,9 @@ export default function PsychDashboard() {
   const renderAppointmentActions = (appointment) => {
     const isUpdating = String(updatingSessionId) === String(appointment.id);
     const joinState = getSessionJoinState(appointment);
+    const requiresPayment = appointment.paymentRequired && appointment.paymentStatus !== 'paid';
+    const startsAt = getSessionDateTime(appointment);
+    const canComplete = Boolean(startsAt && startsAt <= new Date() && !requiresPayment);
 
     if (appointment.status === 'cancelled') {
       return (
@@ -178,9 +189,9 @@ export default function PsychDashboard() {
 
     return (
       <>
-        {appointment.paymentStatus !== 'paid' && (
+        {requiresPayment && (
           <button type="button" className="btn btn-outline btn-sm" disabled>
-            Ödeme Entegrasyonu Bekleniyor
+            Ödeme Bekleniyor
           </button>
         )}
         <button
@@ -200,7 +211,7 @@ export default function PsychDashboard() {
         >
           İptal Et
         </button>
-        {appointment.paymentStatus === 'paid' && (
+        {canComplete && (
           <button
             type="button"
             className="btn btn-outline btn-sm"
@@ -215,9 +226,7 @@ export default function PsychDashboard() {
             Tamamlandı
           </button>
         )}
-        {appointment.paymentStatus !== 'paid' ? (
-          <button type="button" className="btn btn-outline btn-sm" disabled>Ödeme Entegrasyonu Bekleniyor</button>
-        ) : joinState.canJoin ? (
+        {joinState.canJoin ? (
           <Link to={`/seans/${appointment.id}`} className="btn btn-primary btn-sm">Randevuya Git</Link>
         ) : (
           <button type="button" className="btn btn-outline btn-sm" disabled>{joinState.label}</button>
@@ -302,7 +311,7 @@ export default function PsychDashboard() {
                     <div>
                       <h3 className="m-0">Randevu Programı</h3>
                       <p className="appointment-section-subtitle">
-                        {activeAppointments.length} aktif randevu • Bugün {todayAppointments.length} • Yarın {tomorrowAppointments.length} • Entegrasyon bekleyen {unpaidAppointments.length}
+                        {activeAppointments.length} aktif randevu • Bugün {todayAppointments.length} • Yarın {tomorrowAppointments.length} • Ödeme bekleyen {unpaidAppointments.length}
                       </p>
                     </div>
                     <div className="tabs-simple">
@@ -323,7 +332,7 @@ export default function PsychDashboard() {
 
                     {visibleAppointments.map((appointment) => {
                       const status = statusDetails[appointment.status] || statusDetails.upcoming;
-                      const payment = paymentDetails[appointment.paymentStatus] || paymentDetails.pending;
+                      const payment = getPaymentDetails(appointment);
                       const displayDate = getDisplayDate(appointment);
 
                       return (
@@ -366,7 +375,7 @@ export default function PsychDashboard() {
 
                               <div className="appointment-card-footer">
                                 <span className="appointment-code">
-                                  Durum akışı: Planlandı → Ödeme entegrasyonu → Seans → Arşiv
+                                  Durum akışı: Planlandı → Seans → Arşiv
                                 </span>
                                 <div className="appointment-action-group">
                                   {renderAppointmentActions(appointment)}
@@ -442,7 +451,7 @@ export default function PsychDashboard() {
                 <div className="dash-stat-card">
                   <div className="dash-stat-icon">💳</div>
                   <div className="dash-stat-value">{unpaidAppointments.length}</div>
-                  <div className="dash-stat-label">Entegrasyon Bekleyen</div>
+                    <div className="dash-stat-label">Ödeme Bekleyen</div>
                 </div>
                 <div className="dash-stat-card">
                   <div className="dash-stat-icon">⛔</div>

@@ -10,6 +10,27 @@ const SessionContext = createContext(null);
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+const SESSION_SELECT_COLUMNS = [
+  'id',
+  'client_id',
+  'psychologist_id',
+  'scheduled_date',
+  'scheduled_time',
+  'channel',
+  'status',
+  'payment_status',
+  'payment_required',
+  'reviewed',
+  'fee',
+  'paid_at',
+  'completed_at',
+  'cancellation_reason',
+  'client_alias',
+  'psychologist_name',
+  'psychologist_initials',
+  'created_at',
+].join(',');
+
 // ─── Normalizers ────────────────────────────────────────────────────────────────
 
 const normalizeSession = (session) => ({
@@ -24,12 +45,12 @@ const normalizeSession = (session) => ({
   channel: session.channel,
   status: session.status || 'upcoming',
   paymentStatus: session.payment_status || session.paymentStatus || 'pending',
+  paymentRequired: Boolean(session.payment_required ?? session.paymentRequired ?? false),
   reviewed: Boolean(session.reviewed),
   fee: session.fee || session.price || null,
   paidAt: session.paid_at || session.paidAt || null,
   completedAt: session.completed_at || session.completedAt || null,
   cancellationReason: session.cancellation_reason || session.cancellationReason || '',
-  peerRoomToken: session.peer_room_token || session.peerRoomToken || null,
   createdAt: session.created_at || session.createdAt,
 });
 
@@ -67,7 +88,9 @@ const persistMockSessions = (user, sessions) => {
 export function SessionProvider({ user, children }) {
   const [sessions, setSessions] = useState([]);
   const [isLoadingSessions, setIsLoadingSessions] = useState(false);
+  const [loadedSessionsForUser, setLoadedSessionsForUser] = useState(null);
   const { success, error: showError } = useToast();
+  const hasLoadedSessions = Boolean(user?.id && loadedSessionsForUser === user.id);
 
   // ── refreshSessions ─────────────────────────────────────────────────────────
   const refreshSessions = useCallback(async () => {
@@ -81,11 +104,13 @@ export function SessionProvider({ user, children }) {
           const mockUser = JSON.parse(stored);
           const normalized = (mockUser.sessions || []).map(normalizeSession);
           setSessions(normalized);
+          setLoadedSessionsForUser(user.id);
           return normalized;
         }
       } catch {
         // ignore parse errors
       }
+      setLoadedSessionsForUser(user.id);
       return [];
     }
 
@@ -95,7 +120,7 @@ export function SessionProvider({ user, children }) {
       const column = user.role === 'psychologist' ? 'psychologist_id' : 'client_id';
       const { data, error } = await supabase
         .from('sessions')
-        .select('*')
+        .select(SESSION_SELECT_COLUMNS)
         .eq(column, user.id)
         .order('scheduled_date', { ascending: true })
         .order('scheduled_time', { ascending: true });
@@ -115,6 +140,7 @@ export function SessionProvider({ user, children }) {
       return [];
     } finally {
       setIsLoadingSessions(false);
+      setLoadedSessionsForUser(user.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, user?.role, showError]);
@@ -129,6 +155,64 @@ export function SessionProvider({ user, children }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, user?.role]);
+
+  const getSessionRoomAccess = useCallback(async (sessionId) => {
+    if (!user?.id) {
+      return { success: false, error: 'Seans odası için giriş yapmalısınız.' };
+    }
+
+    if (
+      import.meta.env.DEV
+      && (isMockUser(user) || !UUID_PATTERN.test(String(sessionId)))
+    ) {
+      const participantRole = user.role === 'psychologist' ? 'psychologist' : 'client';
+      const targetRole = participantRole === 'client' ? 'psychologist' : 'client';
+      return {
+        success: true,
+        access: {
+          myPeerId: `${sessionId}-${participantRole}`,
+          targetPeerId: `${sessionId}-${targetRole}`,
+          participantRole,
+          channel: sessions.find((item) => String(item.id) === String(sessionId))?.channel || 'video-blur',
+        },
+      };
+    }
+
+    if (!UUID_PATTERN.test(String(sessionId))) {
+      return { success: false, error: 'Geçersiz seans kaydı.' };
+    }
+
+    try {
+      const { data, error } = await supabase
+        .rpc('get_session_room_access', { target_session_id: sessionId })
+        .maybeSingle();
+
+      if (error) {
+        console.warn('Seans odası erişimi alınamadı:', error);
+        return { success: false, error: 'Seans odası erişimi doğrulanamadı.' };
+      }
+
+      if (!data?.my_peer_id || !data?.target_peer_id) {
+        return {
+          success: false,
+          error: 'Seans odası şu anda erişime açık değil.',
+        };
+      }
+
+      return {
+        success: true,
+        access: {
+          myPeerId: data.my_peer_id,
+          targetPeerId: data.target_peer_id,
+          participantRole: data.participant_role,
+          channel: data.session_channel,
+        },
+      };
+    } catch (error) {
+      console.warn('Seans odası erişimi alınırken hata:', error);
+      return { success: false, error: 'Seans odası erişimi doğrulanamadı.' };
+    }
+  }, [sessions, user]);
 
   const fetchBookedSlots = useCallback(async (psychologistId, rangeStart, rangeEnd) => {
     if (!user || user.role !== 'client') {
@@ -195,6 +279,7 @@ export function SessionProvider({ user, children }) {
         channel: sessionData.channel,
         status: 'upcoming',
         payment_status: sessionData.paymentStatus || 'pending',
+        payment_required: sessionData.paymentRequired || false,
         reviewed: false,
         fee: sessionData.fee || null,
       });
@@ -252,7 +337,7 @@ export function SessionProvider({ user, children }) {
       const { data, error } = await supabase
         .from('sessions')
         .insert([payload])
-        .select('*')
+        .select(SESSION_SELECT_COLUMNS)
         .single();
 
       if (error) {
@@ -316,7 +401,7 @@ export function SessionProvider({ user, children }) {
         .from('sessions')
         .update(payload)
         .eq('id', sessionId)
-        .select('*')
+        .select(SESSION_SELECT_COLUMNS)
         .single();
 
       if (error) {
@@ -355,10 +440,12 @@ export function SessionProvider({ user, children }) {
     sessions,
     bookSession,
     fetchBookedSlots,
+    getSessionRoomAccess,
     updateSession,
     refreshSessions,
     markSessionReviewed,
     isLoadingSessions,
+    hasLoadedSessions,
   };
 
   return (
