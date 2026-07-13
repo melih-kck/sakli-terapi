@@ -25,6 +25,8 @@ export default function Login() {
       } else {
         navigate(result.role === 'client' ? '/panel' : '/psikolog-panel');
       }
+    } else if (result.needsEmailConfirmation) {
+      navigate('/e-posta-dogrula', { state: { email: email.trim().toLowerCase() } });
     }
   };
 

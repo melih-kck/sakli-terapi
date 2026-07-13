@@ -52,7 +52,9 @@ export default function RegisterPsychologist() {
     }, 'psychologist');
 
     if (result.success) {
-      navigate('/giris');
+      navigate(result.needsEmailConfirmation ? '/e-posta-dogrula' : '/giris', {
+        state: result.needsEmailConfirmation ? { email: result.email } : undefined,
+      });
     }
   };
 

@@ -18,6 +18,8 @@ const About = lazy(() => import('./pages/About'));
 const Settings = lazy(() => import('./pages/Settings'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 const lazyNamed = (loader, exportName) => lazy(() => loader().then(module => ({ default: module[exportName] })));
+const EmailVerificationPage = lazy(() => import('./pages/EmailVerification'));
+const EmailConfirmationPage = lazyNamed(() => import('./pages/EmailVerification'), 'EmailConfirmationPage');
 const FaqPage = lazyNamed(() => import('./pages/SupportPages'), 'FaqPage');
 const ForgotPasswordPage = lazyNamed(() => import('./pages/SupportPages'), 'ForgotPasswordPage');
 const PrivacyPolicyPage = lazyNamed(() => import('./pages/SupportPages'), 'PrivacyPolicyPage');
@@ -92,6 +94,8 @@ function App() {
         <Route path="/kullanim-kosullari" element={<TermsPage />} />
         <Route path="/sifremi-unuttum" element={<ForgotPasswordPage />} />
         <Route path="/sifre-yenile" element={<ResetPasswordPage />} />
+        <Route path="/e-posta-dogrula" element={<EmailVerificationPage />} />
+        <Route path="/hesap-dogrulandi" element={<EmailConfirmationPage />} />
 
         {/* Catch all route */}
         <Route path="*" element={<NotFound />} />

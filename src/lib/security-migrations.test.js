@@ -10,6 +10,7 @@ const migration = readSource('./migration-009-privacy-boundaries.sql');
 const bookingMigration = readSource('./migration-010-booking-availability.sql');
 const sessionInsertMigration = readSource('./migration-011-session-insert-hardening.sql');
 const operationsMigration = readSource('./migration-012-notifications-operations.sql');
+const emailDeliveryMigration = readSource('./migration-013-email-notification-delivery.sql');
 const psychologistQueries = readSource('./psychologists.js');
 const reviewQueries = readSource('../context/ReviewContext.jsx');
 const sessionContext = readSource('../context/SessionContext.jsx');
@@ -142,7 +143,7 @@ describe('Supabase privacy boundaries', () => {
   });
 
   it('provides a complete password recovery destination', () => {
-    expect(supportPages).toContain("redirectTo: `${window.location.origin}/sifre-yenile`");
+    expect(supportPages).toContain("redirectTo: getAuthRedirectUrl('/sifre-yenile')");
     expect(supportPages).toContain("event === 'PASSWORD_RECOVERY'");
     expect(supportPages).toContain('supabase.auth.updateUser({ password })');
   });
@@ -164,6 +165,14 @@ describe('Supabase privacy boundaries', () => {
     expect(operationsMigration).toContain('a review reason is required');
     expect(operationsMigration).toContain('INSERT INTO public.admin_audit_log');
     expect(operationsMigration).toContain('USING ((SELECT private.is_admin_user()))');
+  });
+
+  it('keeps operational email opt-in and the delivery queue server-only', () => {
+    expect(emailDeliveryMigration).toContain('email_session_updates boolean NOT NULL DEFAULT false');
+    expect(emailDeliveryMigration).toContain('ALTER TABLE public.email_notification_outbox ENABLE ROW LEVEL SECURITY');
+    expect(emailDeliveryMigration).toContain('REVOKE ALL ON TABLE public.email_notification_outbox FROM PUBLIC, anon, authenticated');
+    expect(emailDeliveryMigration).toContain('FOR UPDATE SKIP LOCKED');
+    expect(emailDeliveryMigration).toContain('TO service_role');
   });
 
   it('keeps production monitoring optional and disables default PII', () => {

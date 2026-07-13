@@ -8,6 +8,7 @@ import { useReview } from '../context/ReviewContext';
 import { useSession } from '../context/SessionContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../lib/supabase';
+import { getAuthRedirectUrl } from '../lib/auth';
 import '../styles/pages/SupportPages.css';
 
 function PageShell({ eyebrow, title, subtitle, children, aside }) {
@@ -418,7 +419,7 @@ export function ForgotPasswordPage() {
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/sifre-yenile`,
+        redirectTo: getAuthRedirectUrl('/sifre-yenile'),
       });
 
       if (error) throw error;

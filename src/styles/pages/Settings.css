@@ -1,0 +1,30 @@
+.settings-content-card {
+  grid-column: span 3;
+  min-width: 0;
+}
+
+.notification-preference-option {
+  align-items: flex-start;
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--border-light);
+  text-align: left;
+}
+
+.notification-preference-option:last-of-type {
+  border-bottom: 0;
+}
+
+.notification-preference-option input {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+.notification-preference-option > span {
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .settings-content-card {
+    grid-column: 1 / -1;
+  }
+}
