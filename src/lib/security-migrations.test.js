@@ -11,6 +11,7 @@ const bookingMigration = readSource('./migration-010-booking-availability.sql');
 const sessionInsertMigration = readSource('./migration-011-session-insert-hardening.sql');
 const operationsMigration = readSource('./migration-012-notifications-operations.sql');
 const emailDeliveryMigration = readSource('./migration-013-email-notification-delivery.sql');
+const sessionRoomMigration = readSource('./migration-014-session-room-access.sql');
 const psychologistQueries = readSource('./psychologists.js');
 const reviewQueries = readSource('../context/ReviewContext.jsx');
 const sessionContext = readSource('../context/SessionContext.jsx');
@@ -110,6 +111,31 @@ describe('Supabase privacy boundaries', () => {
     expect(sessionInsertMigration).toContain("NEW.payment_status := 'pending'");
     expect(sessionInsertMigration).toContain('NEW.peer_room_token := pg_catalog.gen_random_uuid()');
     expect(sessionInsertMigration).toContain("psychologists.approval_status = 'approved'");
+  });
+
+  it('keeps deferred payments explicit without marking sessions as paid', () => {
+    expect(sessionRoomMigration).toContain('payment_required boolean NOT NULL DEFAULT false');
+    expect(sessionRoomMigration).toContain('NEW.payment_required := false');
+    expect(sessionRoomMigration).toContain('NOT sessions.payment_required');
+    expect(sessionRoomMigration).not.toContain("NEW.payment_status := 'paid'");
+  });
+
+  it('exposes room identities only through a participant and time limited RPC', () => {
+    expect(sessionRoomMigration).toContain('public.get_session_room_access');
+    expect(sessionRoomMigration).toContain('actor_id IN (sessions.client_id, sessions.psychologist_id)');
+    expect(sessionRoomMigration).toContain("INTERVAL '15 minutes'");
+    expect(sessionRoomMigration).toContain("INTERVAL '90 minutes'");
+    expect(sessionRoomMigration).toContain('REVOKE SELECT ON TABLE public.sessions FROM authenticated');
+    expect(sessionRoomMigration).toContain('client_peer_token');
+    expect(sessionRoomMigration).toContain('psychologist_peer_token');
+    expect(sessionContext).not.toContain(".select('*')");
+    expect(sessionContext).not.toContain('peer_room_token');
+  });
+
+  it('limits session completion to the psychologist after the scheduled start', () => {
+    expect(sessionRoomMigration).toContain('only the psychologist can complete a session');
+    expect(sessionRoomMigration).toContain('a session cannot be completed before its scheduled start');
+    expect(sessionRoomMigration).toContain('clients can only cancel an upcoming session');
   });
 
   it('derives review identity and aggregate rating in PostgreSQL', () => {

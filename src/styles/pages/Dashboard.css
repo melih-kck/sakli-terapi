@@ -497,6 +497,12 @@
   color: #fbbf24;
 }
 
+.appointment-payment-badge.is-deferred {
+  color: #315a4a;
+  background: #e7f4ee;
+  border-color: #b8ddcd;
+}
+
 .appointment-payment-badge.is-refunded {
   background: var(--bg-tertiary);
   color: var(--text-secondary);

@@ -26,6 +26,12 @@ const paymentDetails = {
   refunded: { label: 'İade sürecinde', className: 'is-refunded' },
 };
 
+const getPaymentDetails = (session) => (
+  session.paymentRequired
+    ? (paymentDetails[session.paymentStatus] || paymentDetails.pending)
+    : { label: 'Tahsilat bu aşamada kapalı', className: 'is-deferred' }
+);
+
 const getLocalDateIso = () => new Date().toISOString().split('T')[0];
 
 export default function ClientDashboard() {
@@ -94,7 +100,9 @@ export default function ClientDashboard() {
     .sort((a, b) => `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`));
   const completedSessions = pastSessions.filter(session => session.status === 'completed');
   const reviewedSessions = completedSessions.filter(session => session.reviewed);
-  const pendingPayments = upcomingSessions.filter(session => session.paymentStatus === 'pending');
+  const pendingPayments = upcomingSessions.filter(session => (
+    session.paymentRequired && session.paymentStatus === 'pending'
+  ));
 
   const todayMood = user.moodHistory?.find(mood => mood.date === getLocalDateIso())?.mood;
   const avgMood = user.moodHistory?.length > 0
@@ -159,7 +167,7 @@ export default function ClientDashboard() {
           <div className="dash-header mb-2xl">
             <div>
               <h1 className="dash-title">Merhaba, {user.alias}</h1>
-              <p className="dash-subtitle">Bugün {upcomingSessions.length} yaklaşan randevunuz var. {pendingPayments.length} randevu ödeme entegrasyonunu bekliyor.</p>
+              <p className="dash-subtitle">{upcomingSessions.length} yaklaşan randevunuz var. Tahsilat bu aşamada kapalı; randevular saatinde görüşmeye açılır.</p>
             </div>
             <div className="dash-actions">
               <Link to="/psikologlar" className="btn btn-primary">Yeni Randevu Al</Link>
@@ -189,7 +197,7 @@ export default function ClientDashboard() {
                     <div>
                       <h3 className="m-0">Yaklaşan Randevularınız</h3>
                       <p className="appointment-section-subtitle">
-                        {upcomingSessions.length} aktif randevu • {pendingPayments.length} ödeme entegrasyonu bekleyen
+                        {upcomingSessions.length} aktif randevu • {pendingPayments.length} ödeme bekleyen
                       </p>
                     </div>
                   </div>
@@ -200,12 +208,13 @@ export default function ClientDashboard() {
                         const psych = getPsychologist(session.psychologistId);
                         const channel = getChannel(session.channel);
                         const status = statusDetails[session.status] || statusDetails.upcoming;
-                        const payment = paymentDetails[session.paymentStatus] || paymentDetails.pending;
+                        const payment = getPaymentDetails(session);
                         const isCancelling = String(sessionToCancel?.id) === String(session.id);
                         const isUpdating = String(updatingSessionId) === String(session.id);
                         const joinState = getSessionJoinState(session);
                         const fee = getSessionFee(psych, session);
-                        const requiresPayment = session.paymentStatus !== 'paid';
+                        const hasPendingPayment = session.paymentStatus !== 'paid';
+                        const requiresPayment = session.paymentRequired && hasPendingPayment;
                         const canUseDevPaymentBypass = import.meta.env.DEV && requiresPayment && (
                           String(session.id).startsWith('local-')
                           || String(session.clientId).startsWith('mock-')
@@ -241,20 +250,20 @@ export default function ClientDashboard() {
                               </div>
                             </div>
 
-                            {requiresPayment && (
+                            {hasPendingPayment && (
                               <div className="session-payment-box">
                                 <div>
-                                  <span className="appointment-eyebrow">Ödeme Özeti</span>
+                                  <span className="appointment-eyebrow">Planlanan Ücret</span>
                                   <strong>{formatCurrency(fee)}</strong>
-                                  <p>Ödeme entegrasyonu etkinleştirilene kadar seans odası kapalıdır.</p>
+                                  <p>
+                                    {session.paymentRequired
+                                      ? 'Ödeme tamamlandığında seans odası açılacaktır.'
+                                      : 'Ödeme altyapısı sonraki aşamaya bırakıldı; bu randevu için şimdi tahsilat yapılmayacaktır.'}
+                                  </p>
                                 </div>
-                                <button
-                                  type="button"
-                                  className="btn btn-warning btn-sm"
-                                  disabled
-                                >
-                                  Ödeme Entegrasyonu Bekleniyor
-                                </button>
+                                <span className="appointment-muted-action">
+                                  {session.paymentRequired ? 'Ödeme bekleniyor' : 'Tahsilat kapalı'}
+                                </span>
                                 {canUseDevPaymentBypass && (
                                   <button
                                     type="button"
@@ -292,7 +301,7 @@ export default function ClientDashboard() {
 
                             <div className="appointment-card-footer">
                               <span className="appointment-code">
-                                {requiresPayment ? 'Ödeme özelliği henüz etkin değil.' : joinState.helper}
+                                  {joinState.helper}
                               </span>
                               <div className="appointment-action-group">
                                 <button
@@ -306,7 +315,7 @@ export default function ClientDashboard() {
                                 {requiresPayment ? (
                                   <>
                                     <button type="button" className="btn btn-primary btn-sm" disabled>
-                                      Ödeme Entegrasyonu Bekleniyor
+                                      Ödeme Bekleniyor
                                     </button>
                                     {canUseDevPaymentBypass && (
                                       <button type="button" className="btn btn-outline btn-sm" disabled={isUpdating} onClick={() => handleDevPaymentBypass(session)}>
@@ -344,7 +353,7 @@ export default function ClientDashboard() {
                         const psych = getPsychologist(session.psychologistId);
                         const channel = getChannel(session.channel);
                         const status = statusDetails[session.status] || statusDetails.completed;
-                        const payment = paymentDetails[session.paymentStatus] || paymentDetails.pending;
+                        const payment = getPaymentDetails(session);
 
                         return (
                           <article key={session.id} className={`appointment-card client-session-card appointment-${session.status}`}>

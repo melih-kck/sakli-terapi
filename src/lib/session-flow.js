@@ -70,12 +70,12 @@ export const getSessionJoinState = (session, now = new Date()) => {
     };
   }
 
-  if (session.paymentStatus !== 'paid') {
+  if (session.paymentRequired && session.paymentStatus !== 'paid') {
     return {
       canJoin: false,
       code: 'payment',
-      label: 'Ödeme entegrasyonu bekleniyor',
-      helper: 'Ödeme özelliği etkinleştirilene kadar seans odası açılamaz.',
+      label: 'Ödeme bekleniyor',
+      helper: 'Bu randevu için ödeme tamamlanmadan seans odası açılamaz.',
     };
   }
 

@@ -35,11 +35,25 @@ describe('session-flow', () => {
     expect(result.getMinutes()).toBe(30);
   });
 
-  it('does not allow cancelled, completed, or unpaid sessions to open', () => {
+  it('does not allow cancelled, completed, or required unpaid sessions to open', () => {
     expect(getSessionJoinState({ status: 'cancelled' }).code).toBe('cancelled');
     expect(getSessionJoinState({ status: 'completed' }).code).toBe('completed');
-    expect(getSessionJoinState({ status: 'confirmed', paymentStatus: 'pending' }).code)
+    expect(getSessionJoinState({
+      status: 'upcoming',
+      paymentRequired: true,
+      paymentStatus: 'pending',
+    }).code)
       .toBe('payment');
+  });
+
+  it('does not block a session when collection is intentionally deferred', () => {
+    expect(getSessionJoinState({
+      status: 'upcoming',
+      paymentRequired: false,
+      paymentStatus: 'pending',
+      date: '2026-07-07',
+      time: '14:30',
+    }).code).toBe('ready');
   });
 
   it('formats Turkish lira without fractional digits', () => {
