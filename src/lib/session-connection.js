@@ -1,4 +1,5 @@
 export const MAX_SESSION_MESSAGE_LENGTH = 2000;
+export const SESSION_CONNECTION_ATTEMPT_TIMEOUT_MS = 8000;
 
 const SESSION_ROLES = new Set(['client', 'psychologist']);
 
@@ -41,4 +42,8 @@ export const isExpectedSessionPeer = ({
   && connection.peer === targetPeerId
   && connection.metadata?.sessionId === String(sessionId)
   && connection.metadata?.role === expectedRole
+);
+
+export const shouldRetrySessionConnection = ({ connection, call }) => (
+  !call && (!connection || !connection.open)
 );
