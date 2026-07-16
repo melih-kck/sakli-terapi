@@ -12,6 +12,7 @@ import {
   sanitizeSessionChatText,
   shouldRetrySessionConnection,
 } from '../lib/session-connection';
+import { acquireSessionMedia } from '../lib/session-media';
 import Navbar from '../components/Navbar';
 import '../styles/pages/Session.css';
 
@@ -131,7 +132,9 @@ export default function SessionRoom() {
   const [sessionTime, setSessionTime] = useState(0);
   const [remoteVideoReady, setRemoteVideoReady] = useState(false);
   const [remoteVideoMissing, setRemoteVideoMissing] = useState(false);
-  const [mediaFallbackActive, setMediaFallbackActive] = useState(false);
+  const [microphoneAvailable, setMicrophoneAvailable] = useState(null);
+  const [cameraAvailable, setCameraAvailable] = useState(null);
+  const [remotePlaybackBlocked, setRemotePlaybackBlocked] = useState(false);
   
   const [pipMode, setPipMode] = useState('safe');
   const pipModeRef = useRef('safe');
@@ -158,7 +161,8 @@ export default function SessionRoom() {
   const connectionAttemptTimerRef = useRef(null);
   const fallbackAudioContextRef = useRef(null);
   const fallbackAudioNodeRef = useRef(null);
-  const mediaFallbackNoticeShownRef = useRef(false);
+  const remotePlaybackNoticeShownRef = useRef(false);
+  const remoteAudioMissingNoticeShownRef = useRef(false);
   const demoModeRef = useRef(false);
   const peerInitRetryRef = useRef(0);
 
@@ -241,6 +245,7 @@ export default function SessionRoom() {
       remoteVideoRef.current.srcObject = null;
     }
 
+    setRemotePlaybackBlocked(false);
     setRemoteVideoReady(false);
     setRemoteVideoMissing(sessionChannel === 'video-blur');
     setSessionStatus('ready');
@@ -278,11 +283,19 @@ export default function SessionRoom() {
     if (remoteElement.srcObject !== remoteStream) {
       remoteElement.srcObject = remoteStream;
     }
+    remoteElement.muted = false;
+    remoteElement.volume = 1;
     demoModeRef.current = false;
 
     const hasVideoTrack = remoteStream.getVideoTracks().length > 0;
+    const hasAudioTrack = remoteStream.getAudioTracks().length > 0;
     setRemoteVideoMissing(sessionChannel === 'video-blur' && !hasVideoTrack);
     setRemoteVideoReady(sessionChannel !== 'video-blur');
+
+    if (!hasAudioTrack && !remoteAudioMissingNoticeShownRef.current) {
+      remoteAudioMissingNoticeShownRef.current = true;
+      addSystemMessage('Karşı tarafın mikrofon akışı alınamadı. Karşı taraf mikrofon iznini kontrol etmeli.');
+    }
 
     remoteStream.getVideoTracks().forEach((track) => {
       track.onended = () => markRemoteUnavailable("Karşı tarafın kamera bağlantısı kapandı. Yeniden bağlanması bekleniyor...");
@@ -290,14 +303,21 @@ export default function SessionRoom() {
       track.onunmute = () => setRemoteVideoReady(true);
     });
 
-    if (sessionChannel === 'video-blur' && hasVideoTrack) {
-      void remoteElement.play?.()
-        .then(() => setRemoteVideoReady(true))
-        .catch(() => {
-          setRemoteVideoReady(false);
-          addSystemMessage('Görüntü otomatik başlatılamadı. Tarayıcı izinlerini kontrol edin.');
-        });
-    }
+    void remoteElement.play?.()
+      .then(() => {
+        setRemotePlaybackBlocked(false);
+        remotePlaybackNoticeShownRef.current = false;
+        if (sessionChannel === 'video-blur' && hasVideoTrack) {
+          setRemoteVideoReady(true);
+        }
+      })
+      .catch(() => {
+        setRemotePlaybackBlocked(true);
+        if (!remotePlaybackNoticeShownRef.current) {
+          remotePlaybackNoticeShownRef.current = true;
+          addSystemMessage('Tarayıcı gelen sesi otomatik başlatmadı. Sesi Aç düğmesini kullanın.');
+        }
+      });
 
     setSessionStatus('active');
     addSystemMessage("Görüşme başladı!");
@@ -368,72 +388,78 @@ export default function SessionRoom() {
       }
 
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: sessionChannel === 'video-blur', // Sadece video seansında kamera aç
-          audio: true 
+        const media = await acquireSessionMedia({
+          mediaDevices: navigator.mediaDevices,
+          includeVideo: sessionChannel === 'video-blur',
         });
-        setMediaFallbackActive(false);
-        localStreamRef.current = stream;
-
-        if (shouldUseBlurStream) {
-          // Blur işleme mekanizması (Sadece video ise)
-          if (hiddenVideoRef.current) {
-            hiddenVideoRef.current.srcObject = stream;
-            void hiddenVideoRef.current.play().catch(() => {});
-          }
-          drawToCanvas();
-
-          if (canvasRef.current) {
-            const canvasStream = canvasRef.current.captureStream(30);
-            stream.getAudioTracks().forEach(track => canvasStream.addTrack(track));
-            blurStreamRef.current = canvasStream;
-          }
-          syncPipPreview();
-        } else {
-          // Audio-only ise blur'a gerek yok
-          syncPipPreview();
+        if (!isMounted.current) {
+          media.stream?.getTracks().forEach(track => track.stop());
+          return;
         }
-      } catch (err) {
-        console.error("Medya akışı açılamadı:", err);
-        const blockedDeviceLabel = sessionChannel === 'voice' ? 'Mikrofon' : 'Kamera veya mikrofon';
-        setMediaFallbackActive(true);
-        if (!mediaFallbackNoticeShownRef.current) {
-          addSystemMessage(`${blockedDeviceLabel} izni alınamadı. Oda medya olmadan açık kalacak.`);
-          mediaFallbackNoticeShownRef.current = true;
+
+        setMicrophoneAvailable(media.audioAvailable);
+        setMicOn(media.audioAvailable);
+        setCameraAvailable(media.videoAvailable);
+        setCamOn(media.videoAvailable === true);
+        camOnRef.current = media.videoAvailable === true;
+
+        if (!media.audioAvailable) {
+          addSystemMessage('Mikrofon izni alınamadı. Sesiniz karşı tarafa iletilmeyecek.');
         }
-        
-        // Donanım izni yoksa oda yine kontrollü şekilde açılabilsin.
-        try {
+        if (sessionChannel === 'video-blur' && !media.videoAvailable) {
+          addSystemMessage(media.audioAvailable
+            ? 'Kamera izni alınamadı. Görüşmeye yalnızca ses ile devam ediliyor.'
+            : 'Kamera izni alınamadı. Görüntünüz karşı tarafa iletilmeyecek.');
+        }
+
+        let stream = media.stream;
+        if (!media.audioAvailable) {
           closeFallbackAudio();
           const silentAudio = createSilentAudioStream();
-
           if (silentAudio) {
             fallbackAudioContextRef.current = silentAudio.audioContext;
             fallbackAudioNodeRef.current = silentAudio.source;
+            if (stream) {
+              silentAudio.stream.getAudioTracks().forEach(track => stream.addTrack(track));
+            } else {
+              stream = silentAudio.stream;
+            }
           }
+        }
+        localStreamRef.current = stream;
 
-          if (sessionChannel === 'voice') {
-            localStreamRef.current = silentAudio?.stream || null;
+        if (shouldUseBlurStream) {
+          let outgoingVideoStream = null;
+          if (media.videoAvailable && stream && hiddenVideoRef.current && canvasRef.current) {
+            hiddenVideoRef.current.srcObject = stream;
+            void hiddenVideoRef.current.play().catch(() => {});
+            drawToCanvas();
+            outgoingVideoStream = canvasRef.current.captureStream(30);
           } else {
             const canvas = document.createElement('canvas');
-            canvas.width = 640; canvas.height = 480;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#333333';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#ffffff';
-            ctx.font = '24px Arial';
-            ctx.fillText('Kamera Kullanılamıyor', 170, 240);
-            const fakeStream = canvas.captureStream(15);
-            silentAudio?.stream.getAudioTracks().forEach(track => fakeStream.addTrack(track));
-            localStreamRef.current = fakeStream;
-            blurStreamRef.current = fakeStream;
+            canvas.width = 640;
+            canvas.height = 480;
+            drawCanvasNotice(
+              canvas.getContext('2d'),
+              canvas,
+              'Kamera kullanılamıyor',
+              media.audioAvailable ? 'Sesli görüşme devam ediyor' : 'Medya izni gerekli',
+            );
+            outgoingVideoStream = canvas.captureStream(15);
           }
 
-          syncPipPreview();
-        } catch (e) {
-          console.error("Sahte stream oluşturulamadı:", e);
+          stream?.getAudioTracks().forEach(track => outgoingVideoStream.addTrack(track));
+          blurStreamRef.current = outgoingVideoStream;
         }
-        
+
+        syncPipPreview();
+      } catch (err) {
+        console.error('Medya akışı hazırlanamadı:', err);
+        setMicrophoneAvailable(false);
+        setCameraAvailable(sessionChannel === 'video-blur' ? false : null);
+        setMicOn(false);
+        setCamOn(false);
+        addSystemMessage('Kamera ve mikrofon akışı hazırlanamadı. Tarayıcı izinlerini kontrol edin.');
         setSessionStatus('ready');
       } finally {
         // React StrictMode causes useEffect to run twice. 
@@ -725,6 +751,25 @@ export default function SessionRoom() {
     }
   };
 
+  const resumeRemotePlayback = async () => {
+    const remoteElement = remoteVideoRef.current;
+    if (!remoteElement) return;
+
+    try {
+      remoteElement.muted = false;
+      remoteElement.volume = 1;
+      await remoteElement.play();
+      setRemotePlaybackBlocked(false);
+      remotePlaybackNoticeShownRef.current = false;
+      if (sessionChannel === 'video-blur') {
+        setRemoteVideoReady(true);
+      }
+      addSystemMessage('Karşı tarafın sesi açıldı.');
+    } catch {
+      addSystemMessage('Ses başlatılamadı. Tarayıcının ses iznini ve cihaz ses düzeyini kontrol edin.');
+    }
+  };
+
   const toggleCam = () => {
     const videoTrack = localStreamRef.current?.getVideoTracks()[0];
     if (videoTrack) {
@@ -775,9 +820,11 @@ export default function SessionRoom() {
   const remoteVideoOverlayText = sessionStatus === 'active'
     ? (remoteVideoMissing ? 'Karşı tarafın kamera görüntüsü bekleniyor...' : 'Görüntü hazırlanıyor...')
     : (sessionStatus === 'ready' ? 'Karşı tarafın bağlanması bekleniyor...' : 'Bağlanılıyor...');
-  const remoteVideoOverlayDetail = mediaFallbackActive
-    ? 'Bu cihazda kamera veya mikrofon izni alınamadı; karşı tarafa medya gönderilmiyor.'
-    : 'Diğer taraf aynı randevuya girdiğinde görüntü burada açılacak.';
+  const remoteVideoOverlayDetail = cameraAvailable === false && microphoneAvailable
+    ? 'Kamera kullanılamıyor; sesiniz karşı tarafa iletilmeye devam ediyor.'
+    : microphoneAvailable === false
+      ? 'Mikrofon kullanılamıyor; sesiniz karşı tarafa iletilmiyor.'
+      : 'Diğer taraf aynı randevuya girdiğinde görüntü burada açılacak.';
 
   if (isWaitingForSession) {
     return (
@@ -911,8 +958,11 @@ export default function SessionRoom() {
                     </div>
                   </div>
                   <div className="remote-video-state-actions">
-                    {mediaFallbackActive && (
-                      <span className="media-fallback-badge">Kamera izni bekleniyor</span>
+                    {cameraAvailable === false && (
+                      <span className="media-fallback-badge">Kamera kullanılamıyor</span>
+                    )}
+                    {microphoneAvailable === false && (
+                      <span className="media-fallback-badge">Mikrofon kullanılamıyor</span>
                     )}
                     {import.meta.env.DEV && (
                       <button className="btn btn-primary" onClick={startDemoMode}>
@@ -1048,18 +1098,47 @@ export default function SessionRoom() {
       {/* Bottom Controls */}
       <footer className="session-controls">
         <div className="controls-group">
-          {/* Empty space for flex layout */}
+          {remotePlaybackBlocked && (
+            <button
+              type="button"
+              className="control-btn active"
+              onClick={resumeRemotePlayback}
+              title="Karşı tarafın sesini aç"
+              aria-label="Karşı tarafın sesini aç"
+            >
+              🔊
+              <span>Sesi Aç</span>
+            </button>
+          )}
         </div>
         
         <div className="controls-group">
-          <button className={`control-btn ${!micOn ? 'off' : ''}`} onClick={toggleMic} title="Mikrofon" disabled={sessionChannel === 'text'}>
+          <button
+            className={`control-btn ${!micOn ? 'off' : ''}`}
+            onClick={toggleMic}
+            title={microphoneAvailable === false ? 'Mikrofon kullanılamıyor' : 'Mikrofon'}
+            disabled={sessionChannel === 'text' || microphoneAvailable === false}
+          >
             {micOn ? '🎙️' : '🔇'}
-            <span>{sessionChannel === 'text' ? 'Kapalı' : (micOn ? 'Açık' : 'Kapalı')}</span>
+            <span>{sessionChannel === 'text'
+              ? 'Kapalı'
+              : microphoneAvailable === false
+                ? 'İzin Yok'
+                : micOn ? 'Açık' : 'Kapalı'}</span>
           </button>
           
-          <button className={`control-btn ${!camOn ? 'off' : ''}`} onClick={toggleCam} title="Kamera" disabled={sessionChannel !== 'video-blur'}>
+          <button
+            className={`control-btn ${!camOn ? 'off' : ''}`}
+            onClick={toggleCam}
+            title={cameraAvailable === false ? 'Kamera kullanılamıyor' : 'Kamera'}
+            disabled={sessionChannel !== 'video-blur' || cameraAvailable === false}
+          >
             {camOn ? '📹' : '🚫'}
-            <span>{sessionChannel !== 'video-blur' ? 'Kapalı' : (camOn ? 'Açık' : 'Kapalı')}</span>
+            <span>{sessionChannel !== 'video-blur'
+              ? 'Kapalı'
+              : cameraAvailable === false
+                ? 'İzin Yok'
+                : camOn ? 'Açık' : 'Kapalı'}</span>
           </button>
           
           <button className="control-btn emergency" onClick={endCall} title="Aramayı Sonlandır">

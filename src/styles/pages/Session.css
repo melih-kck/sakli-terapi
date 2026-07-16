@@ -620,6 +620,11 @@
   background: #475569;
 }
 
+.control-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
 .control-btn.off {
   background: rgba(255, 82, 82, 0.1);
   color: var(--danger);
