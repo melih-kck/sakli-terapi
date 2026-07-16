@@ -14,6 +14,7 @@ const emailDeliveryMigration = readSource('./migration-013-email-notification-de
 const sessionRoomMigration = readSource('./migration-014-session-room-access.sql');
 const verificationMigration = readSource('./migration-015-psychologist-verification.sql');
 const verificationDocuments = readSource('./verification-documents.js');
+const adminQueries = readSource('./admin.js');
 const psychologistQueries = readSource('./psychologists.js');
 const reviewQueries = readSource('../context/ReviewContext.jsx');
 const sessionContext = readSource('../context/SessionContext.jsx');
@@ -193,6 +194,11 @@ describe('Supabase privacy boundaries', () => {
     expect(operationsMigration).toContain('a review reason is required');
     expect(operationsMigration).toContain('INSERT INTO public.admin_audit_log');
     expect(operationsMigration).toContain('USING ((SELECT private.is_admin_user()))');
+  });
+
+  it('uses the psychologist owner relationship in admin profile queries', () => {
+    expect(adminQueries).toContain('profiles!psychologists_id_fkey(email, role)');
+    expect(adminQueries).not.toContain('profiles!inner(email, role)');
   });
 
   it('keeps operational email opt-in and the delivery queue server-only', () => {
