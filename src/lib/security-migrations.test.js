@@ -14,6 +14,7 @@ const emailDeliveryMigration = readSource('./migration-013-email-notification-de
 const sessionRoomMigration = readSource('./migration-014-session-room-access.sql');
 const verificationMigration = readSource('./migration-015-psychologist-verification.sql');
 const adminMfaMigration = readSource('./migration-016-admin-mfa.sql');
+const verificationQuery = readSource('./verify-rls.sql');
 const verificationDocuments = readSource('./verification-documents.js');
 const adminQueries = readSource('./admin.js');
 const psychologistQueries = readSource('./psychologists.js');
@@ -79,6 +80,8 @@ describe('Supabase privacy boundaries', () => {
     expect(appRoutes).toContain('path="/admin-mfa"');
     expect(appRoutes).toContain('!mfaStatus.verified');
     expect(authContext).toContain('readAdminMfaStatus(supabase.auth, role)');
+    expect(verificationQuery).toContain("pg_catalog.strpos(");
+    expect(verificationQuery).toContain("'aal2'");
   });
 
   it('uses safe public views for unauthenticated catalog reads', () => {
