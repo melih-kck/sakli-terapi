@@ -18,7 +18,7 @@ Son güncelleme: 16 Temmuz 2026
 
 - [x] `migration-015-psychologist-verification.sql` üretime uygulandı ve `verify-rls.sql` geçti
 - [x] GitHub, Supabase, Vercel ve Sentry hesaplarında MFA etkin
-- [ ] `migration-016-admin-mfa.sql` üretime uygulandı ve uygulama yönetici hesabında TOTP etkin
+- [x] `migration-016-admin-mfa.sql` üretime uygulandı ve uygulama yönetici hesabında TOTP etkin
 - [ ] Gerçek iPhone, Android ve bilgisayarda kabul matrisi geçti
 - [ ] İlk yedek alındı ve ayrı geçici projede geri dönüş provası yapıldı
 - [ ] Gizlilik politikası, açık rıza/aydınlatma metni ve kullanım koşulları hukuk danışmanı tarafından onaylandı

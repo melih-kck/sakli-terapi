@@ -1,4 +1,4 @@
--- Read-only verification for Migrations 009-015.
+-- Read-only verification for Migrations 009-016.
 -- Run in Supabase SQL Editor after applying the migrations.
 
 SELECT
@@ -181,8 +181,9 @@ BEGIN
     RAISE EXCEPTION 'anon can execute the public admin helper';
   END IF;
 
-  IF pg_catalog.position(
-    'aal2' IN pg_catalog.pg_get_functiondef('private.is_admin_user()'::regprocedure)
+  IF pg_catalog.strpos(
+    pg_catalog.pg_get_functiondef('private.is_admin_user()'::regprocedure),
+    'aal2'
   ) = 0 THEN
     RAISE EXCEPTION 'private.is_admin_user does not enforce AAL2';
   END IF;
