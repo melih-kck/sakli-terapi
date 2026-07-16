@@ -10,7 +10,7 @@ const ADMIN_PSYCHOLOGIST_FIELDS = `
   review_reason,
   reviewed_at,
   created_at,
-  profiles!inner(email, role)
+  profiles!psychologists_id_fkey(email, role)
 `;
 
 const flattenProfile = (item) => ({
