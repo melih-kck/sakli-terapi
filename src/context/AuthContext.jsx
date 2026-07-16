@@ -2,6 +2,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { getAuthRedirectUrl, isEmailNotConfirmedError } from '../lib/auth';
+import { createDefaultMfaStatus, readAdminMfaStatus } from '../lib/admin-mfa';
 import { useToast } from './ToastContext';
 
 const AuthContext = createContext();
@@ -78,10 +79,44 @@ const normalizeClientProfile = (profile = {}) => ({
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
+  const [mfaStatus, setMfaStatus] = useState(createDefaultMfaStatus);
   const [isLoading, setIsLoading] = useState(true);
   const currentUserId = user?.id;
   const currentUserEmail = user?.email;
   const { success, error: showError } = useToast();
+
+  const refreshMfaStatus = useCallback(async (role) => {
+    if (role !== 'admin') {
+      const status = createDefaultMfaStatus();
+      setMfaStatus(status);
+      return status;
+    }
+
+    setMfaStatus(previous => ({
+      ...previous,
+      required: true,
+      loading: true,
+      verified: false,
+      error: '',
+    }));
+    try {
+      const status = await readAdminMfaStatus(supabase.auth, role);
+      setMfaStatus(status);
+      return status;
+    } catch (mfaError) {
+      console.error('Yönetici MFA durumu alınamadı:', mfaError);
+      const status = {
+        required: true,
+        loading: false,
+        enrolled: false,
+        verified: false,
+        factorId: null,
+        error: 'Yönetici güvenlik durumu doğrulanamadı. Lütfen tekrar giriş yapın.',
+      };
+      setMfaStatus(status);
+      return status;
+    }
+  }, []);
 
   const fetchPsychologistProfile = useCallback(async (userId) => {
     const { data, error } = await supabase.from('psychologists').select('*').eq('id', userId).single();
@@ -139,7 +174,8 @@ export function AuthProvider({ children }) {
         privacyLevel: data.privacy_level || clientProfile?.privacyLevel || 5,
         psychologistProfile,
       });
-      return { success: true, role: data.role };
+      const nextMfaStatus = await refreshMfaStatus(data.role);
+      return { success: true, role: data.role, mfa: nextMfaStatus };
     } catch (err) {
       console.error('Profil çekilemedi:', err);
       setUser(null);
@@ -148,7 +184,7 @@ export function AuthProvider({ children }) {
     } finally {
       setIsLoading(false);
     }
-  }, [fetchPsychologistProfile, fetchClientProfile, fetchMoodHistory, showError]);
+  }, [fetchPsychologistProfile, fetchClientProfile, fetchMoodHistory, refreshMfaStatus, showError]);
 
   useEffect(() => {
     let isMounted = true;
@@ -172,6 +208,7 @@ export function AuthProvider({ children }) {
         setUser(JSON.parse(mockData));
         setIsLoading(false);
       } else {
+        setMfaStatus(createDefaultMfaStatus());
         setIsLoading(false);
       }
     };
@@ -188,6 +225,7 @@ export function AuthProvider({ children }) {
       } else {
         if (!import.meta.env.DEV || !localStorage.getItem('mock_user_session')) {
           setUser(null);
+          setMfaStatus(createDefaultMfaStatus());
         }
         setIsLoading(false);
       }
@@ -239,7 +277,7 @@ export function AuthProvider({ children }) {
       }
 
       success('Giriş Başarılı', 'Panele yönlendiriliyorsunuz...');
-      return { success: true, role: profileResult.role };
+      return { success: true, role: profileResult.role, mfa: profileResult.mfa };
     } catch (err) {
       console.error('Giriş hatası:', err);
       showError('Sistem Hatası', 'Beklenmeyen bir hata oluştu.');
@@ -399,6 +437,7 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut();
     localStorage.removeItem('mock_user_session');
     setUser(null);
+    setMfaStatus(createDefaultMfaStatus());
     success('Çıkış', 'Başarıyla çıkış yapıldı.');
   }, [success]);
 
@@ -413,6 +452,7 @@ export function AuthProvider({ children }) {
     isClient: user?.role === 'client',
     isPsychologist: user?.role === 'psychologist',
     isLoading, login, register, resendVerification, logout, refreshUserProfile,
+    mfaStatus, refreshMfaStatus,
   };
 
   return <AuthContext.Provider value={value}>{!isLoading && children}</AuthContext.Provider>;

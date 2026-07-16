@@ -138,6 +138,108 @@
   font-size: var(--text-sm);
 }
 
+.admin-mfa-page {
+  min-height: 100vh;
+  background: var(--bg-secondary);
+}
+
+.admin-mfa-main {
+  min-height: calc(100vh - 72px);
+  display: grid;
+  place-items: center;
+  padding: var(--space-2xl) var(--space-lg);
+}
+
+.admin-mfa-panel {
+  width: min(100%, 560px);
+}
+
+.admin-mfa-panel h1 {
+  margin: var(--space-xs) 0;
+  font-size: var(--text-3xl);
+}
+
+.admin-mfa-eyebrow {
+  color: var(--primary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+}
+
+.admin-mfa-status,
+.admin-mfa-enrollment-start {
+  padding: var(--space-lg) 0;
+}
+
+.admin-mfa-error {
+  margin-bottom: var(--space-lg);
+}
+
+.admin-mfa-enrollment-start p {
+  margin-bottom: var(--space-lg);
+  color: var(--text-secondary);
+}
+
+.admin-mfa-qr-section {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.admin-mfa-qr {
+  width: 220px;
+  height: 220px;
+  padding: var(--space-sm);
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+}
+
+.admin-mfa-secret {
+  width: 100%;
+  color: var(--text-secondary);
+}
+
+.admin-mfa-secret summary {
+  cursor: pointer;
+  color: var(--primary);
+  font-weight: var(--weight-medium);
+}
+
+.admin-mfa-secret label {
+  display: block;
+  margin: var(--space-sm) 0 var(--space-xs);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+}
+
+.admin-mfa-secret input {
+  width: 100%;
+  font-family: monospace;
+}
+
+.admin-mfa-form {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+@media (max-width: 600px) {
+  .admin-mfa-main {
+    place-items: start center;
+    padding: var(--space-xl) var(--space-md);
+  }
+
+  .admin-mfa-panel h1 {
+    font-size: var(--text-2xl);
+  }
+
+  .admin-mfa-qr {
+    width: 200px;
+    height: 200px;
+  }
+}
+
 .auth-switch {
   text-align: center;
   color: var(--text-secondary);

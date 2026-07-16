@@ -181,6 +181,12 @@ BEGIN
     RAISE EXCEPTION 'anon can execute the public admin helper';
   END IF;
 
+  IF pg_catalog.position(
+    'aal2' IN pg_catalog.pg_get_functiondef('private.is_admin_user()'::regprocedure)
+  ) = 0 THEN
+    RAISE EXCEPTION 'private.is_admin_user does not enforce AAL2';
+  END IF;
+
   IF has_table_privilege('anon', 'public.notifications', 'SELECT') THEN
     RAISE EXCEPTION 'anon can read notifications';
   END IF;

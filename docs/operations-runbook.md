@@ -14,6 +14,7 @@
 - Yönetici e-postası kişisel olmayan, yalnızca bu hizmet için kullanılan bir adres olmalıdır.
 - En az 16 karakterlik benzersiz parola ve parola yöneticisi kullanılmalıdır.
 - Supabase, GitHub, Vercel, Sentry ve Resend hesaplarında MFA zorunlu olmalıdır.
+- Uygulama yöneticileri `/admin` erişiminden önce Supabase Auth TOTP ile AAL2 seviyesine çıkmalıdır.
 - Kurtarma kodları çevrimdışı ve şifreli biçimde saklanmalıdır.
 - Paylaşılan yönetici hesabı kullanılmamalı; yeni yönetici gerektiğinde ayrı hesap açılmalıdır.
 - Yönetici rolü ve erişim kayıtları ayda bir kontrol edilmelidir.
