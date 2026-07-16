@@ -21,7 +21,7 @@ export default function Login() {
     const result = await login(email, password);
     if (result.success) {
       if (result.role === 'admin') {
-        navigate('/admin');
+        navigate(result.mfa?.verified ? '/admin' : '/admin-mfa');
       } else {
         navigate(result.role === 'client' ? '/panel' : '/psikolog-panel');
       }

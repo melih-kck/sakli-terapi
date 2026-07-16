@@ -13,6 +13,7 @@ const PsychologistProfile = lazy(() => import('./pages/PsychologistProfile'));
 const ClientDashboard = lazy(() => import('./pages/ClientDashboard'));
 const PsychDashboard = lazy(() => import('./pages/PsychDashboard'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminMfa = lazy(() => import('./pages/AdminMfa'));
 const SessionRoom = lazy(() => import('./pages/SessionRoom'));
 const About = lazy(() => import('./pages/About'));
 const Settings = lazy(() => import('./pages/Settings'));
@@ -44,8 +45,8 @@ const PageLoader = () => (
   </div>
 );
 
-const ProtectedRoute = ({ children, role }) => {
-  const { isAuthenticated, user } = useAuth();
+const ProtectedRoute = ({ children, role, requireAdminMfa = true }) => {
+  const { isAuthenticated, user, mfaStatus } = useAuth();
   const location = useLocation();
 
   if (!isAuthenticated) {
@@ -59,6 +60,13 @@ const ProtectedRoute = ({ children, role }) => {
         ? '/psikolog-panel'
         : '/panel';
     return <Navigate to={dashboardPath} replace />;
+  }
+
+  if (role === 'admin' && requireAdminMfa) {
+    if (mfaStatus.loading) return <PageLoader />;
+    if (!mfaStatus.verified) {
+      return <Navigate to="/admin-mfa" replace state={{ from: location }} />;
+    }
   }
 
   return children;
@@ -79,6 +87,7 @@ function App() {
         
         <Route path="/panel" element={<ProtectedRoute role="client"><ClientDashboard /></ProtectedRoute>} />
         <Route path="/psikolog-panel" element={<ProtectedRoute role="psychologist"><PsychDashboard /></ProtectedRoute>} />
+        <Route path="/admin-mfa" element={<ProtectedRoute role="admin" requireAdminMfa={false}><AdminMfa /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
         
         <Route path="/seans/:sessionId" element={<ProtectedRoute><SessionRoom /></ProtectedRoute>} />

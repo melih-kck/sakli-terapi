@@ -49,6 +49,7 @@ src/lib/migration-012-notifications-operations.sql
 src/lib/migration-013-email-notification-delivery.sql
 src/lib/migration-014-session-room-access.sql
 src/lib/migration-015-psychologist-verification.sql
+src/lib/migration-016-admin-mfa.sql
 ```
 
 For an already-created database, run the latest incremental migrations in order:
@@ -64,6 +65,7 @@ src/lib/migration-012-notifications-operations.sql
 src/lib/migration-013-email-notification-delivery.sql
 src/lib/migration-014-session-room-access.sql
 src/lib/migration-015-psychologist-verification.sql
+src/lib/migration-016-admin-mfa.sql
 ```
 
 `migration-008-auth-profile-trigger.sql` keeps profile creation working when Supabase Auth email confirmation is enabled.
@@ -86,6 +88,8 @@ role-based session completion in PostgreSQL.
 `migration-015-psychologist-verification.sql` stores professional evidence in
 a private bucket, limits access to the owner and admins, and blocks profile
 approval until at least one document has been approved.
+`migration-016-admin-mfa.sql` requires an AAL2 Supabase Auth session for every
+database policy and trigger that grants administrator privileges.
 
 The email worker at `api/process-email-notifications.js` also requires these
 server-only environment variables before delivery is enabled:
@@ -122,6 +126,10 @@ UPDATE public.profiles
 SET role = 'admin'
 WHERE email = 'your-admin-email@example.com';
 ```
+
+Administrators are redirected to `/admin-mfa` after password login. They must
+enroll and verify a TOTP authenticator before `/admin` or any administrator RLS
+policy becomes available.
 
 ## Payment Status
 

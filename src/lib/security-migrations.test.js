@@ -13,6 +13,7 @@ const operationsMigration = readSource('./migration-012-notifications-operations
 const emailDeliveryMigration = readSource('./migration-013-email-notification-delivery.sql');
 const sessionRoomMigration = readSource('./migration-014-session-room-access.sql');
 const verificationMigration = readSource('./migration-015-psychologist-verification.sql');
+const adminMfaMigration = readSource('./migration-016-admin-mfa.sql');
 const verificationDocuments = readSource('./verification-documents.js');
 const adminQueries = readSource('./admin.js');
 const psychologistQueries = readSource('./psychologists.js');
@@ -24,6 +25,8 @@ const createPayment = readSource('../../api/create-payment.js');
 const paymentCallback = readSource('../../api/payment-callback.js');
 const notificationContext = readSource('../context/NotificationContext.jsx');
 const monitoring = readSource('./monitoring.js');
+const appRoutes = readSource('../App.jsx');
+const authContext = readSource('../context/AuthContext.jsx');
 
 describe('Supabase privacy boundaries', () => {
   it('removes legacy policies before recreating the canonical policy set', () => {
@@ -66,6 +69,16 @@ describe('Supabase privacy boundaries', () => {
     expect(migration).toContain(
       'REVOKE ALL ON FUNCTION public.is_admin_user()',
     );
+  });
+
+  it('requires an AAL2 session for every database-level admin check', () => {
+    expect(adminMfaMigration).toContain('CREATE OR REPLACE FUNCTION private.is_admin_user()');
+    expect(adminMfaMigration).toContain("auth.jwt() ->> 'aal'");
+    expect(adminMfaMigration).toContain("= 'aal2'");
+    expect(adminMfaMigration).toContain("role = 'admin'");
+    expect(appRoutes).toContain('path="/admin-mfa"');
+    expect(appRoutes).toContain('!mfaStatus.verified');
+    expect(authContext).toContain('readAdminMfaStatus(supabase.auth, role)');
   });
 
   it('uses safe public views for unauthenticated catalog reads', () => {
