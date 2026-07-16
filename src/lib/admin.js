@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { createVerificationDocumentUrl } from './verification-documents';
 
 const ADMIN_PSYCHOLOGIST_FIELDS = `
   id,
@@ -29,7 +30,24 @@ async function getPsychologistsByStatus(statuses) {
 
   const { data, error } = await query;
   if (error) throw error;
-  return (data || []).map(flattenProfile);
+
+  const psychologists = data || [];
+  if (psychologists.length === 0) return [];
+
+  const { data: documents, error: documentsError } = await supabase
+    .from('psychologist_verification_documents')
+    .select('id, psychologist_id, document_type, storage_path, original_name, mime_type, size_bytes, status, review_reason, reviewed_at, created_at')
+    .in('psychologist_id', psychologists.map(item => item.id))
+    .order('created_at', { ascending: false });
+
+  if (documentsError) throw documentsError;
+
+  return psychologists.map(item => ({
+    ...flattenProfile(item),
+    verification_documents: (documents || []).filter(document => (
+      document.psychologist_id === item.id
+    )),
+  }));
 }
 
 export const getPendingPsychologists = () => getPsychologistsByStatus(['pending']);
@@ -81,4 +99,28 @@ export const rejectPsychologist = (psychologistId, reason) => (
 
 export const suspendPsychologist = (psychologistId, reason) => (
   updatePsychologistStatus(psychologistId, 'suspended', reason)
+);
+
+export async function reviewVerificationDocument(documentId, status, reason = null) {
+  try {
+    const { data, error } = await supabase
+      .from('psychologist_verification_documents')
+      .update({
+        status,
+        review_reason: reason,
+      })
+      .eq('id', documentId)
+      .select('id, psychologist_id, document_type, status, review_reason, reviewed_at')
+      .single();
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (error) {
+    console.error('Mesleki belge durumu güncellenemedi:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export const getVerificationDocumentUrl = (storagePath) => (
+  createVerificationDocumentUrl(storagePath)
 );

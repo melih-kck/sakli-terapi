@@ -48,6 +48,7 @@ src/lib/migration-011-session-insert-hardening.sql
 src/lib/migration-012-notifications-operations.sql
 src/lib/migration-013-email-notification-delivery.sql
 src/lib/migration-014-session-room-access.sql
+src/lib/migration-015-psychologist-verification.sql
 ```
 
 For an already-created database, run the latest incremental migrations in order:
@@ -62,6 +63,7 @@ src/lib/migration-011-session-insert-hardening.sql
 src/lib/migration-012-notifications-operations.sql
 src/lib/migration-013-email-notification-delivery.sql
 src/lib/migration-014-session-room-access.sql
+src/lib/migration-015-psychologist-verification.sql
 ```
 
 `migration-008-auth-profile-trigger.sql` keeps profile creation working when Supabase Auth email confirmation is enabled.
@@ -81,6 +83,9 @@ preferences and a private delivery queue.
 `migration-014-session-room-access.sql` keeps deferred payments explicit,
 limits room credentials to the participant and join window, and enforces
 role-based session completion in PostgreSQL.
+`migration-015-psychologist-verification.sql` stores professional evidence in
+a private bucket, limits access to the owner and admins, and blocks profile
+approval until at least one document has been approved.
 
 The email worker at `api/process-email-notifications.js` also requires these
 server-only environment variables before delivery is enabled:
@@ -99,6 +104,14 @@ block raises an exception if a protected table has RLS disabled or a public
 view exposes a private identifier.
 
 The expected role access matrix is documented in `docs/security-model.md`.
+Delivery and operating procedures are documented in:
+
+```text
+docs/backup-recovery.md
+docs/operations-runbook.md
+docs/real-device-acceptance.md
+docs/release-readiness.md
+```
 
 ## Admin
 
@@ -127,5 +140,8 @@ verification.
 - Verify Supabase Auth redirect URLs include `/sifre-yenile` for the production domain.
 - Keep email confirmation policy consistent with `migration-008`.
 - Apply `migration-012` before deploying the notification UI.
+- Apply `migration-015` before deploying the verification document UI.
+- Run the real-device acceptance matrix before the closed pilot.
+- Complete a backup restore rehearsal before storing real user data.
 - Configure `VITE_SENTRY_DSN` when the production monitoring project is ready.
 - Configure payment env keys only when payment implementation begins.

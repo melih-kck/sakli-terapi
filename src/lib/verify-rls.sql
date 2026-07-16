@@ -1,4 +1,4 @@
--- Read-only verification for Migrations 009-014.
+-- Read-only verification for Migrations 009-015.
 -- Run in Supabase SQL Editor after applying the migrations.
 
 SELECT
@@ -144,7 +144,8 @@ BEGIN
           'notifications',
           'admin_audit_log',
           'notification_preferences',
-          'email_notification_outbox'
+          'email_notification_outbox',
+          'psychologist_verification_documents'
         ]
       )
       AND NOT c.relrowsecurity
@@ -199,6 +200,31 @@ BEGIN
   IF has_table_privilege('anon', 'public.email_notification_outbox', 'SELECT')
      OR has_table_privilege('authenticated', 'public.email_notification_outbox', 'SELECT') THEN
     RAISE EXCEPTION 'browser roles can read the email delivery queue';
+  END IF;
+
+  IF has_table_privilege(
+    'anon',
+    'public.psychologist_verification_documents',
+    'SELECT'
+  ) THEN
+    RAISE EXCEPTION 'anon can read psychologist verification documents';
+  END IF;
+
+  IF has_table_privilege(
+    'authenticated',
+    'public.psychologist_verification_documents',
+    'UPDATE'
+  ) THEN
+    RAISE EXCEPTION 'authenticated has unrestricted document update access';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM storage.buckets
+    WHERE id = 'psychologist-documents'
+      AND public
+  ) THEN
+    RAISE EXCEPTION 'psychologist document bucket is public';
   END IF;
 
   IF has_function_privilege(

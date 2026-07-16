@@ -11,9 +11,15 @@ import {
   getApprovedPsychologistsForAdmin,
   getInactivePsychologistsForAdmin,
   getPendingPsychologists,
+  getVerificationDocumentUrl,
   rejectPsychologist,
+  reviewVerificationDocument,
   suspendPsychologist,
 } from '../lib/admin';
+import {
+  DOCUMENT_STATUS_LABELS,
+  DOCUMENT_TYPE_LABELS,
+} from '../lib/verification-documents';
 
 const statusLabels = {
   approved: 'Aktif',
@@ -25,6 +31,8 @@ const actionLabels = {
   psychologist_approved: 'Onaylandı',
   psychologist_rejected: 'Reddedildi',
   psychologist_suspended: 'Askıya alındı',
+  verification_document_approved: 'Belge onaylandı',
+  verification_document_rejected: 'Belge reddedildi',
 };
 
 const formatDate = (value, withTime = false) => new Intl.DateTimeFormat('tr-TR', withTime ? {
@@ -95,13 +103,57 @@ export default function AdminDashboard() {
     await loadData();
   };
 
-  const handleApprove = async (id, name) => {
+  const handleApprove = async (psychologist) => {
+    const { id, display_name: name, verification_documents: documents = [] } = psychologist;
+    if (!documents.some(document => document.status === 'approved')) {
+      showError('Belge Onayı Gerekli', 'Profili etkinleştirmeden önce en az bir mesleki belgeyi onaylayın.');
+      return;
+    }
     if (!window.confirm(`${name} adlı psikoloğu onaylamak istediğinize emin misiniz?`)) return;
     await runStatusUpdate(
       id,
       () => approvePsychologist(id),
       'Onaylandı',
       `${name} artık platformda aktif.`,
+    );
+  };
+
+  const handleDocumentView = async (document) => {
+    const previewWindow = window.open('about:blank', '_blank');
+    if (previewWindow) previewWindow.opener = null;
+    setProcessingId(`document-view-${document.id}`);
+    try {
+      const signedUrl = await getVerificationDocumentUrl(document.storage_path);
+      if (previewWindow) previewWindow.location.href = signedUrl;
+      else window.open(signedUrl, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      previewWindow?.close();
+      console.error('Mesleki belge açılamadı:', error);
+      showError('Belge Açılamadı', 'Güvenli belge bağlantısı oluşturulamadı.');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleDocumentReview = async (document, psychologistName, status) => {
+    let reason = null;
+    if (status === 'approved') {
+      if (!window.confirm(`${document.original_name} adlı belgeyi onaylamak istediğinize emin misiniz?`)) return;
+    } else {
+      reason = window.prompt(`${psychologistName} için belge ret nedenini yazın:`);
+      if (reason === null) return;
+      if (reason.trim().length < 5) {
+        showError('Neden Gerekli', 'Lütfen en az 5 karakterlik açıklayıcı bir neden yazın.');
+        return;
+      }
+      reason = reason.trim();
+    }
+
+    await runStatusUpdate(
+      `document-review-${document.id}`,
+      () => reviewVerificationDocument(document.id, status, reason),
+      status === 'approved' ? 'Belge Onaylandı' : 'Belge Reddedildi',
+      `${document.original_name} adlı belgenin durumu güncellendi.`,
     );
   };
 
@@ -128,11 +180,72 @@ export default function AdminDashboard() {
 
   if (!user || user.role !== 'admin') return null;
 
+  const renderVerificationDocuments = (psychologist) => {
+    const documents = psychologist.verification_documents || [];
+    const pendingCount = documents.filter(document => document.status === 'pending').length;
+
+    if (documents.length === 0) return <span className="admin-no-documents">Belge yok</span>;
+
+    return (
+      <details className="admin-document-review">
+        <summary>
+          {documents.length} belge
+          {pendingCount > 0 && <span className="badge badge-warning">{pendingCount} yeni</span>}
+        </summary>
+        <div className="admin-document-list">
+          {documents.map(document => (
+            <div className="admin-document-row" key={document.id}>
+              <div>
+                <strong>{DOCUMENT_TYPE_LABELS[document.document_type] || 'Mesleki belge'}</strong>
+                <span title={document.original_name}>{document.original_name}</span>
+                {document.review_reason && <small>{document.review_reason}</small>}
+              </div>
+              <span className={`badge verification-status is-${document.status}`}>
+                {DOCUMENT_STATUS_LABELS[document.status] || document.status}
+              </span>
+              <div className="admin-document-actions">
+                <button
+                  type="button"
+                  className="btn btn-outline btn-sm"
+                  disabled={processingId === `document-view-${document.id}`}
+                  onClick={() => handleDocumentView(document)}
+                >
+                  Görüntüle
+                </button>
+                {document.status !== 'approved' && (
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    disabled={processingId === `document-review-${document.id}`}
+                    onClick={() => handleDocumentReview(document, psychologist.display_name, 'approved')}
+                  >
+                    Onayla
+                  </button>
+                )}
+                {document.status !== 'rejected' && (
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm text-danger"
+                    disabled={processingId === `document-review-${document.id}`}
+                    onClick={() => handleDocumentReview(document, psychologist.display_name, 'rejected')}
+                  >
+                    Reddet
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </details>
+    );
+  };
+
   const renderPsychologistRows = (list, mode) => list.map((psychologist) => (
     <tr key={psychologist.id}>
       <td className="p-md text-sm text-secondary">{formatDate(psychologist.created_at)}</td>
       <td className="p-md font-semibold">{psychologist.display_name || 'İsimsiz'}</td>
       <td className="p-md text-sm">{psychologist.email}</td>
+      <td className="p-md admin-documents-cell">{renderVerificationDocuments(psychologist)}</td>
       <td className="p-md">
         {mode === 'pending' ? (
           <>{psychologist.title} <span className="text-secondary">({psychologist.experience} yıl)</span></>
@@ -152,7 +265,13 @@ export default function AdminDashboard() {
               <button type="button" className="btn btn-outline btn-sm" disabled={processingId === psychologist.id} onClick={() => handleReasonedAction(psychologist.id, psychologist.display_name, 'reject')}>
                 Reddet
               </button>
-              <button type="button" className="btn btn-primary btn-sm" disabled={processingId === psychologist.id} onClick={() => handleApprove(psychologist.id, psychologist.display_name)}>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                disabled={processingId === psychologist.id || !psychologist.verification_documents?.some(document => document.status === 'approved')}
+                title={psychologist.verification_documents?.some(document => document.status === 'approved') ? 'Psikolog profilini etkinleştir' : 'Önce en az bir belgeyi onaylayın'}
+                onClick={() => handleApprove(psychologist)}
+              >
                 Onayla
               </button>
             </>
@@ -163,7 +282,13 @@ export default function AdminDashboard() {
             </button>
           )}
           {mode === 'inactive' && (
-            <button type="button" className="btn btn-outline btn-sm" disabled={processingId === psychologist.id} onClick={() => handleApprove(psychologist.id, psychologist.display_name)}>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              disabled={processingId === psychologist.id || !psychologist.verification_documents?.some(document => document.status === 'approved')}
+              title={psychologist.verification_documents?.some(document => document.status === 'approved') ? 'Psikolog profilini yeniden etkinleştir' : 'Önce en az bir belgeyi onaylayın'}
+              onClick={() => handleApprove(psychologist)}
+            >
               Yeniden Etkinleştir
             </button>
           )}
@@ -251,7 +376,7 @@ export default function AdminDashboard() {
               <div className="table-responsive">
                 <table className="admin-table">
                   <thead>
-                    <tr><th>Kayıt Tarihi</th><th>Ad Soyad</th><th>E-posta</th><th>Durum</th><th>İşlem</th></tr>
+                    <tr><th>Kayıt Tarihi</th><th>Ad Soyad</th><th>E-posta</th><th>Belgeler</th><th>Durum</th><th>İşlem</th></tr>
                   </thead>
                   <tbody>{renderPsychologistRows(activeList, activeTab)}</tbody>
                 </table>

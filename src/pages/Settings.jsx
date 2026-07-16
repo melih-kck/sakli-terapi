@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import PsychologistDocumentsPanel from '../components/PsychologistDocumentsPanel';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
@@ -66,6 +67,7 @@ const getPsychologistSettings = (user) => {
 const getInitialTab = (search, user) => {
   const requestedTab = new URLSearchParams(search).get('tab');
   if (requestedTab === 'profile' && user?.role === 'psychologist') return 'profile';
+  if (requestedTab === 'verification' && user?.role === 'psychologist') return 'verification';
   if (['account', 'notifications', 'privacy'].includes(requestedTab)) return requestedTab;
   return 'account';
 };
@@ -319,14 +321,24 @@ export default function Settings() {
                   Hesap Bilgileri
                 </button>
                 {user.role === 'psychologist' && (
-                  <button
-                    type="button"
-                    className={`tab-item ${activeTab === 'profile' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('profile')}
-                    style={{ textAlign: 'left', borderLeft: activeTab === 'profile' ? '4px solid var(--primary)' : '4px solid transparent', borderBottom: 'none' }}
-                  >
-                    Profilim
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      className={`tab-item ${activeTab === 'profile' ? 'active' : ''}`}
+                      onClick={() => setActiveTab('profile')}
+                      style={{ textAlign: 'left', borderLeft: activeTab === 'profile' ? '4px solid var(--primary)' : '4px solid transparent', borderBottom: 'none' }}
+                    >
+                      Profilim
+                    </button>
+                    <button
+                      type="button"
+                      className={`tab-item ${activeTab === 'verification' ? 'active' : ''}`}
+                      onClick={() => setActiveTab('verification')}
+                      style={{ textAlign: 'left', borderLeft: activeTab === 'verification' ? '4px solid var(--primary)' : '4px solid transparent', borderBottom: 'none' }}
+                    >
+                      Mesleki Belgeler
+                    </button>
+                  </>
                 )}
                 <button
                   type="button"
@@ -353,13 +365,17 @@ export default function Settings() {
               <h3 style={{ margin: 0 }}>
                 {activeTab === 'account' && 'Hesap Bilgileri'}
                 {activeTab === 'profile' && 'Psikolog Profilim'}
+                {activeTab === 'verification' && 'Mesleki Belgeler'}
                 {activeTab === 'notifications' && 'Bildirim Tercihleri'}
                 {activeTab === 'privacy' && 'Gizlilik & Güvenlik'}
               </h3>
             </div>
 
             <div className="card-body">
-              <form onSubmit={handleSave}>
+              {activeTab === 'verification' && user.role === 'psychologist' ? (
+                <PsychologistDocumentsPanel user={user} />
+              ) : (
+                <form onSubmit={handleSave}>
                 {activeTab === 'account' && (
                   <div className="grid gap-lg">
                     <div className="input-group">
@@ -725,7 +741,8 @@ export default function Settings() {
                     {isSaving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
                   </button>
                 </div>
-              </form>
+                </form>
+              )}
             </div>
           </div>
         </div>

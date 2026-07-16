@@ -299,7 +299,10 @@ export default function PsychDashboard() {
                       : 'Ayrıntılı bilgi için destek ekibiyle iletişime geçebilirsiniz.')}
                 </p>
               </div>
-              <Link to="/ayarlar?tab=profile" className="btn btn-outline btn-sm">Profili gözden geçir</Link>
+              <div className="psychologist-review-actions">
+                <Link to="/ayarlar?tab=verification" className="btn btn-primary btn-sm">Belgeleri yönet</Link>
+                <Link to="/ayarlar?tab=profile" className="btn btn-outline btn-sm">Profili gözden geçir</Link>
+              </div>
             </section>
           )}
 
