@@ -6,9 +6,11 @@ import { Peer } from 'peerjs';
 import { getSessionJoinState } from '../lib/session-flow';
 import {
   MAX_SESSION_MESSAGE_LENGTH,
+  SESSION_CONNECTION_ATTEMPT_TIMEOUT_MS,
   isExpectedSessionPeer,
   normalizeIncomingSessionMessage,
   sanitizeSessionChatText,
+  shouldRetrySessionConnection,
 } from '../lib/session-connection';
 import Navbar from '../components/Navbar';
 import '../styles/pages/Session.css';
@@ -153,6 +155,7 @@ export default function SessionRoom() {
 
   const animationFrameId = useRef(null);
   const retryTimerRef = useRef(null);
+  const connectionAttemptTimerRef = useRef(null);
   const fallbackAudioContextRef = useRef(null);
   const fallbackAudioNodeRef = useRef(null);
   const mediaFallbackNoticeShownRef = useRef(false);
@@ -353,6 +356,10 @@ export default function SessionRoom() {
       sessionId: String(sessionId),
       role: participantRole,
     };
+    const clearConnectionAttemptTimer = () => {
+      clearTimeout(connectionAttemptTimerRef.current);
+      connectionAttemptTimerRef.current = null;
+    };
     const initCamera = async () => {
       // Eğer sadece metin (yazışma) ise, kamerayı ve mikrofonu hiç isteme!
       if (sessionChannel === 'text') {
@@ -439,11 +446,20 @@ export default function SessionRoom() {
     };
 
     const scheduleClientReconnect = () => {
-      if (!isClient || sessionChannel === 'text') return;
+      if (!isClient) return;
       clearTimeout(retryTimerRef.current);
       retryTimerRef.current = setTimeout(() => {
         if (!isMounted.current || !peerRef.current || peerRef.current.destroyed) return;
-        if (connRef.current || callRef.current) return;
+        if (!shouldRetrySessionConnection({
+          connection: connRef.current,
+          call: callRef.current,
+        })) return;
+
+        const staleConnection = connRef.current;
+        if (staleConnection) {
+          connRef.current = null;
+          staleConnection.close();
+        }
         connectToPeer(peerRef.current);
       }, 2000);
     };
@@ -468,6 +484,7 @@ export default function SessionRoom() {
       conn.on('close', () => {
         if (!isMounted.current) return;
         if (connRef.current === conn) {
+          clearConnectionAttemptTimer();
           connRef.current = null;
         }
 
@@ -478,6 +495,7 @@ export default function SessionRoom() {
       });
       conn.on('error', () => {
         if (!isMounted.current || connRef.current !== conn) return;
+        clearConnectionAttemptTimer();
         connRef.current = null;
         if (!callRef.current) {
           markRemoteUnavailable('Sohbet bağlantısı kesildi. Yeniden bağlanması bekleniyor...');
@@ -507,8 +525,8 @@ export default function SessionRoom() {
         // Client initiates the call to Psychologist
         if (isClient) {
           const tryConnect = () => {
-            if (callRef.current || connRef.current) return;
-            connectToPeer(peer);
+            if (callRef.current || connRef.current?.open) return;
+            if (!connRef.current) connectToPeer(peer);
             retryTimerRef.current = setTimeout(tryConnect, 3000); // 3 saniyede bir yokla
           };
           tryConnect();
@@ -558,6 +576,7 @@ export default function SessionRoom() {
         } else if (err.type === 'unavailable-id') {
           addSystemMessage('Bu randevu başka bir sekmede açık. Diğer sekmeyi kapatıp sayfayı yenileyin.');
         } else if (err.type === 'peer-unavailable' && isClient) {
+          clearConnectionAttemptTimer();
           if (connRef.current) {
             connRef.current.close();
             connRef.current = null;
@@ -580,6 +599,17 @@ export default function SessionRoom() {
     };
 
     const connectToPeer = (peer) => {
+      if (!shouldRetrySessionConnection({
+        connection: connRef.current,
+        call: callRef.current,
+      })) return;
+
+      const staleConnection = connRef.current;
+      if (staleConnection) {
+        connRef.current = null;
+        staleConnection.close();
+      }
+
       // Connect Data
       const conn = peer.connect(targetPeerId, {
         metadata: peerMetadata,
@@ -588,8 +618,18 @@ export default function SessionRoom() {
       });
       connRef.current = conn;
       bindConnectionHandlers(conn);
+      clearConnectionAttemptTimer();
+      connectionAttemptTimerRef.current = setTimeout(() => {
+        if (!isMounted.current || connRef.current !== conn || conn.open) return;
+
+        connRef.current = null;
+        conn.close();
+        addSystemMessage('Bağlantı yanıt vermedi. Otomatik olarak yeniden deneniyor...');
+        scheduleClientReconnect();
+      }, SESSION_CONNECTION_ATTEMPT_TIMEOUT_MS);
       
       conn.on('open', () => {
+        clearConnectionAttemptTimer();
         handleDataConnection(conn);
         connRef.current = conn;
         clearTimeout(retryTimerRef.current);
@@ -604,7 +644,6 @@ export default function SessionRoom() {
         }
       });
       
-      conn.on('error', () => {});
     };
 
     initCamera();
@@ -612,6 +651,7 @@ export default function SessionRoom() {
     return () => {
       isMounted.current = false;
       clearTimeout(retryTimerRef.current);
+      clearConnectionAttemptTimer();
       cancelAnimationFrame(animationFrameId.current);
       if (callRef.current) {
         callRef.current.close();

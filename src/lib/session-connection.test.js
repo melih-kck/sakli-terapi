@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   MAX_SESSION_MESSAGE_LENGTH,
+  SESSION_CONNECTION_ATTEMPT_TIMEOUT_MS,
   isExpectedSessionPeer,
   normalizeIncomingSessionMessage,
   sanitizeSessionChatText,
+  shouldRetrySessionConnection,
 } from './session-connection';
 
 describe('session-connection', () => {
@@ -56,6 +58,23 @@ describe('session-connection', () => {
         ...expected.connection,
         metadata: { sessionId: 'other-session', role: 'psychologist' },
       },
+    })).toBe(false);
+  });
+
+  it('retries only when the previous connection is not open', () => {
+    expect(SESSION_CONNECTION_ATTEMPT_TIMEOUT_MS).toBe(8000);
+    expect(shouldRetrySessionConnection({ connection: null, call: null })).toBe(true);
+    expect(shouldRetrySessionConnection({
+      connection: { open: false },
+      call: null,
+    })).toBe(true);
+    expect(shouldRetrySessionConnection({
+      connection: { open: true },
+      call: null,
+    })).toBe(false);
+    expect(shouldRetrySessionConnection({
+      connection: null,
+      call: {},
     })).toBe(false);
   });
 });
