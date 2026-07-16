@@ -12,6 +12,8 @@ const sessionInsertMigration = readSource('./migration-011-session-insert-harden
 const operationsMigration = readSource('./migration-012-notifications-operations.sql');
 const emailDeliveryMigration = readSource('./migration-013-email-notification-delivery.sql');
 const sessionRoomMigration = readSource('./migration-014-session-room-access.sql');
+const verificationMigration = readSource('./migration-015-psychologist-verification.sql');
+const verificationDocuments = readSource('./verification-documents.js');
 const psychologistQueries = readSource('./psychologists.js');
 const reviewQueries = readSource('../context/ReviewContext.jsx');
 const sessionContext = readSource('../context/SessionContext.jsx');
@@ -205,5 +207,46 @@ describe('Supabase privacy boundaries', () => {
     expect(monitoring).toContain('VITE_SENTRY_DSN');
     expect(monitoring).toContain('sendDefaultPii: false');
     expect(monitoring).toContain('delete sanitized.user');
+  });
+
+  it('stores psychologist verification files in a private restricted bucket', () => {
+    expect(verificationMigration).toContain("'psychologist-documents'");
+    expect(verificationMigration).toContain('public = false');
+    expect(verificationMigration).toContain('8388608');
+    expect(verificationMigration).toContain("'application/pdf', 'image/jpeg', 'image/png'");
+    expect(verificationDocuments).not.toContain('getPublicUrl');
+    expect(verificationDocuments).toContain('createSignedUrl(storagePath, 120)');
+  });
+
+  it('limits verification document rows to their owner and administrators', () => {
+    expect(verificationMigration).toContain('ALTER TABLE public.psychologist_verification_documents ENABLE ROW LEVEL SECURITY');
+    expect(verificationMigration).toContain('verification_documents_select_owner');
+    expect(verificationMigration).toContain('verification_documents_select_admin');
+    expect(verificationMigration).toContain("private.has_profile_role('psychologist')");
+    expect(verificationMigration).toContain('GRANT UPDATE (status, review_reason)');
+    expect(verificationMigration).toContain('status <> \'approved\'');
+    expect(verificationMigration).not.toContain('CREATE POLICY "verification_documents_delete_admin"');
+  });
+
+  it('binds private storage paths to the authenticated psychologist', () => {
+    expect(verificationMigration).toContain('(storage.foldername(name))[1] = (SELECT auth.uid())::text');
+    expect(verificationMigration).toContain('psychologist_documents_storage_insert_owner');
+    expect(verificationMigration).toContain('psychologist_documents_storage_select_admin');
+    expect(verificationMigration).toContain('documents.storage_path = name');
+    expect(verificationMigration).not.toContain('CREATE POLICY "psychologist_documents_storage_delete_admin"');
+  });
+
+  it('requires approved evidence before activating a psychologist profile', () => {
+    expect(verificationMigration).toContain("NEW.approval_status = 'approved'");
+    expect(verificationMigration).toContain("documents.status = 'approved'");
+    expect(verificationMigration).toContain('at least one approved verification document is required');
+    expect(verificationMigration).toContain('an approved profile must retain an approved document');
+  });
+
+  it('audits document review decisions and notifies the psychologist', () => {
+    expect(verificationMigration).toContain("'verification_document_' || NEW.status");
+    expect(verificationMigration).toContain('INSERT INTO public.admin_audit_log');
+    expect(verificationMigration).toContain('PERFORM private.create_notification');
+    expect(verificationMigration).toContain("'/ayarlar?tab=verification'");
   });
 });

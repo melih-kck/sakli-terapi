@@ -148,7 +148,7 @@ export default function RegisterPsychologist() {
 
                   <div className="auth-info-box mb-md">
                     Başvurunuz yönetici incelemesine alınır. Gerekli mesleki belgeler,
-                    herkese açık formda toplanmak yerine kayıtlı e-posta adresiniz üzerinden istenir.
+                    kayıt sonrasında Ayarlar &gt; Mesleki Belgeler ekranından güvenli biçimde yüklenir.
                   </div>
                 </div>
               )}
