@@ -22,6 +22,7 @@ Bu matris, otomatik tarayıcı testlerinin kapsamadığı kamera, mikrofon, izin
 8. Yazılı görüşmede iki yönde mesaj ve yeniden yükleme sonrası oturum erişimi kontrol edilir.
 9. Psikolog görüşmeyi tamamlar; danışan değerlendirme bırakabilir.
 10. Çıkış sonrasında önceki kullanıcının özel ekranlarına geri tuşuyla erişilemediği kontrol edilir.
+11. Danışan blur seviyesini `0`a getirdiğinde net görüntünün açık onay verilmeden gönderilmediği; onay geri alındığında güvenli blur seviyesine dönüldüğü doğrulanır.
 
 ## Kabul Ölçütü
 
@@ -31,3 +32,10 @@ Bu matris, otomatik tarayıcı testlerinin kapsamadığı kamera, mikrofon, izin
 - İzin reddi ve ağ kesintisi uygulamayı kilitlememelidir.
 - Özel belge genel URL ile açılamamalıdır.
 - Bulunan her hata Sentry kaydı, tekrar adımları ve cihaz bilgisiyle raporlanmalıdır.
+
+## Son Kabul Kaydı
+
+- Tarih: 18 Temmuz 2026
+- Sonuç: Başarılı
+- Doğrulayan: Proje sahibi
+- Not: Gerçek cihaz testlerinin başarılı geçtiği proje sahibi tarafından bildirildi. Ayrıntılı cihaz ve tarayıcı sürümleri bir sonraki kabul koşusunda bu kayda eklenmelidir.

@@ -1,6 +1,6 @@
 # Teslim Hazırlığı
 
-Son güncelleme: 16 Temmuz 2026
+Son güncelleme: 18 Temmuz 2026
 
 ## Tamamlanan Teknik Yapı
 
@@ -19,7 +19,8 @@ Son güncelleme: 16 Temmuz 2026
 - [x] `migration-015-psychologist-verification.sql` üretime uygulandı ve `verify-rls.sql` geçti
 - [x] GitHub, Supabase, Vercel ve Sentry hesaplarında MFA etkin
 - [x] `migration-016-admin-mfa.sql` üretime uygulandı ve uygulama yönetici hesabında TOTP etkin
-- [ ] Gerçek iPhone, Android ve bilgisayarda kabul matrisi geçti
+- [x] `migration-017-public-view-security.sql` üretime uygulandı; RLS doğrulaması ve Supabase Advisor hata taraması geçti
+- [x] Gerçek iPhone, Android ve bilgisayarda kabul matrisi geçti (18 Temmuz 2026, proje sahibi onayı)
 - [ ] İlk yedek alındı ve ayrı geçici projede geri dönüş provası yapıldı
 - [ ] Gizlilik politikası, açık rıza/aydınlatma metni ve kullanım koşulları hukuk danışmanı tarafından onaylandı
 - [ ] Veri saklama ve hesap silme süreleri yazılı olarak kararlaştırıldı
