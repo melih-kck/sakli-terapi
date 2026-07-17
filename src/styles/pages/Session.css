@@ -383,7 +383,7 @@
 
 .blur-level-buttons {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 6px;
 }
 
@@ -411,6 +411,52 @@
   background: var(--primary);
   color: white;
   border-color: var(--primary-light);
+}
+
+.blur-clear-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  border-radius: 7px;
+  background: rgba(251, 191, 36, 0.1);
+  color: #fef3c7;
+  cursor: pointer;
+}
+
+.blur-clear-consent.confirmed {
+  border-color: rgba(248, 113, 113, 0.5);
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.blur-clear-consent input {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  margin: 2px 0 0;
+  accent-color: var(--danger);
+}
+
+.blur-clear-consent span,
+.blur-clear-consent strong,
+.blur-clear-consent small {
+  display: block;
+  min-width: 0;
+}
+
+.blur-clear-consent strong {
+  color: #fff7ed;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.blur-clear-consent small {
+  margin-top: 2px;
+  color: #fde68a;
+  font-size: 10px;
+  line-height: 1.4;
 }
 
 .blur-preview-row {
@@ -469,6 +515,10 @@
 .blur-send-status strong {
   color: var(--success);
   font-size: 12px;
+}
+
+.blur-send-status strong.clear {
+  color: #fca5a5;
 }
 
 /* Chat Panel */
