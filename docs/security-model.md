@@ -1,6 +1,6 @@
 # Supabase Security Model
 
-Migrations 009 through 016 are the canonical authorization boundary for
+Migrations 009 through 017 are the canonical authorization boundary for
 application tables. Run `src/lib/verify-rls.sql` after applying them to a
 Supabase project.
 
@@ -21,6 +21,18 @@ Supabase project.
 
 `public_reviews` excludes `client_id` and `session_id`. Anonymous reviews
 always return a generic alias.
+
+Both public projections are security-invoker views. Their underlying
+security-definer catalog functions use an empty fixed search path, expose only
+the documented public columns, and grant execution only to browser roles that
+need catalog access.
+
+Supabase Advisor reports the two catalog functions as callable security-definer
+functions. This is intentional: both are parameterless, use a fixed empty
+search path, and return only the same reviewed columns exposed by the public
+views. The authenticated `get_booked_slots` and `get_session_room_access`
+functions are also intentional API boundaries and validate the caller inside
+their definitions.
 
 The base `psychologists` and `reviews` tables are not readable by `anon`.
 

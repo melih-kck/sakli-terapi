@@ -1,4 +1,4 @@
--- Read-only verification for Migrations 009-016.
+-- Read-only verification for Migrations 009-017.
 -- Run in Supabase SQL Editor after applying the migrations.
 
 SELECT
@@ -171,6 +171,39 @@ BEGIN
       AND column_name IN ('document_url', 'approval_status')
   ) THEN
     RAISE EXCEPTION 'public_psychologists exposes an application-only field';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public'
+      AND c.relname = ANY (
+        ARRAY['public_psychologists', 'public_reviews']
+      )
+      AND NOT (
+        COALESCE(c.reloptions, ARRAY[]::text[])
+        @> ARRAY['security_invoker=true']
+      )
+  ) THEN
+    RAISE EXCEPTION 'a public catalog view is not security invoker';
+  END IF;
+
+  IF has_table_privilege('anon', 'public.psychologists', 'SELECT')
+     OR has_table_privilege('anon', 'public.reviews', 'SELECT') THEN
+    RAISE EXCEPTION 'anon can read a private catalog base table';
+  END IF;
+
+  IF NOT has_function_privilege(
+    'anon',
+    'public.read_public_psychologist_catalog()',
+    'EXECUTE'
+  ) OR NOT has_function_privilege(
+    'anon',
+    'public.read_public_review_catalog()',
+    'EXECUTE'
+  ) THEN
+    RAISE EXCEPTION 'anon cannot read the safe public catalogs';
   END IF;
 
   IF has_function_privilege(

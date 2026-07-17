@@ -14,6 +14,7 @@ const emailDeliveryMigration = readSource('./migration-013-email-notification-de
 const sessionRoomMigration = readSource('./migration-014-session-room-access.sql');
 const verificationMigration = readSource('./migration-015-psychologist-verification.sql');
 const adminMfaMigration = readSource('./migration-016-admin-mfa.sql');
+const publicViewSecurityMigration = readSource('./migration-017-public-view-security.sql');
 const verificationQuery = readSource('./verify-rls.sql');
 const verificationDocuments = readSource('./verification-documents.js');
 const adminQueries = readSource('./admin.js');
@@ -87,6 +88,30 @@ describe('Supabase privacy boundaries', () => {
   it('uses safe public views for unauthenticated catalog reads', () => {
     expect(psychologistQueries).toContain(".from('public_psychologists')");
     expect(reviewQueries).toContain(".from('public_reviews')");
+    expect(publicViewSecurityMigration).toContain('security_invoker = true');
+    expect(publicViewSecurityMigration).toContain('SECURITY DEFINER');
+    expect(publicViewSecurityMigration).toContain("SET search_path = ''");
+    expect(publicViewSecurityMigration).toContain(
+      'REVOKE ALL ON FUNCTION public.read_public_psychologist_catalog()',
+    );
+    expect(publicViewSecurityMigration).toContain(
+      'REVOKE ALL ON FUNCTION public.read_public_review_catalog()',
+    );
+    expect(verificationQuery).toContain("ARRAY['security_invoker=true']");
+  });
+
+  it('keeps sensitive fields out of the hardened catalog function signatures', () => {
+    const psychologistResult = publicViewSecurityMigration.match(
+      /FUNCTION public\.read_public_psychologist_catalog\(\)[\s\S]*?\)\nLANGUAGE sql/,
+    )?.[0];
+    const reviewResult = publicViewSecurityMigration.match(
+      /FUNCTION public\.read_public_review_catalog\(\)[\s\S]*?\)\nLANGUAGE sql/,
+    )?.[0];
+
+    expect(psychologistResult).toBeTruthy();
+    expect(psychologistResult).not.toMatch(/document_url|approval_status|supervisor/);
+    expect(reviewResult).toBeTruthy();
+    expect(reviewResult).not.toMatch(/client_id|session_id/);
   });
 
   it('keeps incomplete payment endpoints explicitly disabled', () => {

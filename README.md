@@ -50,6 +50,7 @@ src/lib/migration-013-email-notification-delivery.sql
 src/lib/migration-014-session-room-access.sql
 src/lib/migration-015-psychologist-verification.sql
 src/lib/migration-016-admin-mfa.sql
+src/lib/migration-017-public-view-security.sql
 ```
 
 For an already-created database, run the latest incremental migrations in order:
@@ -66,6 +67,7 @@ src/lib/migration-013-email-notification-delivery.sql
 src/lib/migration-014-session-room-access.sql
 src/lib/migration-015-psychologist-verification.sql
 src/lib/migration-016-admin-mfa.sql
+src/lib/migration-017-public-view-security.sql
 ```
 
 `migration-008-auth-profile-trigger.sql` keeps profile creation working when Supabase Auth email confirmation is enabled.
@@ -90,6 +92,9 @@ a private bucket, limits access to the owner and admins, and blocks profile
 approval until at least one document has been approved.
 `migration-016-admin-mfa.sql` requires an AAL2 Supabase Auth session for every
 database policy and trigger that grants administrator privileges.
+`migration-017-public-view-security.sql` converts public catalog views to
+security-invoker views and keeps their limited public projection behind
+fixed-search-path catalog functions.
 
 The email worker at `api/process-email-notifications.js` also requires these
 server-only environment variables before delivery is enabled:
