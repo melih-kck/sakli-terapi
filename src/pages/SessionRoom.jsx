@@ -13,22 +13,15 @@ import {
   shouldRetrySessionConnection,
 } from '../lib/session-connection';
 import { acquireSessionMedia } from '../lib/session-media';
+import {
+  DEFAULT_SESSION_BLUR_LEVEL,
+  getSessionBlurPreset,
+  isSessionClearVideoLevel,
+  normalizeSessionBlurLevel,
+  SESSION_BLUR_PRESETS,
+} from '../lib/session-privacy';
 import Navbar from '../components/Navbar';
 import '../styles/pages/Session.css';
-
-const BLUR_PRESETS = [
-  { level: 1, label: 'Hafif', pixels: 8 },
-  { level: 2, label: 'Dengeli', pixels: 12 },
-  { level: 3, label: 'Güçlü', pixels: 16 },
-  { level: 4, label: 'Yüksek', pixels: 22 },
-  { level: 5, label: 'Maksimum', pixels: 28 },
-];
-
-const DEFAULT_BLUR_LEVEL = 5;
-
-const getBlurPreset = (level) => (
-  BLUR_PRESETS.find(preset => preset.level === Number(level)) || BLUR_PRESETS[BLUR_PRESETS.length - 1]
-);
 
 const drawCanvasNotice = (ctx, canvas, title, subtitle) => {
   ctx.filter = 'none';
@@ -108,18 +101,49 @@ export default function SessionRoom() {
       ? 'Mikrofon Bağlanıyor...'
       : 'Kamera Bağlanıyor...';
 
-  const initialBlurLevel = getBlurPreset(user?.privacyLevel || DEFAULT_BLUR_LEVEL).level;
+  const initialBlurLevel = getSessionBlurPreset(
+    user?.privacyLevel || DEFAULT_SESSION_BLUR_LEVEL,
+  ).level;
   const [blurLevel, setBlurLevel] = useState(initialBlurLevel);
+  const [blurSliderLevel, setBlurSliderLevel] = useState(initialBlurLevel);
+  const [clearVideoConsent, setClearVideoConsent] = useState(false);
   const blurLevelRef = useRef(initialBlurLevel);
-  const activeBlurPreset = getBlurPreset(blurLevel);
+  const lastSafeBlurLevelRef = useRef(initialBlurLevel);
+  const activeBlurPreset = getSessionBlurPreset(blurLevel);
+  const showClearVideoConsent = isSessionClearVideoLevel(blurSliderLevel);
   
   const handleBlurChange = (val) => {
-    const requestedLevel = Number(val);
-    const nextLevel = BLUR_PRESETS.some(preset => preset.level === requestedLevel)
-      ? requestedLevel
-      : DEFAULT_BLUR_LEVEL;
+    const nextLevel = normalizeSessionBlurLevel(val);
+    setBlurSliderLevel(nextLevel);
+
+    if (isSessionClearVideoLevel(nextLevel)) {
+      if (!isSessionClearVideoLevel(blurLevel)) {
+        setClearVideoConsent(false);
+      }
+      return;
+    }
+
+    lastSafeBlurLevelRef.current = nextLevel;
+    setClearVideoConsent(false);
     setBlurLevel(nextLevel);
     blurLevelRef.current = nextLevel;
+  };
+
+  const handleClearVideoConsent = (event) => {
+    const isConfirmed = event.target.checked;
+    setClearVideoConsent(isConfirmed);
+
+    if (isConfirmed) {
+      setBlurSliderLevel(0);
+      setBlurLevel(0);
+      blurLevelRef.current = 0;
+      return;
+    }
+
+    const safeLevel = lastSafeBlurLevelRef.current || DEFAULT_SESSION_BLUR_LEVEL;
+    setBlurSliderLevel(safeLevel);
+    setBlurLevel(safeLevel);
+    blurLevelRef.current = safeLevel;
   };
   
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -222,10 +246,15 @@ export default function SessionRoom() {
     } else if (!videoReady) {
       drawCanvasNotice(ctx, canvas, 'Kamera hazırlanıyor', 'Güvenli görüntü oluşturuluyor');
     } else {
-      const pxBlur = getBlurPreset(blurLevelRef.current).pixels;
-      const bleed = Math.ceil(pxBlur * 2);
-      ctx.filter = `blur(${pxBlur}px)`;
-      ctx.drawImage(video, -bleed, -bleed, canvas.width + bleed * 2, canvas.height + bleed * 2);
+      const pxBlur = getSessionBlurPreset(blurLevelRef.current).pixels;
+      if (pxBlur === 0) {
+        ctx.filter = 'none';
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      } else {
+        const bleed = Math.ceil(pxBlur * 2);
+        ctx.filter = `blur(${pxBlur}px)`;
+        ctx.drawImage(video, -bleed, -bleed, canvas.width + bleed * 2, canvas.height + bleed * 2);
+      }
       ctx.filter = 'none';
     }
 
@@ -1001,18 +1030,18 @@ export default function SessionRoom() {
 
             <label className="blur-label" htmlFor="session-blur-level">
               Bulanıklık
-              <span>{blurLevel}/5</span>
+              <span>{blurSliderLevel}/5</span>
             </label>
             <div className="blur-slider-wrapper">
-              <span className="blur-min">Az</span>
+              <span className="blur-min">Net</span>
               <input
                 id="session-blur-level"
                 type="range"
                 className="blur-slider"
-                min="1"
+                min="0"
                 max="5"
                 step="1"
-                value={blurLevel}
+                value={blurSliderLevel}
                 onChange={(e) => handleBlurChange(e.target.value)}
                 aria-label="Bulanıklık seviyesi"
               />
@@ -1020,18 +1049,32 @@ export default function SessionRoom() {
             </div>
 
             <div className="blur-level-buttons" aria-label="Bulanıklık seviyesi seçenekleri">
-              {BLUR_PRESETS.map(preset => (
+              {SESSION_BLUR_PRESETS.map(preset => (
                 <button
                   key={preset.level}
                   type="button"
-                  className={`blur-level-button ${blurLevel === preset.level ? 'active' : ''}`}
-                  aria-pressed={blurLevel === preset.level}
+                  className={`blur-level-button ${blurSliderLevel === preset.level ? 'active' : ''}`}
+                  aria-pressed={blurSliderLevel === preset.level}
                   onClick={() => handleBlurChange(preset.level)}
                 >
                   {preset.level}
                 </button>
               ))}
             </div>
+
+            {showClearVideoConsent && (
+              <label className={`blur-clear-consent ${clearVideoConsent ? 'confirmed' : ''}`}>
+                <input
+                  type="checkbox"
+                  checked={clearVideoConsent}
+                  onChange={handleClearVideoConsent}
+                />
+                <span>
+                  <strong>Blursuz görüntüyü paylaş</strong>
+                  <small>İşaretlendiğinde yüzünüz psikoloğa net iletilir.</small>
+                </span>
+              </label>
+            )}
           
             <div className="blur-preview-row">
               <span>Önizleme</span>
@@ -1055,7 +1098,9 @@ export default function SessionRoom() {
 
             <div className="blur-send-status">
               <span>Giden görüntü</span>
-              <strong>Blurlu</strong>
+              <strong className={isSessionClearVideoLevel(blurLevel) ? 'clear' : ''}>
+                {isSessionClearVideoLevel(blurLevel) ? 'Blursuz' : 'Blurlu'}
+              </strong>
             </div>
           </div>
         )}
