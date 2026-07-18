@@ -22,7 +22,7 @@ Son güncelleme: 18 Temmuz 2026
 - [x] `migration-017-public-view-security.sql` üretime uygulandı; RLS doğrulaması ve Supabase Advisor hata taraması geçti
 - [x] Gerçek iPhone, Android ve bilgisayarda kabul matrisi geçti (18 Temmuz 2026, proje sahibi onayı)
 - [x] İlk şifreli veritabanı ve Storage yedeği alındı; manifest ve geri açma kontrolü geçti (18 Temmuz 2026)
-- [ ] İlk yedek ayrı geçici Supabase projesine geri yüklenerek prova edildi
+- [x] İlk yedek ayrı geçici Supabase projesine geri yüklenerek prova edildi (18 Temmuz 2026)
 - [ ] Gizlilik politikası, açık rıza/aydınlatma metni ve kullanım koşulları hukuk danışmanı tarafından onaylandı
 - [ ] Veri saklama ve hesap silme süreleri yazılı olarak kararlaştırıldı
 - [ ] Destek sorumlusu, olay sorumlusu ve psikolog belge inceleme sorumlusu belirlendi

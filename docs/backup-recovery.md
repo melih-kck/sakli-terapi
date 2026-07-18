@@ -39,12 +39,14 @@ Geri dönüş doğrudan üretim projesi üzerinde denenmez.
 1. Ayrı bir geçici Supabase projesi oluşturun.
 2. Uzantıları ve proje ayarlarını üretimle eşleştirin.
 3. Rol, şema ve veri dökümlerini Supabase'in resmi geri yükleme sırasıyla uygulayın.
-4. Storage kovasını ve dosyaları geri yükleyin; kovanın `public=false` olduğunu doğrulayın.
-5. `src/lib/verify-rls.sql` dosyasını çalıştırın.
-6. Danışan, psikolog ve yönetici rol testlerini uygulayın.
-7. Rastgele seçilen en az üç belge kaydının nesnesiyle eşleştiğini doğrulayın.
-8. Prova tarihini, süresini, sonucu ve bulunan sorunları yedek günlüğüne kaydedin.
-9. Geçici projeyi ve geçici kimlik bilgilerini güvenli biçimde kaldırın.
+4. Temiz projenin varsayılan yetkilerini kaynak projeyle eşitlemek için `migration-006` ile `migration-017` arasındaki migration'ları sırayla yeniden uygulayın.
+5. Storage dosyalarını resmi taşıma betiği veya Storage API ile aynı nesne yoluna `upsert: true` kullanarak yükleyin. Dashboard'un normal yüklemesi çakışmada dosya adına ` (1)` ekleyebileceği için kurtarma amacıyla kullanılmamalıdır.
+6. Storage kovasının `public=false` olduğunu doğrulayın.
+7. `src/lib/verify-rls.sql` dosyasını çalıştırın; hiçbir doğrulama hatasını beklenen restore gürültüsü olarak geçmeyin.
+8. Danışan, psikolog ve yönetici rol testlerini uygulayın.
+9. Rastgele seçilen en az üç belge kaydının, toplam nesne sayısı daha azsa tüm belge kayıtlarının, gerçek Storage nesnesiyle eşleştiğini doğrulayın.
+10. Prova tarihini, süresini, sonucu ve bulunan sorunları yedek günlüğüne kaydedin.
+11. Geçici projeyi ve geçici kimlik bilgilerini güvenli biçimde kaldırın.
 
 ## Olay Anında
 
