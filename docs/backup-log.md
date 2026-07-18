@@ -25,6 +25,7 @@
 - Storage sonucu: yedekteki tek PDF yeniden yüklendi; belge kaydı gerçek nesneyle eşleştirildi, nesne sayısı 1 ve boyut 16.921 bayt
 - Dashboard yüklemesi mevcut metadata yoluna ` (1)` eklediği için geçici projedeki belge yolu yeni nesneyle uzlaştırıldı ve fiziksel karşılığı olmayan eski metadata satırı kaldırıldı
 - Sonuç: prova başarılı; üretim projesinde hiçbir değişiklik yapılmadı
+- Temizlik: geçici bağlantı parolası ve çözülmüş yerel kopyalar silindi; `irxsbxtiajuumrmxwrmh` geçici Supabase projesi prova sonrasında kalıcı olarak kaldırıldı
 
 DPAPI arşivini açmak için aynı Windows kullanıcı hesabında:
 
