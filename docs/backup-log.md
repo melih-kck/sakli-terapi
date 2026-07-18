@@ -12,7 +12,19 @@
 - Koruma: Windows DPAPI `CurrentUser`; yalnızca yedeği oluşturan Windows kullanıcı profili açabilir
 - Doğrulama: şifreli arşiv geri açıldı; manifestteki 4 asıl dosyanın boyut ve SHA-256 değerleri birebir eşti
 - Düz metin SQL, PDF ve geçici doğrulama kopyaları kontrolden sonra silindi
-- Geri dönüş provası: bekliyor; üretim dışı ayrı bir Supabase projesinde yapılmalı
+- Geri dönüş provası: aşağıdaki geçici proje provasıyla tamamlandı
+
+## 18 Temmuz 2026 - Geri Dönüş Provası
+
+- Hedef proje: `irxsbxtiajuumrmxwrmh` (`GizliBiriz Restore Drill 20260718`), üretimden ayrı geçici Supabase projesi
+- Roller, şema ve veri dökümleri PostgreSQL 17.6 hedefe PostgreSQL 17.10 istemcisiyle geri yüklendi
+- Veri kontrolü: 4 Auth kullanıcısı, 4 profil, 1 psikolog, 2 seans ve 1 doğrulama belgesi kaydı geri geldi
+- Temiz Supabase projesinin varsayılan tablo yetkileri nedeniyle ilk `verify-rls.sql` çalışması özel katalog erişiminde durdu
+- `migration-006` ile `migration-017` arasındaki güvenlik migration'ları yeniden uygulandı; ikinci doğrulama geçti
+- Güvenlik sonucu: 11/11 uygulama tablosunda RLS açık, `anon` özel katalog tablolarını okuyamıyor ve belge kovası private
+- Storage sonucu: yedekteki tek PDF yeniden yüklendi; belge kaydı gerçek nesneyle eşleştirildi, nesne sayısı 1 ve boyut 16.921 bayt
+- Dashboard yüklemesi mevcut metadata yoluna ` (1)` eklediği için geçici projedeki belge yolu yeni nesneyle uzlaştırıldı ve fiziksel karşılığı olmayan eski metadata satırı kaldırıldı
+- Sonuç: prova başarılı; üretim projesinde hiçbir değişiklik yapılmadı
 
 DPAPI arşivini açmak için aynı Windows kullanıcı hesabında:
 
