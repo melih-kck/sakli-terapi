@@ -17,12 +17,18 @@ Bu plan veritabanını ve özel belge dosyalarını birlikte ele alır. Supabase
 ```bash
 supabase db dump --db-url "$DATABASE_URL" -f roles.sql --role-only
 supabase db dump --db-url "$DATABASE_URL" -f schema.sql
-supabase db dump --db-url "$DATABASE_URL" -f data.sql --use-copy --data-only
+supabase db dump --db-url "$DATABASE_URL" -f data.sql --use-copy --data-only \
+  -x "storage.buckets_vectors" -x "storage.vector_indexes"
 ```
 
 3. `psychologist-documents` özel kovasındaki dosyaları S3 uyumlu istemci veya Supabase Storage araçlarıyla dışarı aktarın.
 4. Şu dosyaları aynı tarihli, şifreli arşivde saklayın: `roles.sql`, `schema.sql`, `data.sql`, Storage nesneleri, nesne envanteri ve uygulanan migration listesi.
 5. Arşivin özet değerini üretip yedek günlüğüne yazın. Gizli anahtarları arşive eklemeyin.
+
+Windows DPAPI ile korunan yerel arşivler yalnızca arşivi oluşturan Windows
+kullanıcı profili tarafından açılabilir. Bu nedenle arşivi cihaz dışına
+kopyalamak tek başına yeterli değildir; hedef ortamda geri açma testi de yapılmalıdır.
+Uygulama içindeki yardımcı komut `scripts/decrypt-backup.ps1` dosyasındadır.
 
 Supabase'in güncel davranışı ve komutları için [Database Backups](https://supabase.com/docs/guides/platform/backups), [Backup and Restore using the CLI](https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore) ve [Download Objects](https://supabase.com/docs/guides/storage/management/download-objects) belgeleri esas alınır.
 

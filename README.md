@@ -117,6 +117,7 @@ Delivery and operating procedures are documented in:
 
 ```text
 docs/backup-recovery.md
+docs/backup-log.md
 docs/operations-runbook.md
 docs/real-device-acceptance.md
 docs/release-readiness.md
@@ -155,6 +156,6 @@ verification.
 - Apply `migration-012` before deploying the notification UI.
 - Apply `migration-015` before deploying the verification document UI.
 - Run the real-device acceptance matrix before the closed pilot.
-- Complete a backup restore rehearsal before storing real user data.
+- Keep the first encrypted backup off-device and complete a restore rehearsal before storing real user data.
 - Configure `VITE_SENTRY_DSN` when the production monitoring project is ready.
 - Configure payment env keys only when payment implementation begins.
