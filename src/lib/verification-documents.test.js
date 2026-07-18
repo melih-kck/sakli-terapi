@@ -1,4 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('./supabase', () => ({
+  supabase: {},
+}));
+
 import {
   MAX_VERIFICATION_FILE_SIZE,
   validateVerificationFile,
