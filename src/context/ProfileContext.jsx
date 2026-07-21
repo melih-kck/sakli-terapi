@@ -14,7 +14,7 @@ const getInitials = (name = '') => {
     .filter(word => !['dr.', 'uzm.', 'psk.'].includes(word.toLocaleLowerCase('tr-TR')))
     .slice(0, 2)
     .map(word => word.charAt(0).toLocaleUpperCase('tr-TR'))
-    .join('') || 'GB';
+    .join('') || 'ST';
 };
 
 const isDevMockUser = (user) => import.meta.env.DEV && Boolean(user?.id?.startsWith('mock-'));

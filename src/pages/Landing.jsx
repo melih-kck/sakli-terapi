@@ -6,6 +6,7 @@ import RatingStars from '../components/RatingStars';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
+import { BRAND } from '../config/brand';
 import '../styles/pages/Landing.css';
 
 export default function Landing() {
@@ -63,8 +64,8 @@ export default function Landing() {
   }, []);
 
   const faqs = [
-    { q: 'GizliBiriz nasıl çalışır?', a: 'Anonim bir rumuz ile kayıt olursunuz, psikologlarımızı inceler ve size uygun olanı seçersiniz. Seanslarınızda yüzünüz blur efektiyle gizlenir, psikologunuz gerçek kimliğinizi bilemez. Kendinizi hazır hissettiğinizde blur seviyesini kademeli olarak azaltabilirsiniz.' },
-    { q: 'Gerçekten anonim miyim?', a: 'Psikolog ekranlarında danışanlar rumuzlarıyla görünür. Hesap e-postası ve acil durum kişisi gibi özel alanlar psikolog profillerine ve herkese açık sayfalara açılmaz.' },
+    { q: `${BRAND.name} nasıl çalışır?`, a: 'Rumuz ile kayıt olur, psikolog profillerini inceler ve size uygun uzmanı seçersiniz. Görüntülü seanslarda blur seviyesini kontrol edebilir, görüntüyü blursuz paylaşmadan önce ayrıca onay verirsiniz.' },
+    { q: 'Hangi bilgilerim gizli kalır?', a: 'Psikolog ekranlarında danışanlar rumuzlarıyla görünür. Hesap e-postası ve isteğe bağlı acil durum kişisi psikolog profillerine veya herkese açık sayfalara açılmaz. Görüşmede paylaşacağınız kişisel bilgiler sizin kontrolünüzdedir.' },
     { q: 'Psikologlar nasıl yayımlanıyor?', a: 'Psikolog başvuruları yönetici incelemesine alınır. Yalnızca onay durumu verilen profiller psikolog kataloğunda yayımlanır.' },
     { q: 'Acil durumda ne olur?', a: 'Kayıt sırasında verdiğiniz acil durum bilgileri güvenli bir kasada saklanır. Psikologunuz bir kriz tespit ettiğinde, platform yönetimi bu bilgilere kontrollü erişim sağlayarak gerekli acil müdahaleyi koordine eder.' },
     { q: 'Seans ücreti ne kadardır?', a: 'Seans ücretleri psikolog profillerinde gösterilir. Ödeme entegrasyonu henüz etkin değildir; randevular panelde ödeme bekliyor durumunda görünür.' },
@@ -86,12 +87,11 @@ export default function Landing() {
           </div>
           <div className="container hero-content">
             <h1 className="hero-title fade-in">
-              Kimliğiniz <span className="text-gradient">Gizli</span>,{' '}
-              Sesiniz <span className="text-gradient">Duyulur</span>
+              <span className="text-gradient">{BRAND.name}</span>
             </h1>
             <p className="hero-subtitle fade-in delay-1">
-              Anonim psikolojik danışmanlık platformunda, kimliğinizi gizleyerek
-              profesyonel psikologlardan destek alın.
+              {BRAND.tagline} Rumuz temelli profil ve kontrollü görüntü seçenekleriyle
+              doğrulanmış psikolog profillerinden çevrim içi destek alın.
             </p>
             <div className="hero-actions fade-in delay-2">
               {user ? (
@@ -158,7 +158,7 @@ export default function Landing() {
         <section className="section why-section" id="why-us">
           <div className="container">
             <div className="text-center mb-2xl animate-on-scroll">
-              <h2>Neden <span className="text-gradient">GizliBiriz</span>?</h2>
+              <h2>Neden <span className="text-gradient">{BRAND.name}</span>?</h2>
               <p className="section-subtitle">Güvenliğiniz ve konforunuz için tasarlandı</p>
             </div>
             <div className="grid grid-2 gap-xl">

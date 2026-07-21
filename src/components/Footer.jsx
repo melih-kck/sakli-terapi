@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { BRAND, getMailto } from '../config/brand';
 import './Footer.css';
 
 export default function Footer() {
@@ -8,7 +9,7 @@ export default function Footer() {
         <div className="footer-grid">
           {/* Brand */}
           <div className="footer-brand">
-            <Link to="/" className="footer-logo">
+            <Link to="/" className="footer-logo" aria-label={`${BRAND.name} ana sayfa`}>
               <div className="logo-icon">
                 <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
                   <circle cx="16" cy="16" r="14" fill="url(#footerLogoGrad)" />
@@ -21,10 +22,10 @@ export default function Footer() {
                   </defs>
                 </svg>
               </div>
-              <span className="logo-text">Gizli<span className="logo-highlight">Biriz</span></span>
+              <span className="logo-text">{BRAND.namePrimary} <span className="logo-highlight">{BRAND.nameAccent}</span></span>
             </Link>
             <p className="footer-description">
-              Kimliğiniz gizli, sesiniz duyulur. Anonim psikolojik danışmanlık platformu.
+              {BRAND.tagline} Rumuz temelli çevrim içi psikolojik destek platformu.
             </p>
           </div>
 
@@ -35,7 +36,7 @@ export default function Footer() {
               <li><Link to="/psikologlar" id="footer-psychologists">Psikologlarımız</Link></li>
               <li><Link to="/kayit" id="footer-register">Ücretsiz Başla</Link></li>
               <li><Link to="/hakkinda" id="footer-about">Hakkımızda</Link></li>
-              <li><a href="mailto:iletisim@gizlibiriz.com" id="footer-contact-link">İletişim</a></li>
+              <li><a href={getMailto(BRAND.contactEmail)} id="footer-contact-link">İletişim</a></li>
             </ul>
           </div>
 
@@ -43,7 +44,7 @@ export default function Footer() {
           <div className="footer-section">
             <h4 className="footer-title">Destek & İletişim</h4>
             <ul className="footer-links">
-              <li><a href="mailto:destek@gizlibiriz.com" id="footer-contact">Bize Ulaşın</a></li>
+              <li><a href={getMailto(BRAND.supportEmail)} id="footer-contact">Bize Ulaşın</a></li>
               <li><Link to="/sss" id="footer-faq">Sık Sorulan Sorular</Link></li>
               <li><Link to="/gizlilik-politikasi" id="footer-privacy">Gizlilik Politikası</Link></li>
               <li><Link to="/kullanim-kosullari" id="footer-terms">Kullanım Koşulları</Link></li>
@@ -74,7 +75,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="footer-bottom">
-          <p>© 2026 GizliBiriz. Tüm hakları saklıdır.</p>
+          <p>© 2026 {BRAND.name}. Tüm hakları saklıdır.</p>
           <div className="footer-badges">
             <span className="footer-badge">🔒 TLS bağlantısı</span>
             <span className="footer-badge">🛡️ Rol bazlı erişim</span>

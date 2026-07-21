@@ -253,10 +253,10 @@ ALTER TABLE public.psychologists
 
 UPDATE public.psychologists p
 SET
-  display_name = COALESCE(p.display_name, pr.name, p.title, U&'GizliBiriz Psikolo\011Fu'),
+  display_name = COALESCE(p.display_name, pr.name, p.title, U&'Sakl\0131 Terapi Psikolo\011Fu'),
   avatar_initials = COALESCE(
     p.avatar_initials,
-    UPPER(LEFT(COALESCE(pr.name, p.title, 'GB'), 1))
+    UPPER(LEFT(COALESCE(pr.name, p.title, 'ST'), 1))
   ),
   short_bio = COALESCE(
     p.short_bio,
@@ -274,8 +274,8 @@ WHERE p.id = pr.id;
 
 UPDATE public.psychologists
 SET
-  display_name = COALESCE(display_name, title, U&'GizliBiriz Psikolo\011Fu'),
-  avatar_initials = COALESCE(avatar_initials, 'GB'),
+  display_name = COALESCE(display_name, title, U&'Sakl\0131 Terapi Psikolo\011Fu'),
+  avatar_initials = COALESCE(avatar_initials, 'ST'),
   short_bio = COALESCE(short_bio, LEFT(COALESCE(bio, U&'Gizlilik odakl\0131 \00E7evrimi\00E7i psikolojik dan\0131\015Fmanl\0131k.'), 120)),
   channels = COALESCE(channels, ARRAY['video-blur', 'voice', 'text']),
   languages = COALESCE(languages, ARRAY[U&'T\00FCrk\00E7e']),
@@ -936,8 +936,8 @@ BEGIN
     )
     VALUES (
       NEW.id,
-      COALESCE(NULLIF(metadata->>'name', ''), 'GizliBiriz Psikologu'),
-      UPPER(LEFT(COALESCE(NULLIF(metadata->>'name', ''), 'GB'), 1)),
+      COALESCE(NULLIF(metadata->>'name', ''), U&'Sakl\0131 Terapi Psikolo\011Fu'),
+      UPPER(LEFT(COALESCE(NULLIF(metadata->>'name', ''), 'ST'), 1)),
       COALESCE(NULLIF(metadata->>'title', ''), 'Psikolog'),
       NULLIF(metadata->>'bio', ''),
       NULLIF(metadata->>'shortBio', ''),

@@ -1,4 +1,4 @@
-# GizliBiriz
+# Saklı Terapi
 
 Anonim psikolojik danismanlik platformu. Frontend React + Vite, backend Supabase uzerinde calisir.
 
@@ -51,6 +51,7 @@ src/lib/migration-014-session-room-access.sql
 src/lib/migration-015-psychologist-verification.sql
 src/lib/migration-016-admin-mfa.sql
 src/lib/migration-017-public-view-security.sql
+src/lib/migration-018-brand-defaults.sql
 ```
 
 For an already-created database, run the latest incremental migrations in order:
@@ -68,6 +69,7 @@ src/lib/migration-014-session-room-access.sql
 src/lib/migration-015-psychologist-verification.sql
 src/lib/migration-016-admin-mfa.sql
 src/lib/migration-017-public-view-security.sql
+src/lib/migration-018-brand-defaults.sql
 ```
 
 `migration-008-auth-profile-trigger.sql` keeps profile creation working when Supabase Auth email confirmation is enabled.
@@ -95,6 +97,8 @@ database policy and trigger that grants administrator privileges.
 `migration-017-public-view-security.sql` converts public catalog views to
 security-invoker views and keeps their limited public projection behind
 fixed-search-path catalog functions.
+`migration-018-brand-defaults.sql` updates the generated psychologist fallback
+name from the legacy brand without changing real profile names.
 
 The email worker at `api/process-email-notifications.js` also requires these
 server-only environment variables before delivery is enabled:
@@ -107,6 +111,10 @@ EMAIL_FROM=
 EMAIL_WORKER_SECRET=
 PUBLIC_APP_URL=https://gizlibiriz.vercel.app
 ```
+
+Keep `PUBLIC_APP_URL` on the working Vercel address until the new domain is
+connected. Then change it to `https://sakliterapi.com` together with the
+Supabase Auth redirect URLs and Resend sender domain.
 
 After the migrations, run `src/lib/verify-rls.sql` in the SQL Editor. The final
 block raises an exception if a protected table has RLS disabled or a public
@@ -155,6 +163,8 @@ verification.
 - Keep email confirmation policy consistent with `migration-008`.
 - Apply `migration-012` before deploying the notification UI.
 - Apply `migration-015` before deploying the verification document UI.
+- Apply `migration-018` before accepting new psychologist registrations under the new brand.
+- Verify the `sakliterapi.com` support and contact mailboxes before publishing their links.
 - Run the real-device acceptance matrix before the closed pilot.
 - Keep the first encrypted backup off-device and complete a restore rehearsal before storing real user data.
 - Configure `VITE_SENTRY_DSN` when the production monitoring project is ready.

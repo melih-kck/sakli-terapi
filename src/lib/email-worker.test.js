@@ -16,6 +16,7 @@ describe('email notification worker', () => {
 
     expect(content.subject).toBe('Randevu <güncellendi>');
     expect(content.html).toContain('Randevu &lt;güncellendi&gt;');
+    expect(content.html).toContain('Saklı Terapi');
     expect(content.html).toContain('https://gizlibiriz.vercel.app/panel');
   });
 });
