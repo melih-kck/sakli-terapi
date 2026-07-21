@@ -126,6 +126,7 @@ Delivery and operating procedures are documented in:
 ```text
 docs/backup-recovery.md
 docs/backup-log.md
+docs/brand-cutover.md
 docs/operations-runbook.md
 docs/real-device-acceptance.md
 docs/release-readiness.md
