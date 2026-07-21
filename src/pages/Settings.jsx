@@ -8,6 +8,7 @@ import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
 import { APPROACHES, COMMUNICATION_CHANNELS, DAYS_TR, SPECIALIZATIONS } from '../data/constants';
 import { supabase } from '../lib/supabase';
+import { BRAND, getMailto } from '../config/brand';
 import '../styles/pages/Settings.css';
 
 const EDITABLE_CHANNELS = COMMUNICATION_CHANNELS.filter(channel => ['text', 'voice', 'video-blur'].includes(channel.id));
@@ -725,7 +726,7 @@ export default function Settings() {
                       <p className="text-sm mb-md">Hesap silme talebi destek onayıyla ilerler; ani ve geri alınamaz silme burada yapılmaz.</p>
                       <a
                         className="btn btn-danger btn-sm"
-                        href="mailto:destek@gizlibiriz.com?subject=Hesap%20silme%20talebi"
+                        href={getMailto(BRAND.supportEmail, 'Hesap silme talebi')}
                         onClick={() => warning('Hesap Silme', 'Talebinizi tamamlamak için destek ekibine e-posta gönderin.')}
                       >
                         Hesap Silme Talebi

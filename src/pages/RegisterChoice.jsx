@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { BRAND } from '../config/brand';
 import '../styles/pages/Auth.css';
 
 export default function RegisterChoice() {
@@ -9,7 +10,7 @@ export default function RegisterChoice() {
       <main className="page-content">
         <div className="container container-md" style={{ paddingTop: 'var(--space-3xl)', paddingBottom: 'var(--space-3xl)' }}>
           <div className="text-center mb-2xl">
-            <h2>GizliBiriz'e Katılın</h2>
+            <h2>{BRAND.name}'ye Katılın</h2>
             <p className="section-subtitle" style={{ color: 'var(--text-secondary)' }}>Nasıl kayıt olmak istiyorsunuz?</p>
           </div>
 

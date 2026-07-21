@@ -9,6 +9,7 @@ import { useSession } from '../context/SessionContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../lib/supabase';
 import { getAuthRedirectUrl } from '../lib/auth';
+import { BRAND, getMailto } from '../config/brand';
 import '../styles/pages/SupportPages.css';
 
 function PageShell({ eyebrow, title, subtitle, children, aside }) {
@@ -270,9 +271,9 @@ export function ReviewsPage() {
 
 const faqGroups = {
   genel: [
-    ['GizliBiriz nasıl çalışır?', 'Danışan rumuzla kayıt olur, uygun psikoloğu seçer ve metin, ses veya blurlu görüntülü görüşme seçeneklerinden biriyle randevu alır.'],
+    [`${BRAND.name} nasıl çalışır?`, 'Danışan rumuzla kayıt olur, uygun psikoloğu seçer ve metin, ses veya blurlu görüntülü görüşme seçeneklerinden biriyle randevu alır.'],
     ['Hangi bilgiler psikolog ekranında görünür?', 'Psikolog, seans kaydında rumuzunuzu ve görüşme tercihlerinizi görür; hesap e-postası ile acil durum kişisi psikolog ekranına açılmaz.'],
-    ['Acil durumda ne yapmalıyım?', 'GizliBiriz acil müdahale hizmeti değildir. Hayati risk veya acil durum varsa 112 Acil Çağrı Merkezi aranmalıdır.'],
+    ['Acil durumda ne yapmalıyım?', `${BRAND.name} acil müdahale hizmeti değildir. Hayati risk veya acil durum varsa 112 Acil Çağrı Merkezi aranmalıdır.`],
   ],
   randevu: [
     ['Randevu aldıktan sonra nereden katılırım?', 'Danışan ve psikolog panellerinde randevu kartı görünür. Seans saati geldiğinde karttaki seans butonundan odaya geçilir.'],
@@ -299,7 +300,7 @@ export function FaqPage() {
         <div className="content-info-panel">
           <h3>Yanıt bulamadınız mı?</h3>
           <p>Destek ekibine e-posta göndererek hesabınız veya randevunuzla ilgili yardım alabilirsiniz.</p>
-          <a className="btn btn-outline btn-block" href="mailto:destek@gizlibiriz.com">Destek Ekibine Yaz</a>
+          <a className="btn btn-outline btn-block" href={getMailto(BRAND.supportEmail)}>Destek Ekibine Yaz</a>
         </div>
       )}
     >
@@ -336,12 +337,12 @@ export function PrivacyPolicyPage() {
     <PageShell
       eyebrow="Gizlilik"
       title="Gizlilik Politikası"
-      subtitle="GizliBiriz, danışan gizliliğini ürünün temel çalışma ilkesi olarak ele alır."
+      subtitle={`${BRAND.name}, danışan gizliliğini ürünün temel çalışma ilkesi olarak ele alır.`}
       aside={(
         <div className="content-info-panel">
           <h3>Kısa Özet</h3>
           <p>Hesap, tercih ve seans verileri amaçlarına göre ayrılır; özel hesap alanları psikolog ekranlarına açılmaz.</p>
-          <span className="content-date">Son güncelleme: 6 Temmuz 2026</span>
+          <span className="content-date">Son güncelleme: 21 Temmuz 2026</span>
         </div>
       )}
     >
@@ -359,7 +360,7 @@ export function PrivacyPolicyPage() {
       </ContentSection>
 
       <ContentSection title="Paylaşım İlkeleri">
-        <p>GizliBiriz kullanıcı verilerini reklam amaçlı satmaz. Psikologlar seans yürütmek için gereken rumuz ve randevu alanlarını görür. Yetkili yönetici erişimi, başvuru inceleme ve destek sorumluluklarıyla sınırlandırılır.</p>
+        <p>{BRAND.name} kullanıcı verilerini reklam amaçlı satmaz. Psikologlar seans yürütmek için gereken rumuz ve randevu alanlarını görür. Yetkili yönetici erişimi, başvuru inceleme ve destek sorumluluklarıyla sınırlandırılır.</p>
       </ContentSection>
 
       <ContentSection title="Haklarınız">
@@ -378,13 +379,13 @@ export function TermsPage() {
       aside={(
         <div className="content-info-panel">
           <h3>Önemli</h3>
-          <p>GizliBiriz acil kriz müdahalesi yerine geçmez. Hayati risk varsa 112 Acil Çağrı Merkezi aranmalıdır.</p>
-          <span className="content-date">Son güncelleme: 6 Temmuz 2026</span>
+          <p>{BRAND.name} acil kriz müdahalesi yerine geçmez. Hayati risk varsa 112 Acil Çağrı Merkezi aranmalıdır.</p>
+          <span className="content-date">Son güncelleme: 21 Temmuz 2026</span>
         </div>
       )}
     >
       <ContentSection title="Hizmetin Kapsamı">
-        <p>GizliBiriz, danışanların yönetici onaylı psikolog profilleriyle rumuz temelli randevu planlamasına yardımcı olan dijital bir platformdur.</p>
+        <p>{BRAND.name}, danışanların yönetici onaylı psikolog profilleriyle rumuz temelli randevu planlamasına yardımcı olan dijital bir platformdur.</p>
       </ContentSection>
 
       <ContentSection title="Kullanıcı Sorumlulukları">

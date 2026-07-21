@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { SPECIALIZATIONS } from '../data/constants';
 import Navbar from '../components/Navbar';
+import { BRAND } from '../config/brand';
 import '../styles/pages/Auth.css';
 
 export default function RegisterClient() {
@@ -155,7 +156,7 @@ export default function RegisterClient() {
                 <div className="register-step-content slide-up">
                   <h3>Acil Durum Bilgileri</h3>
                   <div className="auth-warning-box">
-                    Bu alan isteğe bağlıdır. GizliBiriz acil müdahale hizmeti değildir; hayati riskte 112 aranmalıdır.
+                    Bu alan isteğe bağlıdır. {BRAND.name} acil müdahale hizmeti değildir; hayati riskte 112 aranmalıdır.
                   </div>
                   <div className="auth-form">
                     <div className="input-group">
@@ -177,7 +178,7 @@ export default function RegisterClient() {
                 <div className="register-step-content slide-up">
                   <h3>Sözleşme Onayı</h3>
                   <div className="contract-box">
-                    <h4>GizliBiriz Hizmet Özeti</h4>
+                    <h4>{BRAND.name} Hizmet Özeti</h4>
                     <div className="contract-text">
                       <p><strong>1. Profil ayrımı:</strong> Psikolog ekranlarında danışan rumuzu ve randevu için gerekli tercihler gösterilir; e-posta ve acil kişi alanları gösterilmez.</p>
                       <p><strong>2. Görüntü tercihi:</strong> Görüntülü seanslarda blur seviyesi danışan tarafından değiştirilebilir. Sesli ve metin kanalları ayrıca seçilebilir.</p>

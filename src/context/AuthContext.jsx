@@ -3,6 +3,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 import { supabase } from '../lib/supabase';
 import { getAuthRedirectUrl, isEmailNotConfirmedError } from '../lib/auth';
 import { createDefaultMfaStatus, readAdminMfaStatus } from '../lib/admin-mfa';
+import { BRAND } from '../config/brand';
 import { useToast } from './ToastContext';
 
 const AuthContext = createContext();
@@ -11,7 +12,8 @@ const isDevMockEmail = (email = '') => {
   if (!import.meta.env.DEV) return false;
   const normalizedEmail = email.toLowerCase();
   return (
-    normalizedEmail === 'psikolog@gizlibiriz.com'
+    normalizedEmail === 'psikolog@sakliterapi.com'
+    || normalizedEmail === 'psikolog@gizlibiriz.com'
     || normalizedEmail.endsWith('@test.local')
     || normalizedEmail.includes('+bypass@')
   );
@@ -40,7 +42,7 @@ const getInitials = (name = '') => {
     .filter(word => !['dr.', 'uzm.', 'psk.'].includes(word.toLocaleLowerCase('tr-TR')))
     .slice(0, 2)
     .map(word => word.charAt(0).toLocaleUpperCase('tr-TR'))
-    .join('') || 'GB';
+    .join('') || 'ST';
 };
 
 const normalizePsychologistProfile = (profile = {}) => ({
@@ -238,7 +240,7 @@ export function AuthProvider({ children }) {
     setIsLoading(true);
     try {
       if (isDevMockEmail(email)) {
-        const mockRole = email.toLowerCase() === 'psikolog@gizlibiriz.com' ? 'psychologist' : 'client';
+        const mockRole = ['psikolog@sakliterapi.com', 'psikolog@gizlibiriz.com'].includes(email.toLowerCase()) ? 'psychologist' : 'client';
         const mockUser = {
           id: `mock-${crypto.randomUUID()}`, email, role: mockRole,
           alias: mockRole === 'psychologist' ? null : 'Test Danışanı',
@@ -246,7 +248,7 @@ export function AuthProvider({ children }) {
           sessions: [], moodHistory: [], reviews: [],
           clientProfile: mockRole === 'client' ? normalizeClientProfile({ topics: ['anxiety', 'stress'], preferredChannel: 'video-blur', privacyLevel: 5 }) : null,
           privacyLevel: 5,
-          psychologistProfile: mockRole === 'psychologist' ? normalizePsychologistProfile({ displayName: 'Uzman Psikolog', title: 'Psikolog', shortBio: 'GizliBiriz test profili.', channels: ['video-blur', 'voice', 'text'], languages: ['Türkçe'] }) : null,
+          psychologistProfile: mockRole === 'psychologist' ? normalizePsychologistProfile({ displayName: 'Uzman Psikolog', title: 'Psikolog', shortBio: `${BRAND.name} test profili.`, channels: ['video-blur', 'voice', 'text'], languages: ['Türkçe'] }) : null,
         };
         setUser(mockUser);
         localStorage.setItem('mock_user_session', JSON.stringify(mockUser));
@@ -359,7 +361,7 @@ export function AuthProvider({ children }) {
         if (role === 'psychologist') {
           const { error: psychologistError } = await supabase.from('psychologists').upsert([{
             id: data.user.id,
-            display_name: profileData.name || 'GizliBiriz Psikoloğu',
+            display_name: profileData.name || `${BRAND.name} Psikoloğu`,
             avatar_initials: getInitials(profileData.name),
             title: profileData.title || 'Psikolog',
             bio: profileData.shortBio || profileData.bio || null,

@@ -8,6 +8,7 @@ import {
   normalizeMfaCode,
 } from '../lib/admin-mfa';
 import { supabase } from '../lib/supabase';
+import { BRAND } from '../config/brand';
 import '../styles/pages/Auth.css';
 
 export default function AdminMfa() {
@@ -39,7 +40,7 @@ export default function AdminMfa() {
 
       const { data, error: enrollError } = await supabase.auth.mfa.enroll({
         factorType: 'totp',
-        friendlyName: 'GizliBiriz Yönetici',
+        friendlyName: `${BRAND.name} Yönetici`,
       });
       if (enrollError) throw enrollError;
       setEnrollment(data);

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { BRAND } from '../config/brand';
 import '../styles/pages/About.css';
 
 export default function About() {
@@ -31,7 +32,7 @@ export default function About() {
         {/* Hero Section */}
         <section className="about-hero animate-on-scroll">
           <div className="container">
-            <h1 className="fade-in">GizliBiriz Nedir?</h1>
+            <h1 className="fade-in">{BRAND.name} Nedir?</h1>
             <p className="fade-in delay-1">
               Rumuz temelli profiller ve bulanık görüntü seçenekleriyle mahremiyeti
               önceleyen bir psikolojik danışmanlık platformu.
@@ -47,9 +48,9 @@ export default function About() {
                 <h2>Misyonumuz</h2>
                 <p>
                   Pek çok insan, etiketlenme veya yargılanma korkusuyla psikolojik destek 
-                  almaktan çekiniyor. GizliBiriz olarak misyonumuz; yüzünüzü, isminizi ve 
-                  kimliğinizi ifşa etmek zorunda kalmadan en üst düzey profesyonellerle 
-                  görüşebileceğiniz güvenli bir dijital alan yaratmaktır.
+                  almaktan çekiniyor. {BRAND.name} olarak misyonumuz; psikolog ekranlarında
+                  rumuzla yer alabileceğiniz ve görüntünüz üzerinde kontrol sahibi olduğunuz
+                  güvenli bir dijital görüşme alanı oluşturmaktır.
                 </p>
                 <p>
                   Veri minimizasyonu yaklaşımımız ve blur teknolojimiz, danışanların

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
+import { BRAND } from '../config/brand';
 import './Navbar.css';
 
 export default function Navbar() {
@@ -44,7 +45,7 @@ export default function Navbar() {
     <nav className={`navbar ${isScrolled ? 'navbar-scrolled' : ''}`} id="main-navbar">
       <div className="container navbar-inner">
         {/* Logo */}
-        <Link to="/" className="navbar-logo" id="navbar-logo">
+        <Link to="/" className="navbar-logo" id="navbar-logo" aria-label={`${BRAND.name} ana sayfa`}>
           <div className="logo-icon">
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
               <circle cx="16" cy="16" r="14" fill="url(#logoGrad)" />
@@ -59,7 +60,7 @@ export default function Navbar() {
             </svg>
           </div>
           <span className="logo-text">
-            Gizli<span className="logo-highlight">Biriz</span>
+            {BRAND.namePrimary} <span className="logo-highlight">{BRAND.nameAccent}</span>
           </span>
         </Link>
 

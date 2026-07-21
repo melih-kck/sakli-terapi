@@ -4,6 +4,8 @@ const REQUIRED_ENVIRONMENT = [
   'EMAIL_FROM',
 ];
 
+const BRAND_NAME = 'Saklı Terapi';
+
 export const escapeHtml = (value = '') => String(value)
   .replaceAll('&', '&amp;')
   .replaceAll('<', '&lt;')
@@ -53,13 +55,13 @@ export const buildEmailContent = (notification, appUrl) => {
     ? new URL(notification.notification_action_url, appUrl).toString()
     : null;
   const actionMarkup = actionUrl
-    ? `<p style="margin:24px 0 0"><a href="${escapeHtml(actionUrl)}" style="display:inline-block;padding:12px 18px;background:#6d5dfc;color:#fff;text-decoration:none;border-radius:6px">GizliBiriz'de Görüntüle</a></p>`
+    ? `<p style="margin:24px 0 0"><a href="${escapeHtml(actionUrl)}" style="display:inline-block;padding:12px 18px;background:#6d5dfc;color:#fff;text-decoration:none;border-radius:6px">${BRAND_NAME}'de Görüntüle</a></p>`
     : '';
 
   return {
     subject: notification.notification_title,
     text: `${notification.notification_title}\n\n${notification.notification_message}${actionUrl ? `\n\n${actionUrl}` : ''}`,
-    html: `<!doctype html><html lang="tr"><body style="margin:0;background:#f5f6f8;font-family:Arial,sans-serif;color:#20242c"><div style="max-width:600px;margin:0 auto;padding:32px 20px"><div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;padding:28px"><p style="margin:0 0 18px;font-size:18px;font-weight:700">GizliBiriz</p><h1 style="margin:0 0 12px;font-size:22px">${safeTitle}</h1><p style="margin:0;line-height:1.6;color:#4f5663">${safeMessage}</p>${actionMarkup}</div><p style="margin:16px 0 0;font-size:12px;color:#737b88">Bu e-posta, hesap ayarlarınızda etkinleştirdiğiniz operasyonel bildirim tercihlerine göre gönderildi.</p></div></body></html>`,
+    html: `<!doctype html><html lang="tr"><body style="margin:0;background:#f5f6f8;font-family:Arial,sans-serif;color:#20242c"><div style="max-width:600px;margin:0 auto;padding:32px 20px"><div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;padding:28px"><p style="margin:0 0 18px;font-size:18px;font-weight:700">${BRAND_NAME}</p><h1 style="margin:0 0 12px;font-size:22px">${safeTitle}</h1><p style="margin:0;line-height:1.6;color:#4f5663">${safeMessage}</p>${actionMarkup}</div><p style="margin:16px 0 0;font-size:12px;color:#737b88">Bu e-posta, hesap ayarlarınızda etkinleştirdiğiniz operasyonel bildirim tercihlerine göre gönderildi.</p></div></body></html>`,
   };
 };
 

@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { mockPsychologists } from '../data/mock-psychologists';
+import { BRAND } from '../config/brand';
 
 const ALLOWED_CHANNELS = ['text', 'voice', 'video-blur'];
 
@@ -13,12 +14,12 @@ const DEFAULT_AVAILABILITY = {
 
 const getInitials = (name = '') => {
   const words = name.trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return 'GB';
+  if (words.length === 0) return 'ST';
   return words
     .filter(word => !['dr.', 'uzm.', 'psk.'].includes(word.toLocaleLowerCase('tr-TR')))
     .slice(0, 2)
     .map(word => word.charAt(0).toLocaleUpperCase('tr-TR'))
-    .join('') || 'GB';
+    .join('') || 'ST';
 };
 
 const getShortBio = (bio = '') => {
@@ -27,7 +28,7 @@ const getShortBio = (bio = '') => {
 };
 
 export const normalizePsychologist = (psychologist) => {
-  const name = psychologist.display_name || psychologist.name || psychologist.title || 'GizliBiriz Psikoloğu';
+  const name = psychologist.display_name || psychologist.name || psychologist.title || `${BRAND.name} Psikoloğu`;
   const channels = (psychologist.channels?.length ? psychologist.channels : ['video-blur', 'voice', 'text'])
     .filter(channel => ALLOWED_CHANNELS.includes(channel));
 
