@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { SPECIALIZATIONS } from '../data/constants';
 import { fetchApprovedPsychologists, getDemoPsychologists } from '../lib/psychologists';
 import RatingStars from '../components/RatingStars';

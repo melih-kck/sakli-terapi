@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { useSession } from '../context/SessionContext';
 import { Peer } from 'peerjs';

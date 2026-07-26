@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 import { SPECIALIZATIONS, APPROACHES, COMMUNICATION_CHANNELS, DAYS_TR } from '../data/constants';
 import { fetchApprovedPsychologistById, getDemoPsychologists } from '../lib/psychologists';
 import {

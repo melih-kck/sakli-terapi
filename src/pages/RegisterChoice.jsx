@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Navbar from '../components/Navbar';
 import { BRAND } from '../config/brand';
 import '../styles/pages/Auth.css';
