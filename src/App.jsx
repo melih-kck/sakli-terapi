@@ -1,7 +1,9 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router';
+import { Routes, Route, Navigate, Link, useLocation } from 'react-router';
 import { useAuth } from './context/AuthContext';
 import DemoNotice from './components/DemoNotice';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import { FEATURES, IS_DEMO_MODE } from './config/runtime';
 
 // Pages imported using React.lazy for performance
@@ -33,17 +35,23 @@ const ReviewsPage = lazyNamed(() => import('./pages/SupportPages'), 'ReviewsPage
 const TermsPage = lazyNamed(() => import('./pages/SupportPages'), 'TermsPage');
 
 const NotFound = () => (
-  <div style={{ padding: '100px', textAlign: 'center' }}>
-    <h1 style={{ fontSize: '4rem', color: 'var(--primary)', marginBottom: '20px' }}>404</h1>
-    <h2>Sayfa Bulunamadı</h2>
-    <p style={{ marginBottom: '20px' }}>Aradığınız sayfa mevcut değil veya taşınmış olabilir.</p>
-    <a href="/" className="btn btn-primary">Ana Sayfaya Dön</a>
+  <div className="page not-found-page">
+    <Navbar />
+    <main className="page-content not-found-main">
+      <section className="not-found-content">
+        <span className="not-found-code" aria-hidden="true">404</span>
+        <h1>Sayfa bulunamadı</h1>
+        <p>Aradığınız sayfa mevcut değil veya taşınmış olabilir.</p>
+        <Link to="/" className="btn btn-primary">Ana Sayfaya Dön</Link>
+      </section>
+    </main>
+    <Footer />
   </div>
 );
 
 const PageLoader = () => (
-  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-primary)' }}>
-    <div className="spinner" style={{ width: '40px', height: '40px', border: '4px solid var(--border-medium)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+  <div role="status" aria-label="Sayfa yükleniyor" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-primary)' }}>
+    <div className="spinner" aria-hidden="true" style={{ width: '40px', height: '40px', border: '4px solid var(--border-medium)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
     <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
   </div>
 );

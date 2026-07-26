@@ -23,22 +23,40 @@ export default function RatingStars({ rating = 0, maxStars = 5, size = 'md', int
 
   return (
     <div className="rating-stars-wrapper">
-      <div className="rating-stars" style={{ gap: s.gap }}>
+      <div
+        className="rating-stars"
+        style={{ gap: s.gap }}
+        role={interactive ? 'group' : 'img'}
+        aria-label={interactive ? 'Puan seçin' : `${rating.toFixed(1)} / ${maxStars} yıldız`}
+      >
         {Array.from({ length: maxStars }, (_, i) => {
           const value = i + 1;
           const filled = value <= Math.floor(displayRating);
           const half = !filled && value === Math.ceil(displayRating) && displayRating % 1 >= 0.3;
+          const starText = filled || half ? '★' : '☆';
 
-          return (
-            <span
+          return interactive ? (
+            <button
+              type="button"
               key={i}
               className={`star ${filled ? 'filled' : ''} ${half ? 'half' : ''} ${interactive ? 'interactive' : ''}`}
               style={{ fontSize: s.star }}
+              aria-label={`${value} yıldız`}
+              aria-pressed={rating === value}
               onClick={() => handleClick(value)}
               onMouseEnter={() => interactive && setHoverRating(value)}
               onMouseLeave={() => interactive && setHoverRating(0)}
             >
-              {filled || half ? '★' : '☆'}
+              {starText}
+            </button>
+          ) : (
+            <span
+              key={i}
+              className={`star ${filled ? 'filled' : ''} ${half ? 'half' : ''}`}
+              style={{ fontSize: s.star }}
+              aria-hidden="true"
+            >
+              {starText}
             </span>
           );
         })}

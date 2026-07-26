@@ -17,6 +17,8 @@
 .auth-decorative-content h2 {
   font-size: var(--text-3xl);
   color: white;
+  line-height: var(--leading-tight);
+  margin-top: 0;
   margin-bottom: var(--space-sm);
 }
 
@@ -148,7 +150,10 @@
   line-height: 1.55;
 }
 
-.auth-form-wrapper h2 {
+.auth-form-wrapper h1 {
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+  margin-top: 0;
   margin-bottom: var(--space-xs);
 }
 

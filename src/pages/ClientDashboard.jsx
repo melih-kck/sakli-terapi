@@ -6,7 +6,13 @@ import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
 import { COMMUNICATION_CHANNELS, SPECIALIZATIONS } from '../data/constants';
 import { fetchApprovedPsychologists, getDemoPsychologists } from '../lib/psychologists';
-import { formatCurrency, getSessionFee, getSessionJoinState } from '../lib/session-flow';
+import {
+  formatCurrency,
+  formatLocalDateIso,
+  getSessionFee,
+  getSessionJoinState,
+  getSessionReference,
+} from '../lib/session-flow';
 import { ALLOW_LOCAL_SIMULATION, IS_DEMO_MODE } from '../config/runtime';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -32,8 +38,6 @@ const getPaymentDetails = (session) => (
     ? (paymentDetails[session.paymentStatus] || paymentDetails.pending)
     : { label: 'Tahsilat bu aşamada kapalı', className: 'is-deferred' }
 );
-
-const getLocalDateIso = () => new Date().toISOString().split('T')[0];
 
 export default function ClientDashboard() {
   const { user, isClient } = useAuth();
@@ -105,7 +109,7 @@ export default function ClientDashboard() {
     session.paymentRequired && session.paymentStatus === 'pending'
   ));
 
-  const todayMood = user.moodHistory?.find(mood => mood.date === getLocalDateIso())?.mood;
+  const todayMood = user.moodHistory?.find(mood => mood.date === formatLocalDateIso())?.mood;
   const avgMood = user.moodHistory?.length > 0
     ? Math.round(user.moodHistory.reduce((acc, curr) => acc + curr.mood, 0) / user.moodHistory.length)
     : 0;
@@ -249,7 +253,7 @@ export default function ClientDashboard() {
                               </div>
                               <div className="appointment-detail">
                                 <span className="appointment-label">Randevu Kodu</span>
-                                <strong>{String(session.id).slice(0, 8)}</strong>
+                                <strong>{getSessionReference(session.id)}</strong>
                               </div>
                             </div>
 
@@ -283,8 +287,9 @@ export default function ClientDashboard() {
                             {isCancelling && (
                               <div className="session-cancel-box">
                                 <div className="input-group">
-                                  <label>İptal Nedeni</label>
+                                  <label htmlFor={`cancel-reason-${session.id}`}>İptal Nedeni</label>
                                   <textarea
+                                    id={`cancel-reason-${session.id}`}
                                     rows="3"
                                     value={cancelReason}
                                     onChange={(event) => setCancelReason(event.target.value)}
@@ -383,7 +388,7 @@ export default function ClientDashboard() {
                               </div>
                               <div className="appointment-detail">
                                 <span className="appointment-label">Randevu Kodu</span>
-                                <strong>{String(session.id).slice(0, 8)}</strong>
+                                <strong>{getSessionReference(session.id)}</strong>
                               </div>
                             </div>
 

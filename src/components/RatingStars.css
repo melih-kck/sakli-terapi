@@ -5,8 +5,16 @@
 }
 
 .rating-stars .star {
+  display: inline-grid;
+  place-items: center;
   color: var(--border-medium);
   cursor: default;
+  min-width: 1em;
+  min-height: 1em;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  line-height: 1;
   transition: all var(--transition-fast);
   user-select: none;
 }
@@ -18,9 +26,17 @@
 
 .rating-stars .star.interactive {
   cursor: pointer;
+  min-width: 36px;
+  min-height: 36px;
 }
 
 .rating-stars .star.interactive:hover {
   transform: scale(1.2);
   color: var(--accent);
+}
+
+.rating-stars .star.interactive:focus-visible {
+  border-radius: var(--radius-sm);
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }

@@ -60,7 +60,7 @@ export default function Login() {
           </div>
           <div className="split-content">
             <div className="auth-form-wrapper">
-              <h2>{IS_DEMO_MODE ? 'Demoyu Bir Rolle Açın' : 'Giriş Yap'}</h2>
+              <h1>{IS_DEMO_MODE ? 'Demoyu Bir Rolle Açın' : 'Giriş Yap'}</h1>
               <p className="auth-subtitle">
                 {IS_DEMO_MODE
                   ? DEMO_DISCLOSURE.description

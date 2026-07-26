@@ -22,6 +22,10 @@ describe('demo fixtures', () => {
       expect(session.clientId).toBe('mock-client');
       expect(session.psychologistId).toBe('mock-psychologist');
     });
+    expect(sessions.map(session => session.channel)).toEqual(
+      expect.arrayContaining(['video-blur', 'voice', 'text']),
+    );
+    expect(new Set(sessions.map(session => session.id)).size).toBe(sessions.length);
   });
 
   it('creates isolated users for each role without real account identifiers', () => {
@@ -33,5 +37,13 @@ describe('demo fixtures', () => {
       expect(user.email).toMatch(/@demo\.sakliterapi\.local$/);
       expect(user.isDemo).toBe(true);
     });
+  });
+
+  it('ships a presentation-ready psychologist profile', () => {
+    const psychologist = createDemoUser('psychologist');
+
+    expect(psychologist.psychologistProfile.approvalStatus).toBe('approved');
+    expect(Object.keys(psychologist.psychologistProfile.availability).length)
+      .toBeGreaterThan(0);
   });
 });

@@ -3,6 +3,30 @@ import { ALLOW_LOCAL_SIMULATION } from '../config/runtime';
 export const SESSION_JOIN_EARLY_MINUTES = 15;
 export const SESSION_JOIN_LATE_MINUTES = 90;
 
+export const formatLocalDateIso = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+export const getSessionReference = (sessionId) => {
+  const value = String(sessionId || '');
+  const demoReferences = {
+    'demo-session-privacy': 'DEMO-GZL',
+    'demo-session-voice': 'DEMO-SES',
+    'demo-session-text': 'DEMO-MTN',
+    'demo-session-completed': 'DEMO-TMM',
+  };
+
+  if (demoReferences[value]) return demoReferences[value];
+
+  const compact = value.replace(/[^a-z0-9]/gi, '');
+  if (!compact) return 'ST-BELIRSIZ';
+  if (compact.length <= 8) return compact.toLocaleUpperCase('tr-TR');
+  return `${compact.slice(0, 4)}-${compact.slice(-4)}`.toLocaleUpperCase('tr-TR');
+};
+
 export const formatCurrency = (amount = 0) => (
   new Intl.NumberFormat('tr-TR', {
     style: 'currency',

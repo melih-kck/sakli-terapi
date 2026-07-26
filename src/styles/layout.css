@@ -7,7 +7,7 @@
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 var(--space-lg);
+  padding-inline: var(--space-lg);
 }
 
 .container-sm { max-width: 768px; }
@@ -198,7 +198,7 @@
 
 @media (max-width: 768px) {
   .container {
-    padding: 0 var(--space-md);
+    padding-inline: var(--space-md);
   }
   
   .section {
@@ -226,6 +226,6 @@
   html { font-size: 14px; }
   
   .container {
-    padding: 0 var(--space-sm);
+    padding-inline: var(--space-sm);
   }
 }

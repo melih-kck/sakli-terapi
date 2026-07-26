@@ -996,6 +996,9 @@ export default function SessionRoom() {
   return (
     <div className="session-room">
       <Navbar />
+      <h1 className="sr-only">
+        {isClient ? 'Psikolog ile seans odası' : 'Danışan ile seans odası'}
+      </h1>
       
       {/* Invisible video/canvas for Blur Processing */}
       <div style={{ display: 'none' }}>
@@ -1016,13 +1019,19 @@ export default function SessionRoom() {
         <div className="session-with">
           {isClient ? 'Psikolog ile Görüşme' : 'Danışan ile Görüşme'}
         </div>
-        <button className="btn btn-ghost btn-sm" onClick={() => setIsChatOpen(!isChatOpen)}>
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          aria-controls="session-chat-panel"
+          aria-expanded={isChatOpen || sessionChannel === 'text'}
+          onClick={() => setIsChatOpen(!isChatOpen)}
+        >
           💬 Sohbet {messages.length > 1 ? `(${messages.length-1})` : ''}
         </button>
       </header>
 
       {/* Main Area */}
-      <div className="session-content" style={{ display: sessionChannel === 'text' ? 'block' : 'flex' }}>
+      <main className="session-content" style={{ display: sessionChannel === 'text' ? 'block' : 'flex' }}>
         
         {/* Video or Audio Container */}
         {sessionChannel === 'text' ? null : sessionChannel === 'voice' ? (
@@ -1066,7 +1075,7 @@ export default function SessionRoom() {
                       <span className="media-fallback-badge">Mikrofon kullanılamıyor</span>
                     )}
                     {ALLOW_LOCAL_SIMULATION && (
-                      <button className="btn btn-primary" onClick={startDemoMode}>
+                      <button type="button" className="btn btn-primary" onClick={startDemoMode}>
                         {IS_DEMO_MODE ? 'Görüşme Simülasyonunu Başlat' : 'Simülasyon Modunu Başlat'}
                       </button>
                     )}
@@ -1178,10 +1187,12 @@ export default function SessionRoom() {
         )}
 
         {/* Chat Panel */}
-        <div className={`session-chat ${isChatOpen || sessionChannel === 'text' ? 'open' : ''}`} style={sessionChannel === 'text' ? { position: 'relative', width: '100%', height: '100%', borderLeft: 'none', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)' } : {}}>
+        <div id="session-chat-panel" className={`session-chat ${isChatOpen || sessionChannel === 'text' ? 'open' : ''}`} style={sessionChannel === 'text' ? { position: 'relative', width: '100%', height: '100%', borderLeft: 'none', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)' } : {}}>
           <div className="chat-header">
             <h4>Seans Sohbeti</h4>
-            <button className="btn-ghost" onClick={() => setIsChatOpen(false)}>✕</button>
+            {sessionChannel !== 'text' && (
+              <button type="button" className="btn-ghost" aria-label="Sohbeti kapat" onClick={() => setIsChatOpen(false)}>✕</button>
+            )}
           </div>
           
           <div className="chat-messages">
@@ -1200,7 +1211,9 @@ export default function SessionRoom() {
           </div>
 
           <form className="chat-input" onSubmit={sendMessage}>
+            <label className="sr-only" htmlFor="session-chat-input">Mesajınız</label>
             <input 
+              id="session-chat-input"
               type="text" 
               placeholder="Mesaj yazın..." 
               value={chatInput}
@@ -1210,7 +1223,7 @@ export default function SessionRoom() {
             <button type="submit" className="btn btn-primary">Gönder</button>
           </form>
         </div>
-      </div>
+      </main>
 
       {/* Bottom Controls */}
       <footer className="session-controls">
@@ -1231,7 +1244,9 @@ export default function SessionRoom() {
         
         <div className="controls-group">
           <button
+            type="button"
             className={`control-btn ${!micOn ? 'off' : ''}`}
+            aria-pressed={micOn}
             onClick={toggleMic}
             title={microphoneAvailable === false ? 'Mikrofon kullanılamıyor' : 'Mikrofon'}
             disabled={sessionChannel === 'text' || microphoneAvailable === false}
@@ -1245,7 +1260,9 @@ export default function SessionRoom() {
           </button>
           
           <button
+            type="button"
             className={`control-btn ${!camOn ? 'off' : ''}`}
+            aria-pressed={camOn}
             onClick={toggleCam}
             title={cameraAvailable === false ? 'Kamera kullanılamıyor' : 'Kamera'}
             disabled={sessionChannel !== 'video-blur' || cameraAvailable === false}
@@ -1258,14 +1275,20 @@ export default function SessionRoom() {
                 : camOn ? 'Açık' : 'Kapalı'}</span>
           </button>
           
-          <button className="control-btn emergency" onClick={endCall} title="Aramayı Sonlandır">
+          <button type="button" className="control-btn emergency" onClick={endCall} title="Aramayı Sonlandır">
             📞
             <span>Kapat</span>
           </button>
         </div>
 
         <div className="controls-group">
-          <button className={`control-btn ${isChatOpen ? 'active' : ''}`} onClick={() => setIsChatOpen(!isChatOpen)}>
+          <button
+            type="button"
+            className={`control-btn ${isChatOpen ? 'active' : ''}`}
+            aria-controls="session-chat-panel"
+            aria-expanded={isChatOpen || sessionChannel === 'text'}
+            onClick={() => setIsChatOpen(!isChatOpen)}
+          >
             💬
             <span>Sohbet</span>
           </button>

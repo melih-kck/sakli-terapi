@@ -349,17 +349,17 @@ export default function AdminDashboard() {
           </div>
 
           <div className="admin-workspace">
-            <div className="tab-navigation admin-tabs">
-              <button type="button" className={`tab-item ${activeTab === 'pending' ? 'active' : ''}`} onClick={() => setActiveTab('pending')}>
+            <div className="tab-navigation admin-tabs" role="tablist" aria-label="Yönetici kayıtları">
+              <button type="button" role="tab" aria-selected={activeTab === 'pending'} className={`tab-item ${activeTab === 'pending' ? 'active' : ''}`} onClick={() => setActiveTab('pending')}>
                 Bekleyenler {pendingList.length > 0 && <span className="badge badge-warning">{pendingList.length}</span>}
               </button>
-              <button type="button" className={`tab-item ${activeTab === 'approved' ? 'active' : ''}`} onClick={() => setActiveTab('approved')}>
+              <button type="button" role="tab" aria-selected={activeTab === 'approved'} className={`tab-item ${activeTab === 'approved' ? 'active' : ''}`} onClick={() => setActiveTab('approved')}>
                 Aktif
               </button>
-              <button type="button" className={`tab-item ${activeTab === 'inactive' ? 'active' : ''}`} onClick={() => setActiveTab('inactive')}>
+              <button type="button" role="tab" aria-selected={activeTab === 'inactive'} className={`tab-item ${activeTab === 'inactive' ? 'active' : ''}`} onClick={() => setActiveTab('inactive')}>
                 Pasif
               </button>
-              <button type="button" className={`tab-item ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>
+              <button type="button" role="tab" aria-selected={activeTab === 'audit'} className={`tab-item ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>
                 İşlem Geçmişi
               </button>
             </div>

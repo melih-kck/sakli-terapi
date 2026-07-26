@@ -105,6 +105,7 @@ export default function PsychologistList() {
             {/* Filters */}
             <aside className="sidebar psy-filters" id="psychologist-filters">
               <div className="input-group">
+                <label className="sr-only" htmlFor="psy-search">Psikolog ara</label>
                 <input type="text" placeholder="🔍 Psikolog ara..." value={search} onChange={(e) => setSearch(e.target.value)} id="psy-search" />
               </div>
 
@@ -112,7 +113,7 @@ export default function PsychologistList() {
                 <h4>Uzmanlık Alanı</h4>
                 <div className="filter-tags">
                   {SPECIALIZATIONS.slice(0, 8).map(spec => (
-                    <button key={spec.id} className={`tag ${selectedSpecs.includes(spec.id) ? 'active' : ''}`} onClick={() => toggleSpec(spec.id)} id={`filter-spec-${spec.id}`}>
+                    <button type="button" key={spec.id} className={`tag ${selectedSpecs.includes(spec.id) ? 'active' : ''}`} aria-pressed={selectedSpecs.includes(spec.id)} onClick={() => toggleSpec(spec.id)} id={`filter-spec-${spec.id}`}>
                       {spec.icon} {spec.label}
                     </button>
                   ))}
@@ -146,7 +147,7 @@ export default function PsychologistList() {
                 </div>
               </div>
 
-              <button className="btn btn-ghost btn-sm btn-block" onClick={clearFilters} id="clear-filters">
+              <button type="button" className="btn btn-ghost btn-sm btn-block" onClick={clearFilters} id="clear-filters">
                 Filtreleri Temizle
               </button>
             </aside>
@@ -155,6 +156,7 @@ export default function PsychologistList() {
             <div className="psy-results">
               <div className="psy-toolbar">
                 <span className="psy-count">{isLoading ? 'Psikologlar yükleniyor...' : `${filtered.length} psikolog listeleniyor`}</span>
+                <label className="sr-only" htmlFor="psy-sort">Sıralama</label>
                 <select className="psy-sort" value={sortBy} onChange={(e) => setSortBy(e.target.value)} id="psy-sort">
                   <option value="rating">En Yüksek Puan</option>
                   <option value="reviews">En Çok Yorum</option>
@@ -207,7 +209,7 @@ export default function PsychologistList() {
                   <span className="empty-state-icon">🔍</span>
                   <h3 className="empty-state-title">Sonuç bulunamadı</h3>
                   <p className="empty-state-description">Filtrelerinizi değiştirerek tekrar deneyin.</p>
-                  <button className="btn btn-outline" onClick={clearFilters}>Filtreleri Temizle</button>
+                  <button type="button" className="btn btn-outline" onClick={clearFilters}>Filtreleri Temizle</button>
                 </div>
               )}
             </div>

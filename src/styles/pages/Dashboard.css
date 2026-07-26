@@ -35,9 +35,14 @@
 
 .dash-grid {
   display: grid;
-  grid-template-columns: 1fr 350px;
+  grid-template-columns: minmax(0, 1fr) 350px;
   gap: var(--space-2xl);
   align-items: start;
+}
+
+.dash-main,
+.dash-sidebar {
+  min-width: 0;
 }
 
 /* Dashboard Stats */
@@ -788,7 +793,7 @@
 /* Responsive */
 @media (max-width: 1024px) {
   .dash-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .dash-sidebar {
     order: -1;

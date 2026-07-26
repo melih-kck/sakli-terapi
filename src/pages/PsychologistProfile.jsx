@@ -1,9 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { SPECIALIZATIONS, APPROACHES, COMMUNICATION_CHANNELS, DAYS_TR } from '../data/constants';
+import {
+  SPECIALIZATIONS,
+  APPROACHES,
+  COMMUNICATION_CHANNELS,
+  DAYS_SHORT_TR,
+  DAYS_TR,
+} from '../data/constants';
 import { fetchApprovedPsychologistById, getDemoPsychologists } from '../lib/psychologists';
 import {
   formatCurrency,
+  formatLocalDateIso,
   getSessionFee,
   getSessionSlotKey,
   isSessionSlotBookable,
@@ -20,13 +27,6 @@ import { FEATURES, IS_DEMO_MODE } from '../config/runtime';
 import '../styles/pages/Psychologists.css';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-const formatLocalDateIso = (date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
 
 export default function PsychologistProfile() {
   const { id } = useParams();
@@ -142,10 +142,12 @@ export default function PsychologistProfile() {
   const next7Days = Array.from({ length: 7 }).map((_, i) => {
     const d = new Date();
     d.setDate(d.getDate() + i);
-    const dayName = DAYS_TR[(d.getDay() + 6) % 7]; // Convert JS day to tr day
+    const dayIndex = (d.getDay() + 6) % 7;
+    const dayName = DAYS_TR[dayIndex];
     return {
       dateObj: d,
       dayName,
+      dayShort: DAYS_SHORT_TR[dayIndex],
       dateStr: formatLocalDateIso(d),
       display: `${d.getDate()} ${['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'][d.getMonth()]}`,
       slots: psych?.availability?.[dayName] || []
@@ -400,7 +402,8 @@ export default function PsychologistProfile() {
                   ))}
                 </div>
                 {reviews.length > 3 && (
-                  <button 
+                  <button
+                    type="button"
                     className="btn btn-outline btn-block mt-lg"
                     onClick={() => setShowAllReviews(!showAllReviews)}
                   >
@@ -422,7 +425,7 @@ export default function PsychologistProfile() {
                   )}
                   
                   <div className="booking-section">
-                    <label className="booking-label">1. Tarih Seçin</label>
+                    <h4 className="booking-label">1. Tarih Seçin</h4>
                     <div className="date-picker-scroll">
                       {next7Days.map(day => {
                         const isSelected = selectedDate === day.dateStr;
@@ -435,12 +438,13 @@ export default function PsychologistProfile() {
                         ));
                         return (
                           <button
+                            type="button"
                             key={day.dateStr}
                             className={`date-btn ${isSelected ? 'selected' : ''} ${!hasSlots ? 'disabled' : ''}`}
                             disabled={!hasSlots}
                             onClick={() => { setSelectedDate(day.dateStr); setSelectedTime(null); setAcceptedBookingTerms(false); }}
                           >
-                            <span className="date-day-name">{day.dayName.slice(0, 3)}</span>
+                            <span className="date-day-name">{day.dayShort}</span>
                             <span className="date-day-num">{day.display.split(' ')[0]}</span>
                             <span className="date-month">{day.display.split(' ')[1]}</span>
                           </button>
@@ -451,7 +455,7 @@ export default function PsychologistProfile() {
 
                   {selectedDate && (
                     <div className="booking-section slide-up">
-                      <label className="booking-label">2. Saat Seçin</label>
+                      <h4 className="booking-label">2. Saat Seçin</h4>
                       <div className="time-slots-grid">
                         {next7Days.find(d => d.dateStr === selectedDate)?.slots.map(time => {
                           const slotKey = getSessionSlotKey(selectedDate, time);
@@ -461,6 +465,7 @@ export default function PsychologistProfile() {
 
                           return (
                             <button
+                              type="button"
                               key={time}
                               className={`time-btn ${selectedTime === time ? 'selected' : ''} ${isUnavailable ? 'disabled' : ''}`}
                               disabled={isUnavailable}
@@ -479,13 +484,14 @@ export default function PsychologistProfile() {
 
                   {selectedTime && (
                     <div className="booking-section slide-up">
-                      <label className="booking-label">3. İletişim Tercihi</label>
+                      <h4 className="booking-label">3. İletişim Tercihi</h4>
                       <div className="channel-select-grid">
                         {psych.channels.map(c => {
                           const channel = getChannel(c);
                           if (!channel) return null;
                           return (
                             <button
+                              type="button"
                               key={c}
                               className={`channel-btn ${selectedChannel === c ? 'selected' : ''}`}
                               onClick={() => setSelectedChannel(c)}
@@ -538,7 +544,8 @@ export default function PsychologistProfile() {
                         </label>
                       </div>
                     )}
-                    <button 
+                    <button
+                      type="button"
                       className="btn btn-primary btn-block btn-lg"
                       disabled={!canCreateAppointment || !selectedDate || !selectedTime || !selectedChannel || !acceptedBookingTerms || isBooking}
                       onClick={handleBooking}
