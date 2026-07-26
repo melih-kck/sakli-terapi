@@ -67,7 +67,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Nav Links */}
-        <div className={`navbar-links ${isMobileOpen ? 'open' : ''}`}>
+        <div className={`navbar-links ${isMobileOpen ? 'open' : ''}`} id="navbar-menu">
           <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`} id="nav-home">
             Ana Sayfa
           </Link>
@@ -96,7 +96,7 @@ export default function Navbar() {
                   Bildirimler
                   {unreadCount > 0 && <span className="notification-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>}
                 </Link>
-                <button onClick={() => { handleLogout(); setIsMobileOpen(false); }} className="btn btn-outline" style={{ width: '100%' }}>Çıkış Yap</button>
+                <button type="button" onClick={() => { handleLogout(); setIsMobileOpen(false); }} className="btn btn-outline" style={{ width: '100%' }}>Çıkış Yap</button>
               </>
             ) : (
               <>
@@ -120,7 +120,7 @@ export default function Navbar() {
               <Link to={dashboardPath} className="btn btn-outline btn-sm">
                 {dashboardLabel}
               </Link>
-              <button onClick={handleLogout} className="btn btn-text btn-sm text-secondary">
+              <button type="button" onClick={handleLogout} className="btn btn-text btn-sm text-secondary">
                 Çıkış Yap
               </button>
             </div>
@@ -137,9 +137,12 @@ export default function Navbar() {
         {/* Mobile Hamburger */}
         <button
           className={`navbar-hamburger ${isMobileOpen ? 'open' : ''}`}
+          type="button"
           onClick={() => setIsMobileOpen(!isMobileOpen)}
           id="nav-hamburger"
-          aria-label="Menü"
+          aria-label={isMobileOpen ? 'Menüyü kapat' : 'Menüyü aç'}
+          aria-controls="navbar-menu"
+          aria-expanded={isMobileOpen}
         >
           <span></span>
           <span></span>
@@ -148,7 +151,7 @@ export default function Navbar() {
       </div>
 
       {/* Mobile Overlay */}
-      {isMobileOpen && <div className="navbar-overlay" onClick={() => setIsMobileOpen(false)} />}
+      {isMobileOpen && <div className="navbar-overlay" aria-hidden="true" onClick={() => setIsMobileOpen(false)} />}
     </nav>
   );
 }

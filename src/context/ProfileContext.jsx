@@ -3,6 +3,7 @@ import { createContext, useContext, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { useToast } from './ToastContext';
 import { ALLOW_LOCAL_SIMULATION } from '../config/runtime';
+import { formatLocalDateIso } from '../lib/session-flow';
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 const ProfileContext = createContext(null);
@@ -399,7 +400,7 @@ export function ProfileProvider({ user, setUser, children }) {
         return { success: false, error: 'Ruh hali kaydı eklemek için danışan hesabıyla giriş yapmalısınız.' };
       }
 
-      const today = new Date().toISOString().split('T')[0];
+      const today = formatLocalDateIso();
       const nextEntry = { date: today, mood: Number(mood) };
 
       // Build updated mood history (replace today's entry if it exists)

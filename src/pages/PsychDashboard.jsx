@@ -4,7 +4,12 @@ import { useAuth } from '../context/AuthContext';
 import { useReview } from '../context/ReviewContext';
 import { useSession } from '../context/SessionContext';
 import { useToast } from '../context/ToastContext';
-import { getSessionDateTime, getSessionJoinState } from '../lib/session-flow';
+import {
+  formatLocalDateIso,
+  getSessionDateTime,
+  getSessionJoinState,
+  getSessionReference,
+} from '../lib/session-flow';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import RatingStars from '../components/RatingStars';
@@ -76,13 +81,6 @@ export default function PsychDashboard() {
   }, [user, isPsychologist]);
 
   if (!user || !isPsychologist) return null;
-
-  const formatLocalDateIso = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
 
   const formatDateIso = (offsetDays = 0) => {
     const date = new Date();
@@ -318,10 +316,10 @@ export default function PsychDashboard() {
                       </p>
                     </div>
                     <div className="tabs-simple">
-                      <button className={`tab-simple ${activeTab === 'today' ? 'active' : ''}`} onClick={() => setActiveTab('today')}>Bugün</button>
-                      <button className={`tab-simple ${activeTab === 'tomorrow' ? 'active' : ''}`} onClick={() => setActiveTab('tomorrow')}>Yarın</button>
-                      <button className={`tab-simple ${activeTab === 'upcoming' ? 'active' : ''}`} onClick={() => setActiveTab('upcoming')}>Yaklaşan</button>
-                      <button className={`tab-simple ${activeTab === 'archive' ? 'active' : ''}`} onClick={() => setActiveTab('archive')}>Arşiv</button>
+                      <button type="button" className={`tab-simple ${activeTab === 'today' ? 'active' : ''}`} aria-pressed={activeTab === 'today'} onClick={() => setActiveTab('today')}>Bugün</button>
+                      <button type="button" className={`tab-simple ${activeTab === 'tomorrow' ? 'active' : ''}`} aria-pressed={activeTab === 'tomorrow'} onClick={() => setActiveTab('tomorrow')}>Yarın</button>
+                      <button type="button" className={`tab-simple ${activeTab === 'upcoming' ? 'active' : ''}`} aria-pressed={activeTab === 'upcoming'} onClick={() => setActiveTab('upcoming')}>Yaklaşan</button>
+                      <button type="button" className={`tab-simple ${activeTab === 'archive' ? 'active' : ''}`} aria-pressed={activeTab === 'archive'} onClick={() => setActiveTab('archive')}>Arşiv</button>
                     </div>
                   </div>
 
@@ -372,7 +370,7 @@ export default function PsychDashboard() {
                                 </div>
                                 <div className="appointment-detail">
                                   <span className="appointment-label">Randevu Kodu</span>
-                                  <strong>{String(appointment.id).slice(0, 8)}</strong>
+                                  <strong>{getSessionReference(appointment.id)}</strong>
                                 </div>
                               </div>
 

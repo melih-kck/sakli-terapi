@@ -50,8 +50,8 @@
 
 .demo-notice-close {
   display: grid;
-  width: 24px;
-  height: 24px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   place-items: center;
   border: 0;

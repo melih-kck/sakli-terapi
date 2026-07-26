@@ -129,6 +129,42 @@ body {
   color: var(--text-secondary);
 }
 
+.not-found-main {
+  display: grid;
+  place-items: center;
+  min-height: 68svh;
+  padding: calc(72px + var(--space-xl)) var(--space-md) var(--space-3xl);
+}
+
+.not-found-content {
+  width: min(100%, 520px);
+  text-align: center;
+}
+
+.not-found-code {
+  display: block;
+  color: var(--primary);
+  font-family: var(--font-heading);
+  font-size: 6rem;
+  font-weight: var(--weight-bold);
+  line-height: 1;
+}
+
+.not-found-content h1 {
+  margin: var(--space-lg) 0 var(--space-sm);
+  font-size: var(--text-3xl);
+}
+
+.not-found-content p {
+  margin-bottom: var(--space-xl);
+}
+
+@media (max-width: 480px) {
+  .not-found-code {
+    font-size: 4rem;
+  }
+}
+
 h1,
 h2 {
   font-family: var(--heading);
@@ -171,49 +207,6 @@ code {
   line-height: 135%;
   padding: 4px 8px;
 }
-
-/* Toast Notifications */
-.toast-container {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  z-index: 9999;
-}
-
-.toast {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 16px 20px;
-  background: var(--bg);
-  color: var(--text-h);
-  border-radius: 8px;
-  box-shadow: var(--shadow);
-  border-left: 4px solid var(--accent);
-  min-width: 300px;
-  max-width: 450px;
-  animation: slideInRight 0.3s ease-out forwards;
-}
-
-@keyframes slideInRight {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-.toast-success { border-left-color: #10b981; }
-.toast-error { border-left-color: #ef4444; }
-.toast-warning { border-left-color: #f59e0b; }
-.toast-info { border-left-color: #3b82f6; }
-
-.toast-icon { font-size: 1.25rem; }
-.toast-content { flex: 1; text-align: left; }
-.toast-title { font-weight: 600; margin-bottom: 4px; font-size: 1rem; }
-.toast-message { font-size: 0.875rem; color: var(--text); line-height: 1.4; }
-.toast-close { background: transparent; border: none; color: var(--text); cursor: pointer; padding: 4px; opacity: 0.6; }
-.toast-close:hover { opacity: 1; }
 
 /* Global Form & Dropdown Fix for Dark Mode */
 select, input, textarea, button, details, summary {

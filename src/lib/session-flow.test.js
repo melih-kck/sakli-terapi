@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   formatCurrency,
+  formatLocalDateIso,
   getSessionDateTime,
   getSessionFee,
   getSessionJoinState,
+  getSessionReference,
   getSessionSlotKey,
   isSessionSlotBookable,
   isSessionSlotInPast,
@@ -33,6 +35,18 @@ describe('session-flow', () => {
     expect(result.getDate()).toBe(5);
     expect(result.getHours()).toBe(14);
     expect(result.getMinutes()).toBe(30);
+  });
+
+  it('formats calendar dates without converting them through UTC', () => {
+    expect(formatLocalDateIso(new Date(2026, 0, 2, 23, 30))).toBe('2026-01-02');
+  });
+
+  it('creates short and distinct appointment references', () => {
+    expect(getSessionReference('demo-session-privacy')).toBe('DEMO-GZL');
+    expect(getSessionReference('demo-session-voice')).toBe('DEMO-SES');
+    expect(getSessionReference('demo-session-text')).toBe('DEMO-MTN');
+    expect(getSessionReference('local-f5d27e07-72f3-4be4-8a8f-674ed526ee20'))
+      .toBe('LOCA-EE20');
   });
 
   it('does not allow cancelled, completed, or required unpaid sessions to open', () => {

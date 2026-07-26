@@ -160,8 +160,9 @@ export function ReviewPage() {
             </div>
 
             <div className="input-group">
-              <label>Yorumunuz</label>
+              <label htmlFor="review-comment">Yorumunuz</label>
               <textarea
+                id="review-comment"
                 rows="6"
                 value={comment}
                 onChange={(event) => setComment(event.target.value)}
@@ -338,6 +339,8 @@ export function FaqPage() {
             key={group}
             className={activeGroup === group ? 'active' : ''}
             type="button"
+            role="tab"
+            aria-selected={activeGroup === group}
             onClick={() => { setActiveGroup(group); setOpenIndex(0); }}
           >
             {group === 'genel' ? 'Genel' : group === 'randevu' ? 'Randevu' : 'Hesap'}
@@ -348,11 +351,16 @@ export function FaqPage() {
       <div className="faq-list">
         {visibleFaqGroups[activeGroup].map(([question, answer], index) => (
           <div key={question} className={`faq-item ${openIndex === index ? 'open' : ''}`}>
-            <button type="button" onClick={() => setOpenIndex(openIndex === index ? -1 : index)}>
+            <button
+              type="button"
+              aria-expanded={openIndex === index}
+              aria-controls={`faq-answer-${activeGroup}-${index}`}
+              onClick={() => setOpenIndex(openIndex === index ? -1 : index)}
+            >
               <span>{question}</span>
               <strong>{openIndex === index ? '-' : '+'}</strong>
             </button>
-            {openIndex === index && <p>{answer}</p>}
+            {openIndex === index && <p id={`faq-answer-${activeGroup}-${index}`}>{answer}</p>}
           </div>
         ))}
       </div>
@@ -545,8 +553,9 @@ export function ForgotPasswordPage() {
         ) : (
           <>
             <div className="input-group">
-              <label>E-posta adresi</label>
+              <label htmlFor="forgot-password-email">E-posta adresi</label>
               <input
+                id="forgot-password-email"
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}

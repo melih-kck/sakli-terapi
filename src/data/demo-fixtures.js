@@ -1,7 +1,9 @@
+import { formatLocalDateIso } from '../lib/session-flow';
+
 const dateKey = (offsetDays = 0) => {
   const value = new Date();
   value.setDate(value.getDate() + offsetDays);
-  return value.toISOString().slice(0, 10);
+  return formatLocalDateIso(value);
 };
 
 const timeKey = (offsetHours = 0) => {
@@ -37,6 +39,22 @@ export const createDemoSessions = () => ([
     date: dateKey(2),
     time: '14:00',
     channel: 'voice',
+    status: 'upcoming',
+    paymentStatus: 'not-required',
+    paymentRequired: false,
+    reviewed: false,
+    fee: 0,
+  },
+  {
+    id: 'demo-session-text',
+    clientId: 'mock-client',
+    psychologistId: 'mock-psychologist',
+    clientAlias: 'Mavi Defter',
+    psychologistName: 'Klinik Psikolog Demo Uzmanı',
+    psychologistInitials: 'DU',
+    date: dateKey(3),
+    time: '16:00',
+    channel: 'text',
     status: 'upcoming',
     paymentStatus: 'not-required',
     paymentRequired: false,
@@ -92,7 +110,13 @@ export const createDemoUser = (role) => {
         specializations: ['anxiety', 'stress', 'self-esteem'],
         approaches: ['cbt', 'act'],
         channels: ['video-blur', 'voice', 'text'],
-        availability: {},
+        availability: {
+          Pazartesi: ['09:00', '11:00', '14:00'],
+          Salı: ['10:00', '13:00', '16:00'],
+          Çarşamba: ['09:00', '12:00', '15:00'],
+          Perşembe: ['10:00', '14:00', '17:00'],
+          Cuma: ['09:00', '11:00', '15:00'],
+        },
         languages: ['Türkçe'],
         university: 'Kurgusal Demo Üniversitesi',
         supervisor: '',

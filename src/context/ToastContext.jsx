@@ -46,15 +46,15 @@ function ToastContainer({ toasts, onRemove }) {
   };
 
   return (
-    <div className="toast-container" style={{ position: 'fixed', top: '80px', right: '20px', zIndex: 999999, display: 'flex', flexDirection: 'column', gap: '12px', pointerEvents: 'none' }}>
+    <div className="toast-container" aria-live="polite" aria-atomic="false">
       {toasts.map(toast => (
-        <div key={toast.id} className={`toast toast-${toast.type}`} style={{ pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px', background: '#1e293b', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.8)', borderLeft: `4px solid ${toast.type === 'success' ? '#10b981' : toast.type === 'error' ? '#ef4444' : '#3b82f6'}`, minWidth: '320px', maxWidth: '480px' }}>
-          <span className="toast-icon" style={{ fontSize: '24px' }}>{icons[toast.type]}</span>
-          <div className="toast-content" style={{ flex: 1 }}>
-            <div className="toast-title" style={{ fontWeight: 'bold', fontSize: '16px', color: '#ffffff' }}>{toast.title}</div>
-            {toast.message && <div className="toast-message" style={{ fontSize: '14px', color: '#cbd5e1', marginTop: '4px', lineHeight: '1.4' }}>{toast.message}</div>}
+        <div key={toast.id} className={`toast toast-${toast.type}`} role={toast.type === 'error' ? 'alert' : 'status'}>
+          <span className="toast-icon" aria-hidden="true">{icons[toast.type]}</span>
+          <div className="toast-content">
+            <div className="toast-title">{toast.title}</div>
+            {toast.message && <div className="toast-message">{toast.message}</div>}
           </div>
-          <button className="toast-close" onClick={() => onRemove(toast.id)} style={{ color: '#94a3b8', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '4px' }}>✕</button>
+          <button type="button" className="toast-close" aria-label="Bildirimi kapat" onClick={() => onRemove(toast.id)}>✕</button>
         </div>
       ))}
     </div>

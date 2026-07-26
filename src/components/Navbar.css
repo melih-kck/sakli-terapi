@@ -191,7 +191,11 @@
   display: none;
   flex-direction: column;
   gap: 5px;
-  padding: 8px;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 11px;
   cursor: pointer;
   z-index: 10;
 }
