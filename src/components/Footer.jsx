@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { BRAND, getMailto } from '../config/brand';
 import './Footer.css';
 
