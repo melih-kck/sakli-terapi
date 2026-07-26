@@ -35,6 +35,20 @@
   flex-shrink: 0;
 }
 
+.navbar-demo-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 2px 7px;
+  border: 1px solid rgba(141, 224, 200, 0.35);
+  border-radius: 999px;
+  background: rgba(31, 128, 107, 0.08);
+  color: #8de0c8;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
 .logo-icon {
   transition: transform var(--transition-normal);
 }

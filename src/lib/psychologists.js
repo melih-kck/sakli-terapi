@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { mockPsychologists } from '../data/mock-psychologists';
 import { BRAND } from '../config/brand';
+import { IS_DEMO_MODE } from '../config/runtime';
 
 const ALLOWED_CHANNELS = ['text', 'voice', 'video-blur'];
 
@@ -55,18 +56,49 @@ export const normalizePsychologist = (psychologist) => {
     supervisor: psychologist.supervisor || null,
     university: psychologist.university || null,
     source: psychologist.source || 'supabase',
+    isDemo: psychologist.source === 'demo' || Boolean(psychologist.isDemo),
   };
 };
 
+const DEMO_PROFILE_NAMES = [
+  'Klinik Psikolog Demo 01',
+  'Klinik Psikolog Demo 02',
+  'Klinik Psikolog Demo 03',
+  'Klinik Psikolog Demo 04',
+  'Klinik Psikolog Demo 05',
+  'Klinik Psikolog Demo 06',
+  'Klinik Psikolog Demo 07',
+  'Klinik Psikolog Demo 08',
+  'Klinik Psikolog Demo 09',
+  'Klinik Psikolog Demo 10',
+  'Klinik Psikolog Demo 11',
+  'Klinik Psikolog Demo 12',
+  'Aday Profil Demo 13',
+  'Aday Profil Demo 14',
+  'Aday Profil Demo 15',
+];
+
 export const getDemoPsychologists = () => (
-  import.meta.env.DEV
+  IS_DEMO_MODE || import.meta.env.DEV
     ? mockPsychologists.map(psychologist => (
-      normalizePsychologist({ ...psychologist, source: 'demo' })
+      normalizePsychologist({
+        ...psychologist,
+        name: DEMO_PROFILE_NAMES[Number(psychologist.id) - 1] || `Kurgusal Uzman ${psychologist.id}`,
+        title: psychologist.isCandidate ? 'Aday Profil' : 'Klinik Psikolog',
+        bio: 'Bu profil, uzman keşfi ve randevu akışlarını göstermek için hazırlanmış tamamen kurgusal bir demo kaydıdır. Herhangi bir gerçek kişi, diploma, kurum veya mesleki yetkinlik iddiasını temsil etmez.',
+        shortBio: 'Kurgusal demo profili. Uzman keşfi akışını göstermek için hazırlanmıştır.',
+        university: psychologist.isCandidate ? 'Kurgusal eğitim kurumu' : null,
+        supervisor: psychologist.isCandidate ? 'Kurgusal demo süpervizörü' : null,
+        source: 'demo',
+        isDemo: true,
+      })
     ))
     : []
 );
 
 export const fetchApprovedPsychologists = async () => {
+  if (IS_DEMO_MODE) return getDemoPsychologists();
+
   const { data, error } = await supabase
     .from('public_psychologists')
     .select('*')
@@ -77,6 +109,12 @@ export const fetchApprovedPsychologists = async () => {
 };
 
 export const fetchApprovedPsychologistById = async (id) => {
+  if (IS_DEMO_MODE) {
+    const psychologist = getDemoPsychologists().find(item => String(item.id) === String(id));
+    if (!psychologist) throw new Error('Demo profili bulunamadı.');
+    return psychologist;
+  }
+
   const { data, error } = await supabase
     .from('public_psychologists')
     .select('*')

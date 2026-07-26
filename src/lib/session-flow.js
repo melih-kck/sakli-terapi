@@ -1,3 +1,5 @@
+import { ALLOW_LOCAL_SIMULATION } from '../config/runtime';
+
 export const SESSION_JOIN_EARLY_MINUTES = 15;
 export const SESSION_JOIN_LATE_MINUTES = 90;
 
@@ -80,12 +82,12 @@ export const getSessionJoinState = (session, now = new Date()) => {
   }
 
   // TEST ORTAMI İÇİN BYPASS (Saati beklemeden girebilme)
-  if (import.meta.env.DEV) {
+  if (ALLOW_LOCAL_SIMULATION) {
     return {
       canJoin: true,
       code: 'ready',
-      label: 'Seansa katılabilir (Test)',
-      helper: 'Test Ortamı: Saat kısıtlaması kaldırıldı.',
+      label: 'Demo seansına katılabilir',
+      helper: 'Portföy demosunda saat kısıtlaması uygulanmaz.',
     };
   }
 

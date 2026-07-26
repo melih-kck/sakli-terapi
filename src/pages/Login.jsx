@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
+import { DEMO_ROLE_OPTIONS } from '../data/demo-fixtures';
+import { DEMO_DISCLOSURE, IS_DEMO_MODE } from '../config/runtime';
 import Navbar from '../components/Navbar';
 import '../styles/pages/Auth.css';
 
 export default function Login() {
-  const { login, isLoading } = useAuth();
+  const { login, loginAsDemo, isLoading } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,6 +32,16 @@ export default function Login() {
     }
   };
 
+  const handleDemoLogin = async (option) => {
+    setError('');
+    const result = await loginAsDemo(option.role);
+    if (result.success) {
+      navigate(option.destination);
+    } else {
+      setError(result.error || 'Demo hesabı açılamadı.');
+    }
+  };
+
   return (
     <div className="page">
       <Navbar />
@@ -37,25 +49,54 @@ export default function Login() {
         <div className="split-layout">
           <div className="split-decorative">
             <div className="auth-decorative-content">
-              <div className="auth-deco-shapes">
-                <div className="auth-shape auth-shape-1"></div>
-                <div className="auth-shape auth-shape-2"></div>
-              </div>
-              <h2>Hoş Geldiniz</h2>
-              <p>Kimliğiniz gizli, sesiniz duyulur.</p>
+              <h2>{IS_DEMO_MODE ? 'Üç Rol, Tek Ürün Hikâyesi' : 'Hoş Geldiniz'}</h2>
+              <p>{IS_DEMO_MODE ? 'Danışan, uzman ve yönetici deneyimlerini ayrı ayrı inceleyin.' : 'Kimliğiniz gizli, sesiniz duyulur.'}</p>
               <div className="auth-deco-features">
-                <div className="auth-deco-feat">🔒 Anonim Seanslar</div>
-                <div className="auth-deco-feat">👨‍⚕️ Onaylı Psikolog Profilleri</div>
-                <div className="auth-deco-feat">💜 Sosyal Sorumluluk</div>
+                <div className="auth-deco-feat">Rumuz temelli danışan deneyimi</div>
+                <div className="auth-deco-feat">Kurgusal uzman doğrulama akışı</div>
+                <div className="auth-deco-feat">Gizlilik kontrollü seans prototipi</div>
               </div>
             </div>
           </div>
           <div className="split-content">
             <div className="auth-form-wrapper">
-              <h2>Giriş Yap</h2>
-              <p className="auth-subtitle">Hesabınıza giriş yaparak devam edin</p>
+              <h2>{IS_DEMO_MODE ? 'Demoyu Bir Rolle Açın' : 'Giriş Yap'}</h2>
+              <p className="auth-subtitle">
+                {IS_DEMO_MODE
+                  ? DEMO_DISCLOSURE.description
+                  : 'Hesabınıza giriş yaparak devam edin'}
+              </p>
 
-              <form onSubmit={handleSubmit} className="auth-form">
+              {IS_DEMO_MODE ? (
+                <div className="demo-role-list">
+                  {DEMO_ROLE_OPTIONS.map((option) => (
+                    <button
+                      type="button"
+                      className="demo-role-option"
+                      key={option.role}
+                      onClick={() => handleDemoLogin(option)}
+                      disabled={isLoading}
+                      id={`demo-login-${option.role}`}
+                    >
+                      <span className="demo-role-mark" aria-hidden="true">
+                        {option.role === 'client' ? 'D' : option.role === 'psychologist' ? 'U' : 'Y'}
+                      </span>
+                      <span>
+                        <strong>{option.title}</strong>
+                        <small>{option.description}</small>
+                      </span>
+                      <span className="demo-role-arrow" aria-hidden="true">›</span>
+                    </button>
+                  ))}
+                  {error && <div className="auth-error">{error}</div>}
+                  <p className="demo-safety-note">
+                    Demo oturumları tarayıcınızda tutulur. Gösterilen adlar, belgeler,
+                    randevular ve değerlendirmeler tamamen kurgusaldır.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <form onSubmit={handleSubmit} className="auth-form">
                 <div className="input-group">
                   <label htmlFor="login-email">E-posta</label>
                   <input
@@ -87,14 +128,16 @@ export default function Login() {
                 <button type="submit" className="btn btn-primary btn-block btn-lg" disabled={isLoading} id="login-submit">
                   {isLoading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
                 </button>
-              </form>
+                  </form>
 
-              <div className="divider-text">veya</div>
+                  <div className="divider-text">veya</div>
 
-              <p className="auth-switch">
-                Hesabınız yok mu?{' '}
-                <Link to="/kayit" id="login-to-register">Ücretsiz Başla</Link>
-              </p>
+                  <p className="auth-switch">
+                    Hesabınız yok mu?{' '}
+                    <Link to="/kayit" id="login-to-register">Ücretsiz Başla</Link>
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { BRAND, getMailto } from '../config/brand';
+import { DEMO_DISCLOSURE, IS_DEMO_MODE } from '../config/runtime';
 import './Footer.css';
 
 export default function Footer() {
@@ -25,7 +26,9 @@ export default function Footer() {
               <span className="logo-text">{BRAND.namePrimary} <span className="logo-highlight">{BRAND.nameAccent}</span></span>
             </Link>
             <p className="footer-description">
-              {BRAND.tagline} Rumuz temelli çevrim içi psikolojik destek platformu.
+              {IS_DEMO_MODE
+                ? DEMO_DISCLOSURE.description
+                : `${BRAND.tagline} Rumuz temelli çevrim içi psikolojik destek platformu.`}
             </p>
           </div>
 
@@ -33,10 +36,12 @@ export default function Footer() {
           <div className="footer-section">
             <h4 className="footer-title">Hızlı Bağlantılar</h4>
             <ul className="footer-links">
-              <li><Link to="/psikologlar" id="footer-psychologists">Psikologlarımız</Link></li>
-              <li><Link to="/kayit" id="footer-register">Ücretsiz Başla</Link></li>
-              <li><Link to="/hakkinda" id="footer-about">Hakkımızda</Link></li>
-              <li><a href={getMailto(BRAND.contactEmail)} id="footer-contact-link">İletişim</a></li>
+              <li><Link to="/psikologlar" id="footer-psychologists">{IS_DEMO_MODE ? 'Kurgusal Uzmanlar' : 'Psikologlarımız'}</Link></li>
+              <li><Link to={IS_DEMO_MODE ? '/giris' : '/kayit'} id="footer-register">{IS_DEMO_MODE ? 'Demoyu Aç' : 'Ücretsiz Başla'}</Link></li>
+              <li><Link to="/hakkinda" id="footer-about">Proje Hakkında</Link></li>
+              {IS_DEMO_MODE
+                ? <li><Link to="/kullanim-kosullari" id="footer-contact-link">Demo Sınırları</Link></li>
+                : <li><a href={getMailto(BRAND.contactEmail)} id="footer-contact-link">İletişim</a></li>}
             </ul>
           </div>
 
@@ -44,7 +49,9 @@ export default function Footer() {
           <div className="footer-section">
             <h4 className="footer-title">Destek & İletişim</h4>
             <ul className="footer-links">
-              <li><a href={getMailto(BRAND.supportEmail)} id="footer-contact">Bize Ulaşın</a></li>
+              {IS_DEMO_MODE
+                ? <li><Link to="/hakkinda" id="footer-contact">Teknik Kapsam</Link></li>
+                : <li><a href={getMailto(BRAND.supportEmail)} id="footer-contact">Bize Ulaşın</a></li>}
               <li><Link to="/sss" id="footer-faq">Sık Sorulan Sorular</Link></li>
               <li><Link to="/gizlilik-politikasi" id="footer-privacy">Gizlilik Politikası</Link></li>
               <li><Link to="/kullanim-kosullari" id="footer-terms">Kullanım Koşulları</Link></li>
@@ -75,7 +82,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="footer-bottom">
-          <p>© 2026 {BRAND.name}. Tüm hakları saklıdır.</p>
+          <p>© 2026 {BRAND.name}. {IS_DEMO_MODE ? 'Akademik değerlendirme prototipi.' : 'Tüm hakları saklıdır.'}</p>
           <div className="footer-badges">
             <span className="footer-badge">🔒 TLS bağlantısı</span>
             <span className="footer-badge">🛡️ Rol bazlı erişim</span>

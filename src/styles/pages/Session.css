@@ -5,13 +5,15 @@
 .session-room {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 72px);
+  height: 100vh;
+  padding-top: 72px;
+  box-sizing: border-box;
   background: #0f172a;
   color: white;
 }
 
 .session-room-blocked {
-  min-height: calc(100vh - 72px);
+  min-height: 100vh;
   height: auto;
 }
 
@@ -717,6 +719,9 @@
     width: 120px;
     bottom: var(--space-md);
     right: var(--space-md);
+  }
+  .session-video-area.waiting .video-pip {
+    display: none;
   }
   .blur-control {
     top: var(--space-sm);

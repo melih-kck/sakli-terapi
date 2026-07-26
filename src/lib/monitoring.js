@@ -1,3 +1,5 @@
+import { IS_DEMO_MODE } from '../config/runtime';
+
 let sentryClient = null;
 
 const sanitizeUrl = (value) => {
@@ -27,7 +29,7 @@ const sanitizeEvent = (event) => {
 
 export async function initializeMonitoring() {
   const dsn = import.meta.env.VITE_SENTRY_DSN;
-  if (!dsn || import.meta.env.DEV) return;
+  if (!dsn || import.meta.env.DEV || IS_DEMO_MODE) return;
 
   try {
     sentryClient = await import('@sentry/react');

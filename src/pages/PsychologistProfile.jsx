@@ -16,6 +16,7 @@ import { useAuth } from '../context/AuthContext';
 import { useReview } from '../context/ReviewContext';
 import { useSession } from '../context/SessionContext';
 import { useToast } from '../context/ToastContext';
+import { FEATURES, IS_DEMO_MODE } from '../config/runtime';
 import '../styles/pages/Psychologists.css';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -46,6 +47,7 @@ export default function PsychologistProfile() {
   const [selectedChannel, setSelectedChannel] = useState('video-blur');
   const [acceptedBookingTerms, setAcceptedBookingTerms] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
+  const canCreateAppointment = IS_DEMO_MODE || FEATURES.liveAppointments;
 
   useEffect(() => {
     let isMounted = true;
@@ -161,6 +163,11 @@ export default function PsychologistProfile() {
   const handleBooking = async () => {
     if (!psych) return;
 
+    if (!canCreateAppointment) {
+      warning('Randevu Alımı Kapalı', 'Gerçek randevular kontrollü pilot başlayana kadar kullanıma açılmayacaktır.');
+      return;
+    }
+
     if (!user) {
       warning('Giriş Gerekli', 'Randevu alabilmek için lütfen önce giriş yapın.');
       navigate('/giris');
@@ -181,7 +188,7 @@ export default function PsychologistProfile() {
         channel: selectedChannel,
         status: 'upcoming',
         paymentStatus: 'pending',
-        fee: getSessionFee(psych),
+        fee: IS_DEMO_MODE ? 0 : getSessionFee(psych),
       });
     } finally {
       setIsBooking(false);
@@ -254,6 +261,7 @@ export default function PsychologistProfile() {
               <div className="psy-profile-title-area">
                 <h1>{psych.name}</h1>
                 <p className="psy-profile-title">{psych.title}</p>
+                {psych.isDemo && <span className="badge badge-success">Tamamen kurgusal demo profili</span>}
                 {psych.isCandidate && (
                   <div className="psy-candidate-info">
                     <span className="badge badge-accent">Aday Psikolog</span>
@@ -339,6 +347,11 @@ export default function PsychologistProfile() {
 
               <section className="psy-section">
                 <h2>Danışan Değerlendirmeleri</h2>
+                {IS_DEMO_MODE && (
+                  <p className="demo-booking-note">
+                    Aşağıdaki puanlar ve metinler arayüz demonstrasyonu için üretilmiş kurgusal içeriklerdir.
+                  </p>
+                )}
                 <div className="reviews-summary card card-glass p-lg mb-xl">
                   <div className="reviews-overall">
                     <div className="reviews-big-rating">{profileRating}</div>
@@ -402,6 +415,11 @@ export default function PsychologistProfile() {
               <div className="card card-elevated sticky-sidebar">
                 <div className="card-body">
                   <h3 className="mb-lg">Randevu Al</h3>
+                  {IS_DEMO_MODE && (
+                    <p className="demo-booking-note">
+                      Bu akış yalnızca ürün demonstrasyonudur. Gerçek randevu veya sağlık hizmeti oluşturmaz.
+                    </p>
+                  )}
                   
                   <div className="booking-section">
                     <label className="booking-label">1. Tarih Seçin</label>
@@ -484,7 +502,13 @@ export default function PsychologistProfile() {
                   <div className="booking-summary mt-xl">
                     <div className="donation-notice mb-md">
                       <span className="donation-icon-small">🔒</span>
-                      <p className="text-xs m-0">Ödeme entegrasyonu henüz etkin değildir.</p>
+                      <p className="text-xs m-0">
+                        {IS_DEMO_MODE
+                          ? 'Demo sürümünde ücret ve ödeme yoktur.'
+                          : canCreateAppointment
+                            ? 'Ödeme entegrasyonu henüz etkin değildir.'
+                            : 'Gerçek randevu alımı kontrollü pilot başlayana kadar kapalıdır.'}
+                      </p>
                     </div>
                     {selectedDate && selectedTime && (
                       <div className="booking-confirm-box mb-md">
@@ -494,11 +518,11 @@ export default function PsychologistProfile() {
                         </div>
                         <div className="content-metric">
                           <span>Seans Ücreti</span>
-                          <strong>{formatCurrency(getSessionFee(psych))}</strong>
+                          <strong>{IS_DEMO_MODE ? 'Demo, ücret yok' : formatCurrency(getSessionFee(psych))}</strong>
                         </div>
                         <div className="content-metric">
                           <span>Ödeme Durumu</span>
-                          <strong>Entegrasyon bekleniyor</strong>
+                          <strong>{IS_DEMO_MODE ? 'Uygulanmaz' : 'Entegrasyon bekleniyor'}</strong>
                         </div>
                         <label className="checkbox-group content-checkbox">
                           <input
@@ -506,19 +530,25 @@ export default function PsychologistProfile() {
                             checked={acceptedBookingTerms}
                             onChange={(event) => setAcceptedBookingTerms(event.target.checked)}
                           />
-                          <span>Randevu oluşturma ve iptal koşullarını onaylıyorum.</span>
+                          <span>
+                            {IS_DEMO_MODE
+                              ? 'Bunun kurgusal bir ürün demonstrasyonu olduğunu anlıyorum.'
+                              : 'Randevu oluşturma ve iptal koşullarını onaylıyorum.'}
+                          </span>
                         </label>
                       </div>
                     )}
                     <button 
                       className="btn btn-primary btn-block btn-lg"
-                      disabled={!selectedDate || !selectedTime || !selectedChannel || !acceptedBookingTerms || isBooking}
+                      disabled={!canCreateAppointment || !selectedDate || !selectedTime || !selectedChannel || !acceptedBookingTerms || isBooking}
                       onClick={handleBooking}
                     >
                       {isBooking
                         ? 'Randevu Oluşturuluyor...'
-                        : selectedDate && selectedTime
-                          ? 'Randevuyu Oluştur'
+                        : !canCreateAppointment
+                          ? 'Randevu Alımı Kapalı'
+                          : selectedDate && selectedTime
+                          ? IS_DEMO_MODE ? 'Demo Randevusu Oluştur' : 'Randevuyu Oluştur'
                           : 'Tarih ve Saat Seçin'}
                     </button>
                   </div>

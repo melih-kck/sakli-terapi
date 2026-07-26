@@ -4,12 +4,14 @@ import { supabase } from '../lib/supabase';
 import { getAuthRedirectUrl, isEmailNotConfirmedError } from '../lib/auth';
 import { createDefaultMfaStatus, readAdminMfaStatus } from '../lib/admin-mfa';
 import { BRAND } from '../config/brand';
+import { FEATURES, IS_DEMO_MODE } from '../config/runtime';
+import { createDemoUser } from '../data/demo-fixtures';
 import { useToast } from './ToastContext';
 
 const AuthContext = createContext();
 
 const isDevMockEmail = (email = '') => {
-  if (!import.meta.env.DEV) return false;
+  if (!IS_DEMO_MODE && !import.meta.env.DEV) return false;
   const normalizedEmail = email.toLowerCase();
   return (
     normalizedEmail === 'psikolog@sakliterapi.com'
@@ -21,6 +23,8 @@ const isDevMockEmail = (email = '') => {
 
 const clearLegacySensitiveCaches = () => {
   if (import.meta.env.DEV) return;
+  const demoCleanupKey = 'sakli-terapi-demo-cache-cleaned-v1';
+  if (IS_DEMO_MODE && localStorage.getItem(demoCleanupKey)) return;
 
   const sensitivePrefixes = [
     'gizlibiriz-client-profile-',
@@ -34,6 +38,10 @@ const clearLegacySensitiveCaches = () => {
       localStorage.removeItem(key);
     }
   });
+
+  if (IS_DEMO_MODE) {
+    localStorage.setItem(demoCleanupKey, 'true');
+  }
 };
 
 const getInitials = (name = '') => {
@@ -88,6 +96,19 @@ export function AuthProvider({ children }) {
   const { success, error: showError } = useToast();
 
   const refreshMfaStatus = useCallback(async (role) => {
+    if (IS_DEMO_MODE && role === 'admin') {
+      const status = {
+        required: true,
+        loading: false,
+        enrolled: true,
+        verified: true,
+        factorId: 'demo-factor',
+        error: '',
+      };
+      setMfaStatus(status);
+      return status;
+    }
+
     if (role !== 'admin') {
       const status = createDefaultMfaStatus();
       setMfaStatus(status);
@@ -193,6 +214,23 @@ export function AuthProvider({ children }) {
 
     const initAuth = async () => {
       clearLegacySensitiveCaches();
+
+      if (IS_DEMO_MODE) {
+        const mockData = localStorage.getItem('mock_user_session');
+        if (mockData) {
+          try {
+            const mockUser = JSON.parse(mockData);
+            setUser(mockUser);
+            await refreshMfaStatus(mockUser.role);
+          } catch {
+            localStorage.removeItem('mock_user_session');
+          }
+        }
+        setSession(null);
+        setIsLoading(false);
+        return;
+      }
+
       const { data } = await supabase.auth.getSession();
       if (!isMounted) return;
 
@@ -217,6 +255,12 @@ export function AuthProvider({ children }) {
 
     initAuth();
 
+    if (IS_DEMO_MODE) {
+      return () => {
+        isMounted = false;
+      };
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
       if (nextSession?.user) {
@@ -234,11 +278,17 @@ export function AuthProvider({ children }) {
     });
 
     return () => { isMounted = false; subscription.unsubscribe(); };
-  }, [fetchUserProfile]);
+  }, [fetchUserProfile, refreshMfaStatus]);
 
   const login = useCallback(async (email, password) => {
     setIsLoading(true);
     try {
+      if (IS_DEMO_MODE) {
+        const message = 'Portföy sürümünde gerçek hesap girişi kapalıdır.';
+        showError('Demo Sürümü', message);
+        return { success: false, error: message };
+      }
+
       if (isDevMockEmail(email)) {
         const mockRole = ['psikolog@sakliterapi.com', 'psikolog@gizlibiriz.com'].includes(email.toLowerCase()) ? 'psychologist' : 'client';
         const mockUser = {
@@ -289,9 +339,43 @@ export function AuthProvider({ children }) {
     }
   }, [fetchUserProfile, success, showError]);
 
+  const loginAsDemo = useCallback(async (role) => {
+    if (!IS_DEMO_MODE) {
+      return { success: false, error: 'Demo girişi bu ortamda kullanılamaz.' };
+    }
+
+    setIsLoading(true);
+    try {
+      const demoUser = createDemoUser(role);
+      localStorage.setItem('mock_user_session', JSON.stringify(demoUser));
+      setSession(null);
+      setUser(demoUser);
+      const nextMfaStatus = await refreshMfaStatus(demoUser.role);
+      success('Demo Hazır', 'Kurgusal verilerle güvenli inceleme ortamı açıldı.');
+      return {
+        success: true,
+        role: demoUser.role,
+        mfa: nextMfaStatus,
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  }, [refreshMfaStatus, success]);
+
   const register = useCallback(async (email, password, profileData, role) => {
     setIsLoading(true);
     try {
+      const registrationEnabled = role === 'psychologist'
+        ? FEATURES.professionalApplications
+        : FEATURES.publicRegistration;
+      if (!registrationEnabled) {
+        const message = IS_DEMO_MODE
+          ? 'Portföy sürümünde gerçek hesap oluşturma kapalıdır.'
+          : 'Bu hesap türü için yeni kullanıcı alımı henüz açık değildir.';
+        showError(IS_DEMO_MODE ? 'Demo Sürümü' : 'Kayıt Kapalı', message);
+        return { success: false, error: message };
+      }
+
       if (isDevMockEmail(email)) {
         success('Test Kaydı Başarılı', 'Lütfen giriş yapın.');
         return { success: true };
@@ -415,6 +499,10 @@ export function AuthProvider({ children }) {
   }, [success, showError]);
 
   const resendVerification = useCallback(async (email) => {
+    if (IS_DEMO_MODE) {
+      return { success: false, error: 'Portföy sürümünde gerçek e-posta gönderimi kapalıdır.' };
+    }
+
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail) {
       return { success: false, error: 'E-posta adresi gerekli.' };
@@ -436,7 +524,9 @@ export function AuthProvider({ children }) {
   }, [showError, success]);
 
   const logout = useCallback(async () => {
-    await supabase.auth.signOut();
+    if (!IS_DEMO_MODE) {
+      await supabase.auth.signOut();
+    }
     localStorage.removeItem('mock_user_session');
     setUser(null);
     setMfaStatus(createDefaultMfaStatus());
@@ -453,8 +543,9 @@ export function AuthProvider({ children }) {
     isAuthenticated: !!user,
     isClient: user?.role === 'client',
     isPsychologist: user?.role === 'psychologist',
-    isLoading, login, register, resendVerification, logout, refreshUserProfile,
+    isLoading, login, loginAsDemo, register, resendVerification, logout, refreshUserProfile,
     mfaStatus, refreshMfaStatus,
+    isDemoMode: IS_DEMO_MODE,
   };
 
   return <AuthContext.Provider value={value}>{!isLoading && children}</AuthContext.Provider>;

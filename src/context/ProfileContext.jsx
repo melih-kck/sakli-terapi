@@ -2,6 +2,7 @@
 import { createContext, useContext, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { useToast } from './ToastContext';
+import { ALLOW_LOCAL_SIMULATION } from '../config/runtime';
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 const ProfileContext = createContext(null);
@@ -17,7 +18,7 @@ const getInitials = (name = '') => {
     .join('') || 'ST';
 };
 
-const isDevMockUser = (user) => import.meta.env.DEV && Boolean(user?.id?.startsWith('mock-'));
+const isDevMockUser = (user) => ALLOW_LOCAL_SIMULATION && Boolean(user?.id?.startsWith('mock-'));
 
 // ─── Default shapes ──────────────────────────────────────────────────────────
 

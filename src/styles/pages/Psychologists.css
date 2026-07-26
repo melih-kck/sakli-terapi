@@ -328,6 +328,16 @@
   min-width: 0;
 }
 
+.demo-booking-note {
+  margin: calc(var(--space-sm) * -1) 0 var(--space-lg);
+  padding: var(--space-sm) var(--space-md);
+  border-left: 3px solid #1f806b;
+  background: #f1faf7;
+  color: #28564c;
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
 .psy-section {
   margin-bottom: var(--space-3xl);
 }

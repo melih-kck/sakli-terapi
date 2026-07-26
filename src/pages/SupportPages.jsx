@@ -10,6 +10,7 @@ import { useToast } from '../context/ToastContext';
 import { supabase } from '../lib/supabase';
 import { getAuthRedirectUrl } from '../lib/auth';
 import { BRAND, getMailto } from '../config/brand';
+import { IS_DEMO_MODE } from '../config/runtime';
 import '../styles/pages/SupportPages.css';
 
 function PageShell({ eyebrow, title, subtitle, children, aside }) {
@@ -287,25 +288,52 @@ const faqGroups = {
   ],
 };
 
+const demoFaqGroups = {
+  genel: [
+    [`${BRAND.name} neyi gösteriyor?`, 'Danışan, uzman ve yönetici rollerini; rumuz, uzman keşfi, kurgusal randevu, seans simülasyonu ve belge onayı akışlarıyla gösteren akademik bir ürün prototipidir.'],
+    ['Bu sitedeki kişiler gerçek mi?', 'Hayır. Profiller, belgeler, randevular, bildirimler ve değerlendirmelerin tamamı kurgusaldır.'],
+    ['Gerçek bilgilerimi girmeli miyim?', 'Hayır. Demo alanlarına kişisel, sağlık, iletişim, kimlik veya mesleki belge bilgisi girilmemelidir.'],
+  ],
+  randevu: [
+    ['Demo randevusuna nasıl katılırım?', 'Danışan rolünü açtıktan sonra paneldeki güncel demo randevusunun seans düğmesiyle görüşme simülasyonuna geçebilirsiniz.'],
+    ['Görüşme seçenekleri çalışıyor mu?', 'Metin, ses ve bulanık görüntü ürün akışları gösterilir. Demo, gerçek bir sağlık görüşmesi veya klinik kayıt oluşturmaz.'],
+    ['Ücret veya ödeme var mı?', 'Hayır. Portföy sürümünde ücret ve ödeme tamamen kapalıdır.'],
+  ],
+  hesap: [
+    ['Demo hesabı nasıl açılır?', 'Giriş sayfasından danışan, uzman veya yönetici rolünü tek tıkla seçin. E-posta veya şifre gerekmez.'],
+    ['Demo işlemleri nerede saklanır?', 'Rol seçimi ve kurgusal demo işlemleri yalnızca tarayıcının yerel depolama alanında tutulabilir.'],
+    ['Demo verilerini sıfırlayabilir miyim?', 'Yönetici panelindeki Demo Verilerini Sıfırla düğmesiyle yönetici başvuru akışını başlangıç durumuna döndürebilirsiniz.'],
+  ],
+};
+
 export function FaqPage() {
   const [activeGroup, setActiveGroup] = useState('genel');
   const [openIndex, setOpenIndex] = useState(0);
+  const visibleFaqGroups = IS_DEMO_MODE ? demoFaqGroups : faqGroups;
 
   return (
     <PageShell
       eyebrow="Destek"
       title="Sık Sorulan Sorular"
-      subtitle="Gizlilik, randevu ve hesap işlemleriyle ilgili en çok sorulan başlıklar."
+      subtitle={IS_DEMO_MODE
+        ? 'Portföy prototipinin kapsamı ve örnek ürün akışlarıyla ilgili başlıklar.'
+        : 'Gizlilik, randevu ve hesap işlemleriyle ilgili en çok sorulan başlıklar.'}
       aside={(
         <div className="content-info-panel">
-          <h3>Yanıt bulamadınız mı?</h3>
-          <p>Destek ekibine e-posta göndererek hesabınız veya randevunuzla ilgili yardım alabilirsiniz.</p>
-          <a className="btn btn-outline btn-block" href={getMailto(BRAND.supportEmail)}>Destek Ekibine Yaz</a>
+          <h3>{IS_DEMO_MODE ? 'Projeyi inceliyor musunuz?' : 'Yanıt bulamadınız mı?'}</h3>
+          <p>
+            {IS_DEMO_MODE
+              ? 'Araştırma sorusu, teknik mimari ve üretim sınırları Hakkında sayfasında özetlenmiştir.'
+              : 'Destek ekibine e-posta göndererek hesabınız veya randevunuzla ilgili yardım alabilirsiniz.'}
+          </p>
+          {IS_DEMO_MODE
+            ? <Link className="btn btn-outline btn-block" to="/hakkinda">Proje Kapsamını Aç</Link>
+            : <a className="btn btn-outline btn-block" href={getMailto(BRAND.supportEmail)}>Destek Ekibine Yaz</a>}
         </div>
       )}
     >
       <div className="content-tabs" role="tablist" aria-label="SSS kategorileri">
-        {Object.keys(faqGroups).map(group => (
+        {Object.keys(visibleFaqGroups).map(group => (
           <button
             key={group}
             className={activeGroup === group ? 'active' : ''}
@@ -318,7 +346,7 @@ export function FaqPage() {
       </div>
 
       <div className="faq-list">
-        {faqGroups[activeGroup].map(([question, answer], index) => (
+        {visibleFaqGroups[activeGroup].map(([question, answer], index) => (
           <div key={question} className={`faq-item ${openIndex === index ? 'open' : ''}`}>
             <button type="button" onClick={() => setOpenIndex(openIndex === index ? -1 : index)}>
               <span>{question}</span>
@@ -333,6 +361,36 @@ export function FaqPage() {
 }
 
 export function PrivacyPolicyPage() {
+  if (IS_DEMO_MODE) {
+    return (
+      <PageShell
+        eyebrow="Demo gizliliği"
+        title="Portföy Sürümü Gizlilik Bilgisi"
+        subtitle={`${BRAND.name} portföy demosu, gerçek sağlık verisi toplamadan incelenmek üzere yapılandırılmıştır.`}
+        aside={(
+          <div className="content-info-panel">
+            <h3>Kısa Özet</h3>
+            <p>Gerçek hesap, başvuru, belge, randevu, ödeme veya klinik kayıt kabul edilmez.</p>
+            <span className="content-date">Son güncelleme: 26 Temmuz 2026</span>
+          </div>
+        )}
+      >
+        <ContentSection title="Demo Verileri">
+          <p>Görünen bütün kullanıcılar, uzman profilleri, belgeler, bildirimler, randevular ve değerlendirmeler kurgusaldır. Herhangi bir gerçek kişi veya kurumu temsil etmez.</p>
+        </ContentSection>
+        <ContentSection title="Tarayıcıda Saklananlar">
+          <p>Seçtiğiniz demo rolü ve demo içinde yaptığınız kurgusal işlemler yalnızca tarayıcınızın yerel depolama alanında tutulabilir. Demo verilerini tarayıcı ayarlarından temizleyebilir veya yönetici panelinden başlangıç durumuna döndürebilirsiniz.</p>
+        </ContentSection>
+        <ContentSection title="Girmemeniz Gereken Bilgiler">
+          <p>Demo alanlarına gerçek ad, iletişim bilgisi, sağlık bilgisi, diploma, kimlik belgesi veya üçüncü kişilere ait veri girmeyin. Portföy sürümü bu verileri kabul etmek amacıyla tasarlanmamıştır.</p>
+        </ContentSection>
+        <ContentSection title="Üretim Sürümü">
+          <p>Gerçek kullanıcı alımı ancak sağlık mevzuatı, uzaktan hizmet, veri koruma, sözleşme ve ödeme gereklilikleri tamamlandıktan sonra ayrı bir canlı ortamda etkinleştirilecektir.</p>
+        </ContentSection>
+      </PageShell>
+    );
+  }
+
   return (
     <PageShell
       eyebrow="Gizlilik"
@@ -371,6 +429,38 @@ export function PrivacyPolicyPage() {
 }
 
 export function TermsPage() {
+  if (IS_DEMO_MODE) {
+    return (
+      <PageShell
+        eyebrow="Demo koşulları"
+        title="Portföy Sürümü Kullanım Koşulları"
+        subtitle="Etkileşimli prototipi incelerken geçerli olan güvenli kullanım sınırları."
+        aside={(
+          <div className="content-info-panel">
+            <h3>Önemli</h3>
+            <p>Bu sürüm sağlık hizmeti veya acil müdahale sağlamaz ve gerçek randevu oluşturmaz.</p>
+            <span className="content-date">Son güncelleme: 26 Temmuz 2026</span>
+          </div>
+        )}
+      >
+        <ContentSection title="Amaç">
+          <p>{BRAND.name}, CV ve akademik değerlendirme amacıyla sunulan çalışan bir ürün prototipidir. Arayüz ve iş akışları kurgusal verilerle demonstrasyon amacıyla kullanılabilir.</p>
+        </ContentSection>
+        <ContentSection title="Kullanım Sınırları">
+          <ul className="content-list">
+            <li>Gerçek kişisel veya sağlık verisi girilmemelidir.</li>
+            <li>Demo profilleri gerçek uzman veya mesleki yetki olarak yorumlanmamalıdır.</li>
+            <li>Demo randevuları, mesajları ve yönetici kararları gerçek dünyada sonuç doğurmaz.</li>
+            <li>Acil durumda platform yerine 112 Acil Çağrı Merkezi aranmalıdır.</li>
+          </ul>
+        </ContentSection>
+        <ContentSection title="Gelecek Canlı Sürüm">
+          <p>Gerçek hizmet koşulları, sorumluluk dağılımı, ücret, iptal ve veri işleme hükümleri gerekli izin ve hukuk incelemelerinden sonra ayrıca yayımlanacaktır.</p>
+        </ContentSection>
+      </PageShell>
+    );
+  }
+
   return (
     <PageShell
       eyebrow="Koşullar"
