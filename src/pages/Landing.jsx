@@ -186,8 +186,8 @@ export default function Landing() {
               <p className="section-subtitle">Arama ve profil deneyimini göstermek için hazırlanmış demo verileri</p>
             </div>
             <div className="grid grid-4 gap-lg">
-              {topPsychologists.map((psych, i) => (
-                <Link to={`/psikolog/${psych.id}`} key={psych.id} className="card card-interactive psych-card animate-on-scroll" style={{ animationDelay: `${i * 0.1}s` }}>
+              {topPsychologists.map((psych) => (
+                <Link to={`/psikolog/${psych.id}`} key={psych.id} className="card card-interactive psych-card">
                   <div className="card-body">
                     <div className="avatar avatar-xl" style={{ margin: '0 auto var(--space-md)' }}>
                       {psych.initials}
