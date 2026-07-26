@@ -1,5 +1,5 @@
 -- ==========================================
--- GIZLIBIRIZ - Migration 017: Public view security
+-- SAKLI TERAPI - Migration 017: Public view security
 -- ==========================================
 -- Run this after Migration 016. Public catalog views become security-invoker
 -- views, while narrowly scoped functions retain the safe public projections.

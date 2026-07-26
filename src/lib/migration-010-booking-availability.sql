@@ -1,5 +1,5 @@
 -- ==========================================
--- GIZLIBIRIZ - Booking availability hardening
+-- SAKLI TERAPI - Booking availability hardening
 -- Migration 010
 -- ==========================================
 

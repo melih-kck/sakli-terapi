@@ -1,5 +1,5 @@
 -- ==========================================
--- GIZLIBIRIZ - Email notification delivery
+-- SAKLI TERAPI - Email notification delivery
 -- Migration 013
 -- ==========================================
 -- Run this after Migration 012. Operational email is opt-in. Authentication

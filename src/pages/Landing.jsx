@@ -70,7 +70,7 @@ export default function Landing() {
     { q: 'Psikologlar nasıl yayımlanıyor?', a: 'Demo yönetici paneli, mesleki belge inceleme ve başvuru kararının ürün akışını gösterir. Portföy sürümündeki bütün profiller kurgusaldır.' },
     { q: 'Acil durumda ne olur?', a: `${BRAND.name} portföy sürümü sağlık veya acil müdahale hizmeti değildir. Hayati risk veya acil durumda 112 Acil Çağrı Merkezi aranmalıdır.` },
     { q: 'Seans ücreti ne kadardır?', a: 'Portföy sürümünde gerçek ücret veya ödeme bulunmaz. Ödeme entegrasyonu, hukuki ve operasyonel onaylardan sonra ele alınacak üretim özelliğidir.' },
-    { q: 'Gerçek hesap açabilir miyim?', a: 'Hayır. Bu sürüm yalnızca akademik değerlendirme ve portföy sunumu içindir. Hazır demo rolleri gerçek kişisel veri girmeden kullanılabilir.' },
+    { q: 'Gerçek hesap açabilir miyim?', a: 'Hayır. Bu sürüm yalnızca ürün ve mühendislik portföyü içindir. Hazır demo rolleri gerçek kişisel veri girmeden kullanılabilir.' },
   ];
 
   const getSpecLabel = (id) => SPECIALIZATIONS.find(s => s.id === id)?.label || id;

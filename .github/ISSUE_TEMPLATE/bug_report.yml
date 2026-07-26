@@ -1,0 +1,47 @@
+name: Hata bildirimi
+description: Tekrarlanabilir bir ürün veya arayüz sorununu bildirin
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Teşekkürler. Bu depo bir ürün prototipidir. Lütfen gerçek kişisel, sağlık veya kimlik verisi paylaşmayın.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Sorun
+      description: Beklenen ve gerçekleşen davranışı kısa ve açık biçimde anlatın.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Tekrarlama adımları
+      placeholder: |
+        1. ... sayfasını açın
+        2. ... düğmesine basın
+        3. ... sonucunu gözlemleyin
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Ortam
+      description: İşletim sistemi, tarayıcı ve cihaz bilgisi
+      placeholder: Windows 11, Chrome 127, masaüstü
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Ek bağlam
+      description: Hassas veri içermeyen ekran görüntüsü, hata metni veya konsol çıktısı
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Gizlilik
+      options:
+        - label: Bu bildirim gerçek kişisel, sağlık veya kimlik verisi içermiyor.
+          required: true

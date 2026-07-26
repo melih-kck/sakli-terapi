@@ -15,7 +15,6 @@ const isDevMockEmail = (email = '') => {
   const normalizedEmail = email.toLowerCase();
   return (
     normalizedEmail === 'psikolog@sakliterapi.com'
-    || normalizedEmail === 'psikolog@gizlibiriz.com'
     || normalizedEmail.endsWith('@test.local')
     || normalizedEmail.includes('+bypass@')
   );
@@ -26,7 +25,8 @@ const clearLegacySensitiveCaches = () => {
   const demoCleanupKey = 'sakli-terapi-demo-cache-cleaned-v1';
   if (IS_DEMO_MODE && localStorage.getItem(demoCleanupKey)) return;
 
-  const sensitivePrefixes = [
+  // Remove sensitive data written by versions released before the rebrand.
+  const legacySensitivePrefixes = [
     'gizlibiriz-client-profile-',
     'gizlibiriz-client-mood-',
     'gizlibiriz-client-reviews-',
@@ -34,7 +34,7 @@ const clearLegacySensitiveCaches = () => {
   ];
 
   Object.keys(localStorage).forEach((key) => {
-    if (key === 'gizlibiriz-global-reviews' || sensitivePrefixes.some(prefix => key.startsWith(prefix))) {
+    if (key === 'gizlibiriz-global-reviews' || legacySensitivePrefixes.some(prefix => key.startsWith(prefix))) {
       localStorage.removeItem(key);
     }
   });
@@ -290,7 +290,7 @@ export function AuthProvider({ children }) {
       }
 
       if (isDevMockEmail(email)) {
-        const mockRole = ['psikolog@sakliterapi.com', 'psikolog@gizlibiriz.com'].includes(email.toLowerCase()) ? 'psychologist' : 'client';
+        const mockRole = email.toLowerCase() === 'psikolog@sakliterapi.com' ? 'psychologist' : 'client';
         const mockUser = {
           id: `mock-${crypto.randomUUID()}`, email, role: mockRole,
           alias: mockRole === 'psychologist' ? null : 'Test Danışanı',

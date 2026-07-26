@@ -1,5 +1,5 @@
 -- ==========================================
--- GIZLIBIRIZ - Psychologist verification documents
+-- SAKLI TERAPI - Psychologist verification documents
 -- Migration 015
 -- ==========================================
 -- Run this after Migration 014. Documents stay in a private Storage bucket;

@@ -3,8 +3,8 @@ import { getAuthRedirectUrl, isEmailNotConfirmedError, maskEmail } from './auth'
 
 describe('auth helpers', () => {
   it('builds same-origin auth redirect URLs', () => {
-    expect(getAuthRedirectUrl('/hesap-dogrulandi', 'https://gizlibiriz.vercel.app/path'))
-      .toBe('https://gizlibiriz.vercel.app/hesap-dogrulandi');
+    expect(getAuthRedirectUrl('/hesap-dogrulandi', 'https://sakli-terapi.vercel.app/path'))
+      .toBe('https://sakli-terapi.vercel.app/hesap-dogrulandi');
   });
 
   it('recognizes unconfirmed email errors without exposing other auth failures', () => {
@@ -14,7 +14,7 @@ describe('auth helpers', () => {
   });
 
   it('masks email addresses for confirmation screens', () => {
-    expect(maskEmail('melih@example.com')).toBe('me***@example.com');
+    expect(maskEmail('kullanici@example.com')).toBe('ku*******@example.com');
     expect(maskEmail('a@example.com')).toBe('a***@example.com');
     expect(maskEmail('invalid')).toBe('');
   });

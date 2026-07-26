@@ -11,7 +11,7 @@ import { ALLOW_LOCAL_SIMULATION } from '../config/runtime';
 
 const ReviewContext = createContext(null);
 
-const CLIENT_REVIEWS_KEY_PREFIX = 'gizlibiriz-client-reviews-';
+const CLIENT_REVIEWS_KEY_PREFIX = 'sakli-terapi-client-reviews-';
 const getClientReviewsKey = (userId) => `${CLIENT_REVIEWS_KEY_PREFIX}${userId}`;
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

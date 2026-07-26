@@ -1,6 +1,6 @@
 import { IS_DEMO_MODE } from '../config/runtime';
 
-const GLOBAL_REVIEWS_KEY = 'gizlibiriz-global-reviews';
+const GLOBAL_REVIEWS_KEY = 'sakli-terapi-global-reviews';
 
 export const getLocalReviews = () => {
   try {

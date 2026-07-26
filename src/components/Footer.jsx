@@ -82,7 +82,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="footer-bottom">
-          <p>© 2026 {BRAND.name}. {IS_DEMO_MODE ? 'Akademik değerlendirme prototipi.' : 'Tüm hakları saklıdır.'}</p>
+          <p>© 2026 {BRAND.name}. {IS_DEMO_MODE ? 'Ürün ve mühendislik portföyü.' : 'Tüm hakları saklıdır.'}</p>
           <div className="footer-badges">
             <span className="footer-badge">🔒 TLS bağlantısı</span>
             <span className="footer-badge">🛡️ Rol bazlı erişim</span>

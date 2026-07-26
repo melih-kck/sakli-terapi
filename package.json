@@ -1,7 +1,26 @@
 {
   "name": "sakli-terapi",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Mahremiyet odaklı çevrim içi psikolojik destek deneyimini araştıran etkileşimli ürün ve mühendislik portföyü.",
+  "author": "Melih Küçük",
+  "license": "UNLICENSED",
+  "homepage": "https://sakli-terapi.vercel.app/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/melih-kck/sakli-terapi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/melih-kck/sakli-terapi/issues"
+  },
+  "keywords": [
+    "react",
+    "vite",
+    "supabase",
+    "webrtc",
+    "privacy",
+    "portfolio"
+  ],
   "type": "module",
   "engines": {
     "node": ">=22.22.0"

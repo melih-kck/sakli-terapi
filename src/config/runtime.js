@@ -18,6 +18,6 @@ export const FEATURES = Object.freeze({
 
 export const DEMO_DISCLOSURE = Object.freeze({
   short: 'Portföy demosu',
-  title: 'Akademik değerlendirme için hazırlanmış teknoloji prototipi',
+  title: 'Ürün ve mühendislik portföyü için hazırlanmış teknoloji prototipi',
   description: 'Bu sürüm sağlık hizmeti sunmaz, gerçek randevu kabul etmez ve yalnızca kurgusal veriler kullanır.',
 });

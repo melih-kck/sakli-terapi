@@ -49,7 +49,7 @@ export async function initializeMonitoring() {
 export function captureError(error, context = {}) {
   if (sentryClient) {
     sentryClient.withScope((scope) => {
-      scope.setContext('gizlibiriz', context);
+      scope.setContext('sakli-terapi', context);
       sentryClient.captureException(error);
     });
     return;

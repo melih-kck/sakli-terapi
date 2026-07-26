@@ -2,14 +2,14 @@
 
 Son güncelleme: 26 Temmuz 2026
 
-## Akademik Portföy Sürümü
+## Profesyonel Portföy Sürümü
 
 - [x] Uygulamanın varsayılan modu güvenli portföy demosu yapıldı
 - [x] Danışan, uzman ve yönetici için tek tıkla kurgusal rol deneyimleri hazırlandı
 - [x] Gerçek kayıt, başvuru, randevu, ödeme ve sağlık hizmeti özellikleri kapatıldı
 - [x] Demo verilerinin Supabase ve Sentry'ye gönderilmesi engellendi
 - [x] Kurgusal uzman kataloğu, randevu, seans ve belge onay akışları hazırlandı
-- [x] GitHub özel depo, CI ve Vercel dağıtım yapısı hazır
+- [x] Herkese açık GitHub portföy deposu, CI ve Vercel dağıtım yapısı hazır
 - [x] Otomatik lint, test, build ve yüksek önem düzeyi bağımlılık denetimi var
 - [x] Masaüstü ve mobil görünüm kabul kontrolü yapıldı
 
@@ -43,4 +43,4 @@ Son güncelleme: 26 Temmuz 2026
 
 ## Teslim Kararı
 
-Mevcut sürüm hocalara, işe alım ekiplerine ve akademik değerlendirmeye sunulabilecek etkileşimli portföy demosudur. Sağlık hizmeti veya açık pilot değildir. `demo` modu ve özellik kapıları, yukarıdaki üretim gereklilikleri tamamlanana kadar korunmalıdır.
+Mevcut sürüm işe alım ekiplerine, ürün ve mühendislik incelemelerine sunulabilecek etkileşimli portföy demosudur. Sağlık hizmeti veya açık pilot değildir. `demo` modu ve özellik kapıları, yukarıdaki üretim gereklilikleri tamamlanana kadar korunmalıdır.

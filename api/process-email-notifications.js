@@ -24,7 +24,7 @@ const getConfiguration = () => ({
   resendApiKey: process.env.RESEND_API_KEY,
   emailFrom: process.env.EMAIL_FROM,
   workerSecret: process.env.EMAIL_WORKER_SECRET || process.env.CRON_SECRET,
-  appUrl: process.env.PUBLIC_APP_URL || 'https://gizlibiriz.vercel.app',
+  appUrl: process.env.PUBLIC_APP_URL || 'https://sakli-terapi.vercel.app',
 });
 
 const callSupabaseRpc = async (configuration, functionName, body) => {
@@ -72,7 +72,7 @@ const sendEmail = async (configuration, notification) => {
     headers: {
       authorization: `Bearer ${configuration.resendApiKey}`,
       'content-type': 'application/json',
-      'idempotency-key': `gizlibiriz-notification-${notification.queue_id}`,
+      'idempotency-key': `sakli-terapi-notification-${notification.queue_id}`,
     },
     body: JSON.stringify({
       from: configuration.emailFrom,

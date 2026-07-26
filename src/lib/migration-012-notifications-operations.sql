@@ -1,5 +1,5 @@
 -- ==========================================
--- GIZLIBIRIZ - Notifications and operations
+-- SAKLI TERAPI - Notifications and operations
 -- Migration 012
 -- ==========================================
 -- Run this after Migration 011. This migration adds private, persistent
