@@ -13,6 +13,7 @@ import {
   getPendingPsychologists,
   getVerificationDocumentUrl,
   rejectPsychologist,
+  resetDemoAdminData,
   reviewVerificationDocument,
   suspendPsychologist,
 } from '../lib/admin';
@@ -20,6 +21,7 @@ import {
   DOCUMENT_STATUS_LABELS,
   DOCUMENT_TYPE_LABELS,
 } from '../lib/verification-documents';
+import { IS_DEMO_MODE } from '../config/runtime';
 
 const statusLabels = {
   approved: 'Aktif',
@@ -178,6 +180,13 @@ export default function AdminDashboard() {
     );
   };
 
+  const handleDemoReset = async () => {
+    if (!window.confirm('Kurgusal yönetici verilerini başlangıç durumuna döndürmek istiyor musunuz?')) return;
+    resetDemoAdminData();
+    success('Demo Sıfırlandı', 'Başvuru ve işlem geçmişi başlangıç durumuna döndürüldü.');
+    await loadData();
+  };
+
   if (!user || user.role !== 'admin') return null;
 
   const renderVerificationDocuments = (psychologist) => {
@@ -311,8 +320,17 @@ export default function AdminDashboard() {
           <div className="dash-header mb-2xl">
             <div>
               <h1 className="dash-title">Yönetici Paneli</h1>
-              <p className="dash-subtitle">Psikolog başvuruları ve yönetici işlem geçmişi</p>
+              <p className="dash-subtitle">
+                {IS_DEMO_MODE
+                  ? 'Kurgusal başvurularla belge inceleme ve karar akışı'
+                  : 'Psikolog başvuruları ve yönetici işlem geçmişi'}
+              </p>
             </div>
+            {IS_DEMO_MODE && (
+              <button type="button" className="btn btn-outline btn-sm" onClick={handleDemoReset}>
+                Demo Verilerini Sıfırla
+              </button>
+            )}
           </div>
 
           <div className="grid grid-3 gap-md mb-2xl">

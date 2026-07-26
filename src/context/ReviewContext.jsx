@@ -3,6 +3,7 @@ import { createContext, useContext, useState, useCallback, useEffect, useMemo } 
 import { supabase } from '../lib/supabase';
 import { appendLocalReview, getLocalReviewsForPsychologist } from '../lib/local-reviews';
 import { useToast } from './ToastContext';
+import { ALLOW_LOCAL_SIMULATION } from '../config/runtime';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -84,7 +85,7 @@ const toReviewInsertPayload = (review) => ({
 // Helper — mock user detection
 // ---------------------------------------------------------------------------
 
-const isDevMockUser = (user) => import.meta.env.DEV && Boolean(user?.id?.startsWith('mock-'));
+const isDevMockUser = (user) => ALLOW_LOCAL_SIMULATION && Boolean(user?.id?.startsWith('mock-'));
 
 // ---------------------------------------------------------------------------
 // Provider
@@ -309,7 +310,7 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
       (user && isDevMockUser(user)) ||
       !UUID_PATTERN.test(String(psychologistId))
     ) {
-      if (!import.meta.env.DEV) return [];
+      if (!ALLOW_LOCAL_SIMULATION) return [];
       const localReviews = getLocalReviewsForPsychologist(psychologistId);
       return localReviews.map(normalizeReview);
     }
@@ -334,7 +335,7 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
 
       if (error) {
         console.warn('Psikolog değerlendirmeleri çekilemedi:', error);
-        return import.meta.env.DEV
+        return ALLOW_LOCAL_SIMULATION
           ? getLocalReviewsForPsychologist(psychologistId).map(normalizeReview)
           : [];
       }
@@ -342,7 +343,7 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
       return (data || []).map(normalizeReview);
     } catch (err) {
       console.warn('fetchReviewsForPsychologist hatası:', err);
-      return import.meta.env.DEV
+      return ALLOW_LOCAL_SIMULATION
         ? getLocalReviewsForPsychologist(psychologistId).map(normalizeReview)
         : [];
     }

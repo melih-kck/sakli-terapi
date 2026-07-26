@@ -9,6 +9,7 @@ import { useToast } from '../context/ToastContext';
 import { APPROACHES, COMMUNICATION_CHANNELS, DAYS_TR, SPECIALIZATIONS } from '../data/constants';
 import { supabase } from '../lib/supabase';
 import { BRAND, getMailto } from '../config/brand';
+import { IS_DEMO_MODE } from '../config/runtime';
 import '../styles/pages/Settings.css';
 
 const EDITABLE_CHANNELS = COMMUNICATION_CHANNELS.filter(channel => ['text', 'voice', 'video-blur'].includes(channel.id));
@@ -722,15 +723,24 @@ export default function Settings() {
                     </div>
 
                     <div className="card p-md mt-md" style={{ background: 'rgba(255, 82, 82, 0.05)', border: '1px solid var(--danger)' }}>
-                      <h4 className="mb-sm text-danger">Tehlikeli Bölge</h4>
-                      <p className="text-sm mb-md">Hesap silme talebi destek onayıyla ilerler; ani ve geri alınamaz silme burada yapılmaz.</p>
-                      <a
-                        className="btn btn-danger btn-sm"
-                        href={getMailto(BRAND.supportEmail, 'Hesap silme talebi')}
-                        onClick={() => warning('Hesap Silme', 'Talebinizi tamamlamak için destek ekibine e-posta gönderin.')}
-                      >
-                        Hesap Silme Talebi
-                      </a>
+                      <h4 className="mb-sm text-danger">{IS_DEMO_MODE ? 'Demo Verisi' : 'Tehlikeli Bölge'}</h4>
+                      {IS_DEMO_MODE ? (
+                        <p className="text-sm m-0">
+                          Bu rol gerçek bir hesap değildir. Demo oturumu çıkış yaptığınızda kapatılır;
+                          kurgusal değişiklikleri tarayıcı verilerini temizleyerek sıfırlayabilirsiniz.
+                        </p>
+                      ) : (
+                        <>
+                          <p className="text-sm mb-md">Hesap silme talebi destek onayıyla ilerler; ani ve geri alınamaz silme burada yapılmaz.</p>
+                          <a
+                            className="btn btn-danger btn-sm"
+                            href={getMailto(BRAND.supportEmail, 'Hesap silme talebi')}
+                            onClick={() => warning('Hesap Silme', 'Talebinizi tamamlamak için destek ekibine e-posta gönderin.')}
+                          >
+                            Hesap Silme Talebi
+                          </a>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}

@@ -5,6 +5,7 @@ import { fetchApprovedPsychologists, getDemoPsychologists } from '../lib/psychol
 import RatingStars from '../components/RatingStars';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { IS_DEMO_MODE } from '../config/runtime';
 import '../styles/pages/Psychologists.css';
 
 export default function PsychologistList() {
@@ -92,8 +93,12 @@ export default function PsychologistList() {
       <main className="page-content">
         <div className="container">
           <div className="psy-header">
-            <h1>Psikologlarımız</h1>
-            <p>Size en uygun psikoloğu bulun</p>
+            <h1>{IS_DEMO_MODE ? 'Kurgusal Uzman Kataloğu' : 'Psikologlarımız'}</h1>
+            <p>
+              {IS_DEMO_MODE
+                ? 'Filtreleme ve profil keşfi akışını tamamen kurgusal verilerle inceleyin'
+                : 'Size en uygun psikoloğu bulun'}
+            </p>
           </div>
 
           <div className="sidebar-layout">
@@ -166,6 +171,7 @@ export default function PsychologistList() {
                         <div className="psy-card-info">
                           <h4>{psych.name}</h4>
                           <p className="psy-card-title">{psych.title}</p>
+                          {psych.isDemo && <span className="badge badge-success">Demo profili</span>}
                           {psych.isCandidate && <span className="badge badge-accent">Aday Psikolog</span>}
                         </div>
                         <div className={`psy-status ${psych.isAvailable ? 'available' : ''}`}>

@@ -7,6 +7,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
 import { BRAND } from '../config/brand';
+import { DEMO_DISCLOSURE, IS_DEMO_MODE } from '../config/runtime';
 import '../styles/pages/Landing.css';
 
 export default function Landing() {
@@ -64,12 +65,12 @@ export default function Landing() {
   }, []);
 
   const faqs = [
-    { q: `${BRAND.name} nasıl çalışır?`, a: 'Rumuz ile kayıt olur, psikolog profillerini inceler ve size uygun uzmanı seçersiniz. Görüntülü seanslarda blur seviyesini kontrol edebilir, görüntüyü blursuz paylaşmadan önce ayrıca onay verirsiniz.' },
+    { q: `${BRAND.name} nasıl çalışır?`, a: 'Prototip; rumuz temelli danışan profili, uzman keşfi, randevu, yönetici doğrulaması ve kontrollü görüntü seçeneklerini üç ayrı kullanıcı rolünde gösterir.' },
     { q: 'Hangi bilgilerim gizli kalır?', a: 'Psikolog ekranlarında danışanlar rumuzlarıyla görünür. Hesap e-postası ve isteğe bağlı acil durum kişisi psikolog profillerine veya herkese açık sayfalara açılmaz. Görüşmede paylaşacağınız kişisel bilgiler sizin kontrolünüzdedir.' },
-    { q: 'Psikologlar nasıl yayımlanıyor?', a: 'Psikolog başvuruları yönetici incelemesine alınır. Yalnızca onay durumu verilen profiller psikolog kataloğunda yayımlanır.' },
-    { q: 'Acil durumda ne olur?', a: 'Kayıt sırasında verdiğiniz acil durum bilgileri güvenli bir kasada saklanır. Psikologunuz bir kriz tespit ettiğinde, platform yönetimi bu bilgilere kontrollü erişim sağlayarak gerekli acil müdahaleyi koordine eder.' },
-    { q: 'Seans ücreti ne kadardır?', a: 'Seans ücretleri psikolog profillerinde gösterilir. Ödeme entegrasyonu henüz etkin değildir; randevular panelde ödeme bekliyor durumunda görünür.' },
-    { q: 'Aday psikolog nedir?', a: 'Aday psikologlar, psikoloji bölümü son sınıf öğrencileridir ve bir süpervizör (danışman hoca) gözetiminde seans yaparlar. Deneyim kazanmak isteyen, eğitimli ve denetim altında çalışan genç profesyonellerdir.' },
+    { q: 'Psikologlar nasıl yayımlanıyor?', a: 'Demo yönetici paneli, mesleki belge inceleme ve başvuru kararının ürün akışını gösterir. Portföy sürümündeki bütün profiller kurgusaldır.' },
+    { q: 'Acil durumda ne olur?', a: `${BRAND.name} portföy sürümü sağlık veya acil müdahale hizmeti değildir. Hayati risk veya acil durumda 112 Acil Çağrı Merkezi aranmalıdır.` },
+    { q: 'Seans ücreti ne kadardır?', a: 'Portföy sürümünde gerçek ücret veya ödeme bulunmaz. Ödeme entegrasyonu, hukuki ve operasyonel onaylardan sonra ele alınacak üretim özelliğidir.' },
+    { q: 'Gerçek hesap açabilir miyim?', a: 'Hayır. Bu sürüm yalnızca akademik değerlendirme ve portföy sunumu içindir. Hazır demo rolleri gerçek kişisel veri girmeden kullanılabilir.' },
   ];
 
   const getSpecLabel = (id) => SPECIALIZATIONS.find(s => s.id === id)?.label || id;
@@ -80,18 +81,15 @@ export default function Landing() {
       <main>
         {/* Hero Section */}
         <section className="hero" id="hero-section">
-          <div className="hero-bg">
-            <div className="hero-shape hero-shape-1"></div>
-            <div className="hero-shape hero-shape-2"></div>
-            <div className="hero-shape hero-shape-3"></div>
-          </div>
           <div className="container hero-content">
+            {IS_DEMO_MODE && <span className="hero-eyebrow">{DEMO_DISCLOSURE.title}</span>}
             <h1 className="hero-title fade-in">
-              <span className="text-gradient">{BRAND.name}</span>
+              {BRAND.name}
             </h1>
             <p className="hero-subtitle fade-in delay-1">
-              {BRAND.tagline} Rumuz temelli profil ve kontrollü görüntü seçenekleriyle
-              doğrulanmış psikolog profillerinden çevrim içi destek alın.
+              {IS_DEMO_MODE
+                ? 'Mahremiyet odaklı bir psikolojik destek platformunun danışan, uzman ve yönetici deneyimlerini güvenli demo verileriyle keşfedin.'
+                : `${BRAND.tagline} Rumuz temelli profil ve kontrollü görüntü seçenekleriyle doğrulanmış psikolog profillerinden çevrim içi destek alın.`}
             </p>
             <div className="hero-actions fade-in delay-2">
               {user ? (
@@ -99,8 +97,8 @@ export default function Landing() {
                   Panele Git
                 </Link>
               ) : (
-                <Link to="/kayit" className="btn btn-primary btn-xl" id="hero-cta-start">
-                  Hemen Başla
+                <Link to={IS_DEMO_MODE ? '/giris' : '/kayit'} className="btn btn-primary btn-xl" id="hero-cta-start">
+                  {IS_DEMO_MODE ? 'Etkileşimli Demoyu Aç' : 'Hemen Başla'}
                 </Link>
               )}
               <Link to="/psikologlar" className="btn btn-outline btn-xl" id="hero-cta-browse" style={{ borderColor: '#fff', color: '#fff' }}>
@@ -109,18 +107,18 @@ export default function Landing() {
             </div>
             <div className="hero-stats fade-in delay-3">
               <div className="hero-stat">
-                <span className="hero-stat-value">Rumuz</span>
-                <span className="hero-stat-label">Temelli Profil</span>
+                <span className="hero-stat-value">3 Rol</span>
+                <span className="hero-stat-label">Uçtan Uca Deneyim</span>
               </div>
               <div className="hero-stat-divider"></div>
               <div className="hero-stat">
-                <span className="hero-stat-value">3</span>
-                <span className="hero-stat-label">Görüşme Kanalı</span>
+                <span className="hero-stat-value">0</span>
+                <span className="hero-stat-label">Gerçek Kullanıcı Verisi</span>
               </div>
               <div className="hero-stat-divider"></div>
               <div className="hero-stat">
-                <span className="hero-stat-value">1-5</span>
-                <span className="hero-stat-label">Gizlilik Seviyesi</span>
+                <span className="hero-stat-value">CI</span>
+                <span className="hero-stat-label">Otomatik Kalite Hattı</span>
               </div>
             </div>
           </div>
@@ -131,14 +129,14 @@ export default function Landing() {
           <div className="container">
             <div className="text-center mb-2xl animate-on-scroll">
               <h2>Nasıl Çalışır?</h2>
-              <p className="section-subtitle">4 basit adımda anonim danışmanlık</p>
+              <p className="section-subtitle">Dört adımda ürün prototipini inceleyin</p>
             </div>
             <div className="steps-grid">
               {[
-                { icon: '🔐', title: 'Anonim Kayıt', desc: 'Rumuz seçin, kimliğiniz gizli kalsın' },
-                { icon: '🔍', title: 'Psikolog Seçin', desc: 'Yorum ve puanlara göre size uygun psikoloğu bulun' },
-                { icon: '💬', title: 'Anonim Seans', desc: 'Blur efektiyle güvenli görüşmenizi yapın' },
-                { icon: '⭐', title: 'Değerlendirin', desc: 'Deneyiminizi paylaşarak diğerlerine yol gösterin' },
+                { icon: '01', title: 'Rol Seçin', desc: 'Danışan, uzman veya yönetici deneyimini tek tıkla açın' },
+                { icon: '02', title: 'Akışı İnceleyin', desc: 'Kurgusal profiller, paneller ve randevular arasında ilerleyin' },
+                { icon: '03', title: 'Seans Odasını Deneyin', desc: 'Gizlilik seviyeleri, ses ve metin kontrollerini keşfedin' },
+                { icon: '04', title: 'Mimariyi Görün', desc: 'Güvenlik sınırlarını ve üretim öncesi kapıları inceleyin' },
               ].map((step, i) => (
                 <div key={i} className="step-card animate-on-scroll" style={{ animationDelay: `${i * 0.15}s` }}>
                   {i > 0 && <div className="step-connector-line"></div>}
@@ -184,8 +182,8 @@ export default function Landing() {
         <section className="section" id="featured-psychologists">
           <div className="container">
             <div className="text-center mb-2xl animate-on-scroll">
-              <h2>Öne Çıkan Psikologlarımız</h2>
-              <p className="section-subtitle">En yüksek puan alan uzmanlarımız</p>
+              <h2>Kurgusal Uzman Profilleri</h2>
+              <p className="section-subtitle">Arama ve profil deneyimini göstermek için hazırlanmış demo verileri</p>
             </div>
             <div className="grid grid-4 gap-lg">
               {topPsychologists.map((psych, i) => (
@@ -195,6 +193,7 @@ export default function Landing() {
                       {psych.initials}
                     </div>
                     <h4 className="text-center">{psych.name}</h4>
+                    <p className="text-center"><span className="badge badge-success">Kurgusal demo profili</span></p>
                     <p className="text-center" style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginBottom: 'var(--space-sm)' }}>{psych.title}</p>
                     <div className="flex-center mb-sm">
                       <RatingStars rating={psych.rating} size="sm" count={psych.reviewCount} />

@@ -7,6 +7,7 @@ import { useToast } from '../context/ToastContext';
 import { COMMUNICATION_CHANNELS, SPECIALIZATIONS } from '../data/constants';
 import { fetchApprovedPsychologists, getDemoPsychologists } from '../lib/psychologists';
 import { formatCurrency, getSessionFee, getSessionJoinState } from '../lib/session-flow';
+import { ALLOW_LOCAL_SIMULATION, IS_DEMO_MODE } from '../config/runtime';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import MoodTracker from '../components/MoodTracker';
@@ -135,7 +136,7 @@ export default function ClientDashboard() {
   };
 
   const handleDevPaymentBypass = async (session) => {
-    if (!import.meta.env.DEV) return;
+    if (!ALLOW_LOCAL_SIMULATION) return;
 
     setUpdatingSessionId(session.id);
     const result = await updateSession(session.id, {
@@ -197,7 +198,9 @@ export default function ClientDashboard() {
                     <div>
                       <h3 className="m-0">Yaklaşan Randevularınız</h3>
                       <p className="appointment-section-subtitle">
-                        {upcomingSessions.length} aktif randevu • {pendingPayments.length} ödeme bekleyen
+                        {IS_DEMO_MODE
+                          ? `${upcomingSessions.length} kurgusal randevu • gerçek tahsilat yok`
+                          : `${upcomingSessions.length} aktif randevu • ${pendingPayments.length} ödeme bekleyen`}
                       </p>
                     </div>
                   </div>
@@ -215,7 +218,7 @@ export default function ClientDashboard() {
                         const fee = getSessionFee(psych, session);
                         const hasPendingPayment = session.paymentStatus !== 'paid';
                         const requiresPayment = session.paymentRequired && hasPendingPayment;
-                        const canUseDevPaymentBypass = import.meta.env.DEV && requiresPayment && (
+                        const canUseDevPaymentBypass = ALLOW_LOCAL_SIMULATION && requiresPayment && (
                           String(session.id).startsWith('local-')
                           || String(session.clientId).startsWith('mock-')
                           || String(user.id).startsWith('mock-')
@@ -254,7 +257,7 @@ export default function ClientDashboard() {
                               <div className="session-payment-box">
                                 <div>
                                   <span className="appointment-eyebrow">Planlanan Ücret</span>
-                                  <strong>{formatCurrency(fee)}</strong>
+                                  <strong>{IS_DEMO_MODE ? 'Demo, ücret yok' : formatCurrency(fee)}</strong>
                                   <p>
                                     {session.paymentRequired
                                       ? 'Ödeme tamamlandığında seans odası açılacaktır.'

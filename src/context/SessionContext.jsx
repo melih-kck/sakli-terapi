@@ -2,6 +2,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { getSessionSlotKey, isSessionSlotInPast } from '../lib/session-flow';
+import { ALLOW_LOCAL_SIMULATION, FEATURES, IS_DEMO_MODE } from '../config/runtime';
 import { useToast } from './ToastContext';
 
 // ─── Constants ──────────────────────────────────────────────────────────────────
@@ -97,7 +98,7 @@ export function SessionProvider({ user, children }) {
     if (!user?.id) return [];
 
     // Mock users: read sessions from localStorage
-    if (import.meta.env.DEV && isMockUser(user)) {
+    if (ALLOW_LOCAL_SIMULATION && isMockUser(user)) {
       try {
         const stored = localStorage.getItem('mock_user_session');
         if (stored) {
@@ -162,7 +163,7 @@ export function SessionProvider({ user, children }) {
     }
 
     if (
-      import.meta.env.DEV
+      ALLOW_LOCAL_SIMULATION
       && (isMockUser(user) || !UUID_PATTERN.test(String(sessionId)))
     ) {
       const participantRole = user.role === 'psychologist' ? 'psychologist' : 'client';
@@ -220,7 +221,7 @@ export function SessionProvider({ user, children }) {
     }
 
     if (!UUID_PATTERN.test(String(psychologistId))) {
-      return import.meta.env.DEV
+      return ALLOW_LOCAL_SIMULATION
         ? { success: true, slots: [], slotKeys: [] }
         : { success: false, error: 'Geçersiz psikolog kaydı.', slots: [], slotKeys: [] };
     }
@@ -255,6 +256,12 @@ export function SessionProvider({ user, children }) {
       return { success: false, error: 'Randevu oluşturmak için giriş yapmalısınız.' };
     }
 
+    if (!IS_DEMO_MODE && !FEATURES.liveAppointments) {
+      const message = 'Gerçek randevu alımı kontrollü pilot başlayana kadar kapalıdır.';
+      showError('Randevu Alımı Kapalı', message);
+      return { success: false, error: message };
+    }
+
     if (user.role !== 'client') {
       const message = 'Randevu yalnızca danışan hesabıyla oluşturulabilir.';
       showError('Randevu Oluşturulamadı', message);
@@ -263,7 +270,7 @@ export function SessionProvider({ user, children }) {
 
     // Local / mock fallback
     if (
-      import.meta.env.DEV
+      ALLOW_LOCAL_SIMULATION
       && (isMockUser(user) || !UUID_PATTERN.test(String(sessionData.psychologistId)))
     ) {
       const fallbackSession = normalizeSession({
@@ -380,7 +387,7 @@ export function SessionProvider({ user, children }) {
 
     // Local / mock fallback
     if (
-      import.meta.env.DEV
+      ALLOW_LOCAL_SIMULATION
       && (isMockUser(user) || !UUID_PATTERN.test(String(sessionId)))
     ) {
       applyLocalUpdate(updates);
@@ -422,7 +429,7 @@ export function SessionProvider({ user, children }) {
   // ── markSessionReviewed ─────────────────────────────────────────────────────
   const markSessionReviewed = useCallback(async (sessionId) => {
     if (
-      import.meta.env.DEV
+      ALLOW_LOCAL_SIMULATION
       && (isMockUser(user) || !UUID_PATTERN.test(String(sessionId)))
     ) {
       return updateSession(sessionId, { reviewed: true });

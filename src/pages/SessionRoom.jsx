@@ -20,6 +20,7 @@ import {
   normalizeSessionBlurLevel,
   SESSION_BLUR_PRESETS,
 } from '../lib/session-privacy';
+import { ALLOW_LOCAL_SIMULATION, IS_DEMO_MODE } from '../config/runtime';
 import Navbar from '../components/Navbar';
 import '../styles/pages/Session.css';
 
@@ -72,7 +73,7 @@ export default function SessionRoom() {
   const sessionChannel = currentSession?.channel || location.state?.channel || 'video-blur';
   const sessionAccess = getSessionJoinState(currentSession);
   const panelPath = user?.role === 'admin' ? '/admin' : isClient ? '/panel' : '/psikolog-panel';
-  const isMockUser = import.meta.env.DEV && user?.id?.startsWith('mock-');
+  const isMockUser = ALLOW_LOCAL_SIMULATION && user?.id?.startsWith('mock-');
   const [roomAccess, setRoomAccess] = useState(null);
   const [roomAccessError, setRoomAccessError] = useState('');
   const [isLoadingRoomAccess, setIsLoadingRoomAccess] = useState(true);
@@ -183,6 +184,7 @@ export default function SessionRoom() {
   const animationFrameId = useRef(null);
   const retryTimerRef = useRef(null);
   const connectionAttemptTimerRef = useRef(null);
+  const demoResponseTimerRef = useRef(null);
   const fallbackAudioContextRef = useRef(null);
   const fallbackAudioNodeRef = useRef(null);
   const remotePlaybackNoticeShownRef = useRef(false);
@@ -410,6 +412,52 @@ export default function SessionRoom() {
       connectionAttemptTimerRef.current = null;
     };
     const initCamera = async () => {
+      if (IS_DEMO_MODE) {
+        setMicrophoneAvailable(false);
+        setMicOn(false);
+
+        if (sessionChannel === 'text') {
+          demoModeRef.current = true;
+          setSessionStatus('active');
+          addSystemMessage('Yerel metin simülasyonu hazır. Mesajlar yalnızca bu tarayıcıda işlenir.');
+          return;
+        }
+
+        if (sessionChannel === 'video-blur') {
+          const demoCanvas = document.createElement('canvas');
+          demoCanvas.width = 1280;
+          demoCanvas.height = 720;
+          drawCanvasNotice(
+            demoCanvas.getContext('2d'),
+            demoCanvas,
+            'Güvenli demo görüntüsü',
+            'Kamera izni gerekmez',
+          );
+          const demoStream = demoCanvas.captureStream(15);
+          localStreamRef.current = demoStream;
+          blurStreamRef.current = demoStream;
+          setCameraAvailable(false);
+          setCamOn(true);
+          camOnRef.current = true;
+          syncPipPreview();
+          setSessionStatus('ready');
+          addSystemMessage('Demo görüntüsü hazır. Görüşme simülasyonunu başlatabilirsiniz.');
+          return;
+        }
+
+        const silentAudio = createSilentAudioStream();
+        if (silentAudio) {
+          fallbackAudioContextRef.current = silentAudio.audioContext;
+          fallbackAudioNodeRef.current = silentAudio.source;
+          localStreamRef.current = silentAudio.stream;
+        }
+        setCameraAvailable(null);
+        demoModeRef.current = true;
+        setSessionStatus('active');
+        addSystemMessage('Yerel sesli görüşme simülasyonu hazır. Gerçek mikrofon verisi kullanılmaz.');
+        return;
+      }
+
       // Eğer sadece metin (yazışma) ise, kamerayı ve mikrofonu hiç isteme!
       if (sessionChannel === 'text') {
         initPeer();
@@ -501,10 +549,10 @@ export default function SessionRoom() {
     };
 
     const scheduleClientReconnect = () => {
-      if (!isClient) return;
+      if (!isClient || demoModeRef.current) return;
       clearTimeout(retryTimerRef.current);
       retryTimerRef.current = setTimeout(() => {
-        if (!isMounted.current || !peerRef.current || peerRef.current.destroyed) return;
+        if (!isMounted.current || demoModeRef.current || !peerRef.current || peerRef.current.destroyed) return;
         if (!shouldRetrySessionConnection({
           connection: connRef.current,
           call: callRef.current,
@@ -707,6 +755,7 @@ export default function SessionRoom() {
       isMounted.current = false;
       clearTimeout(retryTimerRef.current);
       clearConnectionAttemptTimer();
+      clearTimeout(demoResponseTimerRef.current);
       cancelAnimationFrame(animationFrameId.current);
       if (callRef.current) {
         callRef.current.close();
@@ -745,7 +794,22 @@ export default function SessionRoom() {
     };
 
     setMessages(prev => [...prev, msg]);
-    if (connRef.current && connRef.current.open) {
+    if (demoModeRef.current) {
+      const response = {
+        id: crypto.randomUUID(),
+        text: isClient
+          ? 'Demo uzmanı mesajınızı aldı. Bu yanıt yalnızca ürün akışını göstermek için oluşturuldu.'
+          : 'Demo danışanı mesajınızı aldı. Bu yanıt yalnızca ürün akışını göstermek için oluşturuldu.',
+        sender: isClient ? 'psychologist' : 'client',
+        time: new Date().toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'}),
+      };
+      clearTimeout(demoResponseTimerRef.current);
+      demoResponseTimerRef.current = setTimeout(() => {
+        if (demoModeRef.current) {
+          setMessages(prev => [...prev, response]);
+        }
+      }, 350);
+    } else if (connRef.current && connRef.current.open) {
       connRef.current.send(msg);
     } else {
       setMessages(prev => [...prev, {
@@ -827,13 +891,21 @@ export default function SessionRoom() {
   };
 
   const startDemoMode = () => {
-    if (!import.meta.env.DEV) return;
+    if (!ALLOW_LOCAL_SIMULATION) return;
     const demoStream = shouldUseBlurStream
       ? blurStreamRef.current
       : localStreamRef.current;
 
     if (remoteVideoRef.current && demoStream) {
       demoModeRef.current = true;
+      clearTimeout(retryTimerRef.current);
+      clearTimeout(connectionAttemptTimerRef.current);
+      connectionAttemptTimerRef.current = null;
+      if (connRef.current && !connRef.current.open) {
+        const staleConnection = connRef.current;
+        connRef.current = null;
+        staleConnection.close();
+      }
       remoteVideoRef.current.srcObject = demoStream;
       setRemoteVideoMissing(false);
       setRemoteVideoReady(true);
@@ -993,9 +1065,9 @@ export default function SessionRoom() {
                     {microphoneAvailable === false && (
                       <span className="media-fallback-badge">Mikrofon kullanılamıyor</span>
                     )}
-                    {import.meta.env.DEV && (
+                    {ALLOW_LOCAL_SIMULATION && (
                       <button className="btn btn-primary" onClick={startDemoMode}>
-                        🎥 Simülasyon (Test) Modunu Başlat
+                        {IS_DEMO_MODE ? 'Görüşme Simülasyonunu Başlat' : 'Simülasyon Modunu Başlat'}
                       </button>
                     )}
                   </div>

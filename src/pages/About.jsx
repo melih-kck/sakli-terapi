@@ -34,71 +34,104 @@ export default function About() {
           <div className="container">
             <h1 className="fade-in">{BRAND.name} Nedir?</h1>
             <p className="fade-in delay-1">
-              Rumuz temelli profiller ve bulanık görüntü seçenekleriyle mahremiyeti
-              önceleyen bir psikolojik danışmanlık platformu.
+              Psikolojik desteğe ilk adımda mahremiyet hissinin nasıl güçlendirilebileceğini
+              araştıran, çalışan bir ürün ve teknoloji prototipi.
             </p>
           </div>
         </section>
 
-        {/* Mission & Vision */}
+        {/* Problem and product hypothesis */}
         <section className="section">
           <div className="container">
             <div className="about-grid animate-on-scroll">
               <div className="about-content">
-                <h2>Misyonumuz</h2>
+                <span className="content-eyebrow">Araştırma sorusu</span>
+                <h2>Görünürlük kontrolü desteğe başlamayı kolaylaştırabilir mi?</h2>
                 <p>
-                  Pek çok insan, etiketlenme veya yargılanma korkusuyla psikolojik destek 
-                  almaktan çekiniyor. {BRAND.name} olarak misyonumuz; psikolog ekranlarında
-                  rumuzla yer alabileceğiniz ve görüntünüz üzerinde kontrol sahibi olduğunuz
-                  güvenli bir dijital görüşme alanı oluşturmaktır.
+                  Proje; danışanın gerçek adı yerine rumuzla ilerleyebildiği, görüntüsünü
+                  bulanık başlatabildiği ve hazır olduğunda görünürlüğünü kademeli olarak
+                  değiştirebildiği bir görüşme deneyimini inceliyor.
                 </p>
                 <p>
-                  Veri minimizasyonu yaklaşımımız ve blur teknolojimiz, danışanların
-                  görüşme sırasında ne kadar görünür olacaklarını seçmesine yardımcı olur.
+                  Temel ürün hipotezi, kontrolün danışanda kalmasının güven hissini
+                  güçlendirebileceği ve ilk görüşmeye başlama eşiğini azaltabileceğidir.
+                  Bu hipotez henüz klinik bir sonuç iddiası değildir; akademik geri bildirim
+                  ve ileride uygun araştırma tasarımıyla değerlendirilmelidir.
                 </p>
               </div>
               <div className="card p-xl" style={{ borderStyle: 'dashed', borderColor: 'var(--border-medium)' }}>
-                <h3 className="mb-sm text-center" style={{ color: 'var(--text-primary)' }}>Neden Gizlilik?</h3>
+                <h3 className="mb-sm" style={{ color: 'var(--text-primary)' }}>Prototipin Sınırı</h3>
                 <ul style={{ color: 'var(--text-secondary)', lineHeight: '1.8', listStyleType: 'square', paddingLeft: '20px' }}>
-                  <li>Toplumsal baskı ve önyargılardan arınma</li>
-                  <li>Kendini çok daha açık ve dürüst ifade edebilme</li>
-                  <li>Rol bazlı erişim ve veri minimizasyonu</li>
-                  <li>Kariyer veya statü endişesi taşımadan tedavi olma</li>
+                  <li>Sağlık veya acil müdahale hizmeti sunmaz</li>
+                  <li>Gerçek danışan veya uzman kabul etmez</li>
+                  <li>Gerçek ödeme ve klinik kayıt oluşturmaz</li>
+                  <li>Bütün görünür profiller ve belgeler kurgusaldır</li>
                 </ul>
               </div>
             </div>
           </div>
         </section>
 
-
-
-        {/* Our Values */}
-        <section className="section">
+        <section className="section why-section">
           <div className="container">
             <div className="text-center mb-2xl animate-on-scroll">
-              <h2>Temel Değerlerimiz</h2>
-              <p style={{ color: 'var(--text-secondary)' }}>Bizi biz yapan ilkeler</p>
+              <span className="content-eyebrow">Ürün kapsamı</span>
+              <h2>Üç Kullanıcı Rolü, Tek Akış</h2>
+              <p style={{ color: 'var(--text-secondary)' }}>Her rol kendi veri ve işlem sınırları içinde çalışır.</p>
             </div>
             <div className="values-grid animate-on-scroll">
               <div className="card value-card">
-                <div className="value-icon">🛡️</div>
-                <h4>Mahremiyet</h4>
-                <p>Özel veriler amaçlarına göre ayrıştırılır ve erişim kullanıcı rolleriyle sınırlandırılır.</p>
+                <div className="value-icon">D</div>
+                <h4>Danışan</h4>
+                <p>Rumuz, uzman keşfi, randevu, ruh hâli takibi ve gizlilik kontrollü seans odası.</p>
               </div>
               <div className="card value-card">
-                <div className="value-icon">👨‍⚕️</div>
-                <h4>Yetkinlik</h4>
-                <p>Yalnızca yönetici incelemesinden geçen psikolog profilleri katalogda yer alır.</p>
+                <div className="value-icon">U</div>
+                <h4>Uzman</h4>
+                <p>Profil, uygunluk takvimi, danışan rumuzları ve rol sınırlandırılmış seans yönetimi.</p>
               </div>
               <div className="card value-card">
-                <div className="value-icon">🌍</div>
-                <h4>Erişilebilirlik</h4>
-                <p>Mekandan ve zamandan bağımsız, herkesin nitelikli desteğe kolayca ulaşmasını sağlıyoruz.</p>
+                <div className="value-icon">Y</div>
+                <h4>Yönetici</h4>
+                <p>Kurgusal mesleki belge inceleme, başvuru kararı, askıya alma ve işlem geçmişi.</p>
               </div>
               <div className="card value-card">
-                <div className="value-icon">⚙️</div>
-                <h4>İnovasyon</h4>
-                <p>Blur teknolojisi ve akıllı eşleştirme ile sektörün sınırlarını zorluyoruz.</p>
+                <div className="value-icon">G</div>
+                <h4>Güvenlik</h4>
+                <p>Satır seviyesinde yetkilendirme, MFA, özel belge alanı ve denetlenebilir işlemler.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Technical structure */}
+        <section className="section">
+          <div className="container">
+            <div className="text-center mb-2xl animate-on-scroll">
+              <span className="content-eyebrow">Teknik yapı</span>
+              <h2>Çalışan MVP Mimarisi</h2>
+              <p style={{ color: 'var(--text-secondary)' }}>Portföy demosu üretim veritabanına bağlanmadan yerel kurgusal verilerle çalışır.</p>
+            </div>
+            <div className="values-grid animate-on-scroll">
+              <div className="card value-card">
+                <div className="value-icon">R</div>
+                <h4>React + Vite</h4>
+                <p>Rol tabanlı, duyarlı ve erişilebilir kullanıcı arayüzleri.</p>
+              </div>
+              <div className="card value-card">
+                <div className="value-icon">S</div>
+                <h4>Supabase</h4>
+                <p>Kimlik doğrulama, PostgreSQL, RLS politikaları ve özel belge deposu.</p>
+              </div>
+              <div className="card value-card">
+                <div className="value-icon">W</div>
+                <h4>WebRTC</h4>
+                <p>Metin, ses ve bulanıklık kontrollü görüntülü görüşme prototipi.</p>
+              </div>
+              <div className="card value-card">
+                <div className="value-icon">C</div>
+                <h4>Kalite Hattı</h4>
+                <p>GitHub Actions, otomatik testler, lint, derleme ve bağımlılık denetimi.</p>
               </div>
             </div>
           </div>

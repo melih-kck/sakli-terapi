@@ -8,7 +8,10 @@ export const BRAND = Object.freeze({
   namePrimary: 'Saklı',
   nameAccent: 'Terapi',
   tagline: 'Kendin kal, güvende konuş.',
-  description: 'Rumuz temelli profiller ve kontrollü görüntü seçenekleri sunan çevrim içi psikolojik destek platformu.',
+  description: envValue(
+    'VITE_BRAND_DESCRIPTION',
+    'Rumuz temelli profiller ve kontrollü görüntü seçeneklerini araştıran mahremiyet odaklı ürün prototipi.',
+  ),
   supportEmail: envValue('VITE_SUPPORT_EMAIL', 'destek@sakliterapi.com'),
   contactEmail: envValue('VITE_CONTACT_EMAIL', 'iletisim@sakliterapi.com'),
 });

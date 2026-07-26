@@ -1,0 +1,84 @@
+.demo-notice {
+  position: fixed;
+  z-index: 1200;
+  right: 16px;
+  bottom: 16px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  width: min(336px, calc(100vw - 32px));
+  padding: 10px 12px;
+  border: 1px solid rgba(26, 102, 87, 0.24);
+  border-radius: 8px;
+  background: rgba(247, 253, 251, 0.96);
+  color: #153b34;
+  box-shadow: 0 10px 30px rgba(20, 48, 42, 0.16);
+  backdrop-filter: blur(12px);
+}
+
+.demo-notice-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #1f806b;
+  box-shadow: 0 0 0 4px rgba(31, 128, 107, 0.12);
+}
+
+.demo-notice div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.demo-notice strong {
+  font-size: 0.82rem;
+}
+
+.demo-notice div span {
+  display: none;
+}
+
+.demo-notice a {
+  color: #146452;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.demo-notice-close {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #315c54;
+  font: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.demo-notice-close:hover,
+.demo-notice-close:focus-visible {
+  background: rgba(31, 128, 107, 0.1);
+  outline: none;
+}
+
+@media (max-width: 560px) {
+  .demo-notice {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: auto;
+  }
+
+  .demo-notice div span {
+    display: none;
+  }
+}

@@ -1,6 +1,8 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router';
 import { useAuth } from './context/AuthContext';
+import DemoNotice from './components/DemoNotice';
+import { FEATURES, IS_DEMO_MODE } from './config/runtime';
 
 // Pages imported using React.lazy for performance
 const Landing = lazy(() => import('./pages/Landing'));
@@ -18,6 +20,7 @@ const SessionRoom = lazy(() => import('./pages/SessionRoom'));
 const About = lazy(() => import('./pages/About'));
 const Settings = lazy(() => import('./pages/Settings'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+const DemoRestricted = lazy(() => import('./pages/DemoRestricted'));
 const lazyNamed = (loader, exportName) => lazy(() => loader().then(module => ({ default: module[exportName] })));
 const EmailVerificationPage = lazy(() => import('./pages/EmailVerification'));
 const EmailConfirmationPage = lazyNamed(() => import('./pages/EmailVerification'), 'EmailConfirmationPage');
@@ -73,43 +76,63 @@ const ProtectedRoute = ({ children, role, requireAdminMfa = true }) => {
 };
 
 function App() {
-  return (
-    <Suspense fallback={<PageLoader />}>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/giris" element={<Login />} />
-        <Route path="/kayit" element={<RegisterChoice />} />
-        <Route path="/kayit/danisan" element={<RegisterClient />} />
-        <Route path="/kayit/psikolog" element={<RegisterPsychologist />} />
-        
-        <Route path="/psikologlar" element={<PsychologistList />} />
-        <Route path="/psikolog/:id" element={<PsychologistProfile />} />
-        
-        <Route path="/panel" element={<ProtectedRoute role="client"><ClientDashboard /></ProtectedRoute>} />
-        <Route path="/psikolog-panel" element={<ProtectedRoute role="psychologist"><PsychDashboard /></ProtectedRoute>} />
-        <Route path="/admin-mfa" element={<ProtectedRoute role="admin" requireAdminMfa={false}><AdminMfa /></ProtectedRoute>} />
-        <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
-        
-        <Route path="/seans/:sessionId" element={<ProtectedRoute><SessionRoom /></ProtectedRoute>} />
-        
-        {/* Support Pages */}
-        <Route path="/degerlendirme" element={<ProtectedRoute role="client"><ReviewPage /></ProtectedRoute>} />
-        <Route path="/degerlendirmeler" element={<ProtectedRoute role="psychologist"><ReviewsPage /></ProtectedRoute>} />
-        <Route path="/hakkinda" element={<About />} />
-        <Route path="/ayarlar" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-        <Route path="/bildirimler" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
-        <Route path="/sss" element={<FaqPage />} />
-        <Route path="/gizlilik-politikasi" element={<PrivacyPolicyPage />} />
-        <Route path="/kullanim-kosullari" element={<TermsPage />} />
-        <Route path="/sifremi-unuttum" element={<ForgotPasswordPage />} />
-        <Route path="/sifre-yenile" element={<ResetPasswordPage />} />
-        <Route path="/e-posta-dogrula" element={<EmailVerificationPage />} />
-        <Route path="/hesap-dogrulandi" element={<EmailConfirmationPage />} />
+  const registrationEnabled = FEATURES.publicRegistration || FEATURES.professionalApplications;
+  const sessionExperienceEnabled = IS_DEMO_MODE || FEATURES.liveSessions;
 
-        {/* Catch all route */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Suspense>
+  return (
+    <>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/giris" element={<Login />} />
+          <Route path="/kayit" element={registrationEnabled ? <RegisterChoice /> : <DemoRestricted />} />
+          <Route path="/kayit/danisan" element={FEATURES.publicRegistration ? <RegisterClient /> : <DemoRestricted />} />
+          <Route path="/kayit/psikolog" element={FEATURES.professionalApplications ? <RegisterPsychologist /> : <DemoRestricted />} />
+
+          <Route path="/psikologlar" element={<PsychologistList />} />
+          <Route path="/psikolog/:id" element={<PsychologistProfile />} />
+
+          <Route path="/panel" element={<ProtectedRoute role="client"><ClientDashboard /></ProtectedRoute>} />
+          <Route path="/psikolog-panel" element={<ProtectedRoute role="psychologist"><PsychDashboard /></ProtectedRoute>} />
+          <Route path="/admin-mfa" element={<ProtectedRoute role="admin" requireAdminMfa={false}><AdminMfa /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
+
+          <Route
+            path="/seans/:sessionId"
+            element={(
+              <ProtectedRoute>
+                {sessionExperienceEnabled
+                  ? <SessionRoom />
+                  : (
+                    <DemoRestricted
+                      title="Canlı seans özelliği kapalı"
+                      description="Gerçek görüşmeler, kapalı pilot ve operasyon onayları tamamlanana kadar kullanıma açılmayacaktır."
+                    />
+                  )}
+              </ProtectedRoute>
+            )}
+          />
+
+          {/* Support Pages */}
+          <Route path="/degerlendirme" element={<ProtectedRoute role="client"><ReviewPage /></ProtectedRoute>} />
+          <Route path="/degerlendirmeler" element={<ProtectedRoute role="psychologist"><ReviewsPage /></ProtectedRoute>} />
+          <Route path="/hakkinda" element={<About />} />
+          <Route path="/ayarlar" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/bildirimler" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+          <Route path="/sss" element={<FaqPage />} />
+          <Route path="/gizlilik-politikasi" element={<PrivacyPolicyPage />} />
+          <Route path="/kullanim-kosullari" element={<TermsPage />} />
+          <Route path="/sifremi-unuttum" element={IS_DEMO_MODE ? <DemoRestricted /> : <ForgotPasswordPage />} />
+          <Route path="/sifre-yenile" element={IS_DEMO_MODE ? <DemoRestricted /> : <ResetPasswordPage />} />
+          <Route path="/e-posta-dogrula" element={IS_DEMO_MODE ? <DemoRestricted /> : <EmailVerificationPage />} />
+          <Route path="/hesap-dogrulandi" element={IS_DEMO_MODE ? <DemoRestricted /> : <EmailConfirmationPage />} />
+
+          {/* Catch all route */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+      <DemoNotice />
+    </>
   );
 }
 

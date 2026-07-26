@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { BRAND } from '../config/brand';
+import { IS_DEMO_MODE } from '../config/runtime';
 import './Navbar.css';
 
 export default function Navbar() {
@@ -62,6 +63,7 @@ export default function Navbar() {
           <span className="logo-text">
             {BRAND.namePrimary} <span className="logo-highlight">{BRAND.nameAccent}</span>
           </span>
+          {IS_DEMO_MODE && <span className="navbar-demo-badge">Demo</span>}
         </Link>
 
         {/* Desktop Nav Links */}
@@ -98,8 +100,10 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link to="/giris" className="btn btn-ghost btn-sm" id="nav-mobile-login">Giriş Yap</Link>
-                <Link to="/kayit" className="btn btn-primary btn-sm" id="nav-mobile-register">Ücretsiz Başla</Link>
+                <Link to="/giris" className="btn btn-primary btn-sm" id="nav-mobile-login">
+                  {IS_DEMO_MODE ? 'Demoyu Aç' : 'Giriş Yap'}
+                </Link>
+                {!IS_DEMO_MODE && <Link to="/kayit" className="btn btn-primary btn-sm" id="nav-mobile-register">Ücretsiz Başla</Link>}
               </>
             )}
           </div>
@@ -122,8 +126,10 @@ export default function Navbar() {
             </div>
           ) : (
             <>
-              <Link to="/giris" className="btn btn-ghost" id="nav-login">Giriş Yap</Link>
-              <Link to="/kayit" className="btn btn-primary" id="nav-register">Ücretsiz Başla</Link>
+              <Link to="/giris" className={IS_DEMO_MODE ? 'btn btn-primary' : 'btn btn-ghost'} id="nav-login">
+                {IS_DEMO_MODE ? 'Demoyu Aç' : 'Giriş Yap'}
+              </Link>
+              {!IS_DEMO_MODE && <Link to="/kayit" className="btn btn-primary" id="nav-register">Ücretsiz Başla</Link>}
             </>
           )}
         </div>

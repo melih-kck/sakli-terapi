@@ -1,30 +1,50 @@
 # Saklı Terapi
 
-Anonim psikolojik danismanlik platformu. Frontend React + Vite, backend Supabase uzerinde calisir.
+Saklı Terapi; gizlilik odaklı çevrim içi psikolojik danışmanlık fikrinin danışan, uzman ve yönetici deneyimlerini gösteren etkileşimli bir akademik portföy demosudur.
 
-## Local Development
+## Sunum Sürümü
+
+Uygulama varsayılan olarak `demo` modunda çalışır. Bu mod:
+
+- Yalnızca kurgusal kullanıcı ve uzman verileri kullanır.
+- Tek tıkla danışan, uzman ve yönetici rollerinin incelenmesini sağlar.
+- Gerçek kayıt, başvuru, randevu, ödeme ve sağlık hizmeti akışlarını kapalı tutar.
+- Demo randevularını ve yönetici kararlarını yalnızca tarayıcıda saklar.
+- Supabase ve Sentry'ye demo kullanıcı verisi göndermez.
+
+Canlı site: [gizlibiriz.vercel.app](https://gizlibiriz.vercel.app/)
+
+Hocalara yönelik kısa sunum akışı için `docs/academic-demo-guide.md` dosyasını kullanın.
+
+## Yerel Geliştirme
 
 ```bash
 npm install
 npm run dev
 ```
 
-Copy `.env.example` to `.env.local` and fill in the local Supabase values.
+`.env.example` dosyasını `.env.local` olarak kopyalayın. Portföy demosu Supabase anahtarı olmadan da çalışır.
 
-Required local env keys:
+## Özellik Kapıları
+
+Varsayılan güvenli ayarlar:
 
 ```env
-VITE_SUPABASE_URL=
-VITE_SUPABASE_ANON_KEY=
+VITE_APP_MODE=demo
+VITE_ENABLE_PUBLIC_REGISTRATION=false
+VITE_ENABLE_PROFESSIONAL_APPLICATIONS=false
+VITE_ENABLE_LIVE_APPOINTMENTS=false
+VITE_ENABLE_LIVE_SESSIONS=false
+VITE_ENABLE_PAYMENTS=false
 ```
 
-Do not put `SUPABASE_SERVICE_ROLE_KEY` in frontend env files.
-`VITE_SENTRY_DSN` and `VITE_APP_RELEASE` are optional. When a Sentry DSN is
-configured, production errors are reported without sending default user PII.
+Gerçek hizmete geçiş yalnızca `VITE_APP_MODE=live` yapılarak tamamlanmaz. İlgili özellik ayrıca açıkça etkinleştirilmeli; hukuki metinler, profesyonel doğrulama, operasyon sorumluları, veri saklama kararı ve ödeme sağlayıcısı gibi üretim gereklilikleri önce tamamlanmalıdır.
 
-## Quality Checks
+`SUPABASE_SERVICE_ROLE_KEY` hiçbir zaman `VITE_` ile başlayan veya istemciye açılan bir ortam değişkenine konulmamalıdır.
 
-Run the same checks used by GitHub Actions:
+## Kalite Kontrolleri
+
+GitHub Actions ile aynı kontroller:
 
 ```bash
 npm audit --omit=dev --audit-level=high
@@ -33,97 +53,28 @@ npm test
 npm run build
 ```
 
-Tests use Vitest, React Testing Library, and jsdom. Pull requests and pushes to
-`main` run the full check suite automatically.
+Projede Vitest, React Testing Library ve jsdom kullanılır. `main` dalına gönderilen değişikliklerde kalite hattı otomatik çalışır.
 
-## Database Setup
+## Teknik Mimari
 
-For a fresh Supabase project, run:
+- React 19 ve Vite 8 istemci uygulaması
+- Supabase Auth, PostgreSQL, RLS ve özel Storage alanı
+- PeerJS/WebRTC tabanlı metin, ses ve bulanık görüntü seans prototipi
+- Sentry hata izleme entegrasyonu
+- GitHub Actions kalite hattı ve Vercel dağıtımı
 
-```text
-src/lib/supabase-complete-setup.sql
-src/lib/migration-009-privacy-boundaries.sql
-src/lib/migration-010-booking-availability.sql
-src/lib/migration-011-session-insert-hardening.sql
-src/lib/migration-012-notifications-operations.sql
-src/lib/migration-013-email-notification-delivery.sql
-src/lib/migration-014-session-room-access.sql
-src/lib/migration-015-psychologist-verification.sql
-src/lib/migration-016-admin-mfa.sql
-src/lib/migration-017-public-view-security.sql
-src/lib/migration-018-brand-defaults.sql
-```
+Demo modu bu üretim entegrasyonlarını kullanıcı verisi işlemeden, yerel kurgusal durum ile sergiler.
 
-For an already-created database, run the latest incremental migrations in order:
+## Veritabanı Kurulumu
+
+Yeni bir Supabase projesinde önce `src/lib/supabase-complete-setup.sql`, ardından `src/lib/migration-009-privacy-boundaries.sql` ile `src/lib/migration-018-brand-defaults.sql` arasındaki artımlı migration dosyalarını sırayla çalıştırın.
+
+Mevcut bir veritabanında `src/lib/migration-006-rls-hardening.sql` ile başlayan eksik migration dosyalarını sıra ile uygulayın. Ardından `src/lib/verify-rls.sql` çalıştırılmalıdır. Son blok, korunan tabloda RLS kapalıysa veya herkese açık görünüm özel kimlik yayıyorsa hata verir.
+
+Güvenlik modeli `docs/security-model.md`, operasyon ve teslim prosedürleri şu dosyalarda belgelenmiştir:
 
 ```text
-src/lib/migration-006-rls-hardening.sql
-src/lib/migration-007-session-update-hardening.sql
-src/lib/migration-008-auth-profile-trigger.sql
-src/lib/migration-009-privacy-boundaries.sql
-src/lib/migration-010-booking-availability.sql
-src/lib/migration-011-session-insert-hardening.sql
-src/lib/migration-012-notifications-operations.sql
-src/lib/migration-013-email-notification-delivery.sql
-src/lib/migration-014-session-room-access.sql
-src/lib/migration-015-psychologist-verification.sql
-src/lib/migration-016-admin-mfa.sql
-src/lib/migration-017-public-view-security.sql
-src/lib/migration-018-brand-defaults.sql
-```
-
-`migration-008-auth-profile-trigger.sql` keeps profile creation working when Supabase Auth email confirmation is enabled.
-`migration-009-privacy-boundaries.sql` replaces legacy policies, limits public
-catalog data to safe views, and protects server-managed role, payment, and
-rating fields.
-`migration-010-booking-availability.sql` exposes occupied slots only to
-authenticated booking participants and enforces one active appointment per
-psychologist, date, and time.
-`migration-011-session-insert-hardening.sql` derives participant display
-fields, price, workflow state, and the private room token inside PostgreSQL
-instead of trusting browser input.
-`migration-012-notifications-operations.sql` adds private in-app notifications,
-review reasons, suspended psychologist accounts, and an admin-only audit log.
-`migration-013-email-notification-delivery.sql` adds opt-in operational email
-preferences and a private delivery queue.
-`migration-014-session-room-access.sql` keeps deferred payments explicit,
-limits room credentials to the participant and join window, and enforces
-role-based session completion in PostgreSQL.
-`migration-015-psychologist-verification.sql` stores professional evidence in
-a private bucket, limits access to the owner and admins, and blocks profile
-approval until at least one document has been approved.
-`migration-016-admin-mfa.sql` requires an AAL2 Supabase Auth session for every
-database policy and trigger that grants administrator privileges.
-`migration-017-public-view-security.sql` converts public catalog views to
-security-invoker views and keeps their limited public projection behind
-fixed-search-path catalog functions.
-`migration-018-brand-defaults.sql` updates the generated psychologist fallback
-name from the legacy brand without changing real profile names.
-
-The email worker at `api/process-email-notifications.js` also requires these
-server-only environment variables before delivery is enabled:
-
-```env
-SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
-RESEND_API_KEY=
-EMAIL_FROM=
-EMAIL_WORKER_SECRET=
-PUBLIC_APP_URL=https://gizlibiriz.vercel.app
-```
-
-Keep `PUBLIC_APP_URL` on the working Vercel address until the new domain is
-connected. Then change it to `https://sakliterapi.com` together with the
-Supabase Auth redirect URLs and Resend sender domain.
-
-After the migrations, run `src/lib/verify-rls.sql` in the SQL Editor. The final
-block raises an exception if a protected table has RLS disabled or a public
-view exposes a private identifier.
-
-The expected role access matrix is documented in `docs/security-model.md`.
-Delivery and operating procedures are documented in:
-
-```text
+docs/academic-demo-guide.md
 docs/backup-recovery.md
 docs/backup-log.md
 docs/brand-cutover.md
@@ -132,41 +83,8 @@ docs/real-device-acceptance.md
 docs/release-readiness.md
 ```
 
-## Admin
+## Canlı Hizmete Geçiş Sınırı
 
-Promote a real admin account from Supabase SQL Editor:
+Ödeme bilinçli olarak ertelenmiştir. Ödeme API uçları `503 payments_disabled` döndürür ve kullanıcı arayüzünde etkin ödeme düğmesi bulunmaz. Gelecekteki ödeme uygulaması; çağıranı doğrulamalı, resmi seans ücretini sunucudan okumalı ve ödeme durumunu yalnızca sağlayıcı tarafındaki doğrulamadan sonra güncellemelidir.
 
-```sql
-UPDATE public.profiles
-SET role = 'admin'
-WHERE email = 'your-admin-email@example.com';
-```
-
-Administrators are redirected to `/admin-mfa` after password login. They must
-enroll and verify a TOTP authenticator before `/admin` or any administrator RLS
-policy becomes available.
-
-## Payment Status
-
-Payment is intentionally deferred. The payment API routes return
-`503 payments_disabled`, the production UI does not offer an active payment
-button, and browser-authenticated users cannot mark sessions as `paid`.
-A future implementation must authenticate the caller, read the canonical
-session price from Supabase, and update payment state only after provider-side
-verification.
-
-## Pre-Deploy Checklist
-
-- Run `npm run lint`.
-- Run `npm run build`.
-- Confirm only real admins have `role = 'admin'`.
-- Verify Supabase Auth redirect URLs include `/sifre-yenile` for the production domain.
-- Keep email confirmation policy consistent with `migration-008`.
-- Apply `migration-012` before deploying the notification UI.
-- Apply `migration-015` before deploying the verification document UI.
-- Apply `migration-018` before accepting new psychologist registrations under the new brand.
-- Verify the `sakliterapi.com` support and contact mailboxes before publishing their links.
-- Run the real-device acceptance matrix before the closed pilot.
-- Keep the first encrypted backup off-device and complete a restore rehearsal before storing real user data.
-- Configure `VITE_SENTRY_DSN` when the production monitoring project is ready.
-- Configure payment env keys only when payment implementation begins.
+Gerçek kullanıcı kabul edilmeden önce hukuk danışmanı onaylı gizlilik/aydınlatma ve kullanım metinleri, veri saklama-silme süreleri, uzman doğrulama sorumlusu, olay ve destek sorumluları, gönderici alan adı ve kapalı pilot kabul planı tamamlanmalıdır.
