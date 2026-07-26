@@ -1,5 +1,5 @@
 -- ==========================================
--- GIZLIBIRIZ - Migration 007: Session update hardening
+-- SAKLI TERAPI - Migration 007: Session update hardening
 -- ==========================================
 -- Run this after Migration 006. It does not delete table data.
 -- It prevents browser-authenticated users from marking real sessions as paid.

@@ -1,5 +1,5 @@
 -- ==========================================
--- GIZLIBIRIZ - Migration 006: RLS hardening
+-- SAKLI TERAPI - Migration 006: RLS hardening
 -- ==========================================
 -- Run this after the complete setup if your database was already created.
 -- It does not delete table data.

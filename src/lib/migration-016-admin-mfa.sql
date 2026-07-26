@@ -1,5 +1,5 @@
 -- ==========================================
--- GIZLIBIRIZ - Migration 016: Admin MFA enforcement
+-- SAKLI TERAPI - Migration 016: Admin MFA enforcement
 -- ==========================================
 -- Run this after Migration 015. Every policy and trigger that calls
 -- private.is_admin_user() will require an AAL2 JWT in addition to the admin role.

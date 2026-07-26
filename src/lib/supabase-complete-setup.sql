@@ -1,5 +1,5 @@
 -- ==========================================
--- GIZLIBIRIZ - Supabase complete setup
+-- SAKLI TERAPI - Supabase complete setup
 -- ==========================================
 -- Run this file in Supabase SQL Editor instead of running the separate
 -- migration-00x files one by one.

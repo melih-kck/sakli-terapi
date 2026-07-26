@@ -12,11 +12,11 @@ describe('email notification worker', () => {
       notification_title: 'Randevu <güncellendi>',
       notification_message: 'Yeni durum: onaylandı',
       notification_action_url: '/panel',
-    }, 'https://gizlibiriz.vercel.app');
+    }, 'https://sakli-terapi.vercel.app');
 
     expect(content.subject).toBe('Randevu <güncellendi>');
     expect(content.html).toContain('Randevu &lt;güncellendi&gt;');
     expect(content.html).toContain('Saklı Terapi');
-    expect(content.html).toContain('https://gizlibiriz.vercel.app/panel');
+    expect(content.html).toContain('https://sakli-terapi.vercel.app/panel');
   });
 });

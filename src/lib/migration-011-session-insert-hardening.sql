@@ -1,5 +1,5 @@
 -- ==========================================
--- GIZLIBIRIZ - Session insert hardening
+-- SAKLI TERAPI - Session insert hardening
 -- Migration 011
 -- ==========================================
 -- Run this after Migration 010. Client applications choose only the

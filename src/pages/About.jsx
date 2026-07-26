@@ -55,7 +55,7 @@ export default function About() {
                 <p>
                   Temel ürün hipotezi, kontrolün danışanda kalmasının güven hissini
                   güçlendirebileceği ve ilk görüşmeye başlama eşiğini azaltabileceğidir.
-                  Bu hipotez henüz klinik bir sonuç iddiası değildir; akademik geri bildirim
+                  Bu hipotez henüz klinik bir sonuç iddiası değildir; ürün araştırması ve uzman geri bildirimi
                   ve ileride uygun araştırma tasarımıyla değerlendirilmelidir.
                 </p>
               </div>

@@ -1,10 +1,10 @@
-# Akademik Demo Rehberi
+# Portföy Demo Rehberi
 
-## Sunum Amacı
+## Demo Amacı
 
-Saklı Terapi, çevrim içi psikolojik danışmanlıkta mahremiyet kaygısının ürün tasarımı ve yazılım mimarisiyle nasıl ele alınabileceğini araştıran etkileşimli bir prototiptir. Sunumda aktif sağlık hizmeti değil; problem tanımı, kullanıcı deneyimi, güvenlik sınırları ve teknik uygulama gösterilir.
+Saklı Terapi, çevrim içi psikolojik danışmanlıkta mahremiyet kaygısının ürün tasarımı ve yazılım mimarisiyle nasıl ele alınabileceğini araştıran etkileşimli bir prototiptir. Demo; aktif sağlık hizmeti yerine problem tanımını, kullanıcı deneyimini, güvenlik sınırlarını ve teknik uygulamayı gösterir.
 
-## Beş Dakikalık Akış
+## Beş Dakikalık İnceleme Akışı
 
 1. Ana sayfada problem hipotezini ve demo sınırını anlatın.
 2. `Demoyu Aç` ile danışan rolüne girin; kurgusal uzman kataloğunu ve demo randevusunu gösterin.
@@ -32,9 +32,9 @@ Saklı Terapi, çevrim içi psikolojik danışmanlıkta mahremiyet kaygısının
 
 ## Güvenlik ve Etik Sınır
 
-Sunum sürümü sağlık hizmeti sunmaz, gerçek randevu kabul etmez, ödeme almaz ve gerçek kullanıcı verisi saklamaz. Demo sırasında gerçek kişi, diploma, sağlık bilgisi veya iletişim bilgisi girilmemelidir. Canlı hizmete geçiş; hukuk, klinik yönetişim, veri koruma ve operasyon onaylarından ayrı bir aşamadır.
+Portföy sürümü sağlık hizmeti sunmaz, gerçek randevu kabul etmez, ödeme almaz ve gerçek kullanıcı verisi saklamaz. Demo sırasında gerçek kişi, diploma, sağlık bilgisi veya iletişim bilgisi girilmemelidir. Canlı hizmete geçiş; hukuk, klinik yönetişim, veri koruma ve operasyon onaylarından ayrı bir aşamadır.
 
-## Hocalarla Tartışılabilecek Sorular
+## Ürün İncelemesinde Tartışılabilecek Sorular
 
 - Mahremiyet kontrolü yardım arama eşiğini düşürür mü?
 - Blur seviyesi ve iletişim kanalı seçimi güven duygusunu nasıl etkiler?

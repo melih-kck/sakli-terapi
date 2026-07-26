@@ -1,5 +1,5 @@
 -- ==========================================
--- GIZLIBIRIZ - Migration 009: Privacy boundaries
+-- SAKLI TERAPI - Migration 009: Privacy boundaries
 -- ==========================================
 -- Run this after Migration 008.
 -- It replaces permissive legacy policies with a canonical least-privilege set,

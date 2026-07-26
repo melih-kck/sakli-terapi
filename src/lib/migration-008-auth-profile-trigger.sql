@@ -1,5 +1,5 @@
 -- ==========================================
--- GIZLIBIRIZ - Migration 008: Auth profile trigger
+-- SAKLI TERAPI - Migration 008: Auth profile trigger
 -- ==========================================
 -- Run this after Migration 007. It does not delete table data.
 -- It creates public profile rows automatically when Supabase Auth creates
@@ -101,7 +101,7 @@ BEGIN
     )
     VALUES (
       NEW.id,
-      COALESCE(NULLIF(metadata->>'name', ''), 'GizliBiriz Psikologu'),
+      COALESCE(NULLIF(metadata->>'name', ''), U&'Sakl\0131 Terapi Psikolo\011Fu'),
       UPPER(LEFT(COALESCE(NULLIF(metadata->>'name', ''), 'GB'), 1)),
       COALESCE(NULLIF(metadata->>'title', ''), 'Psikolog'),
       NULLIF(metadata->>'bio', ''),

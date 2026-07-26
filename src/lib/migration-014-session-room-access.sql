@@ -1,5 +1,5 @@
 -- ==========================================
--- GIZLIBIRIZ - Session room access hardening
+-- SAKLI TERAPI - Session room access hardening
 -- Migration 014
 -- ==========================================
 -- Run this after Migration 013. Payments remain intentionally disabled:

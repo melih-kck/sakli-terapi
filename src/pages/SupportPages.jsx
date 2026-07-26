@@ -291,7 +291,7 @@ const faqGroups = {
 
 const demoFaqGroups = {
   genel: [
-    [`${BRAND.name} neyi gösteriyor?`, 'Danışan, uzman ve yönetici rollerini; rumuz, uzman keşfi, kurgusal randevu, seans simülasyonu ve belge onayı akışlarıyla gösteren akademik bir ürün prototipidir.'],
+    [`${BRAND.name} neyi gösteriyor?`, 'Danışan, uzman ve yönetici rollerini; rumuz, uzman keşfi, kurgusal randevu, seans simülasyonu ve belge onayı akışlarıyla gösteren etkileşimli bir ürün prototipidir.'],
     ['Bu sitedeki kişiler gerçek mi?', 'Hayır. Profiller, belgeler, randevular, bildirimler ve değerlendirmelerin tamamı kurgusaldır.'],
     ['Gerçek bilgilerimi girmeli miyim?', 'Hayır. Demo alanlarına kişisel, sağlık, iletişim, kimlik veya mesleki belge bilgisi girilmemelidir.'],
   ],
@@ -452,7 +452,7 @@ export function TermsPage() {
         )}
       >
         <ContentSection title="Amaç">
-          <p>{BRAND.name}, CV ve akademik değerlendirme amacıyla sunulan çalışan bir ürün prototipidir. Arayüz ve iş akışları kurgusal verilerle demonstrasyon amacıyla kullanılabilir.</p>
+          <p>{BRAND.name}, ürün ve mühendislik portföyü amacıyla sunulan çalışan bir prototiptir. Arayüz ve iş akışları yalnızca kurgusal verilerle incelenebilir.</p>
         </ContentSection>
         <ContentSection title="Kullanım Sınırları">
           <ul className="content-list">
