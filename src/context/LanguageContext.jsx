@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { translations } from '../i18n/translations';
 
 const LANGUAGE_STORAGE_KEY = 'sakli_terapi_language';
 const SUPPORTED_LANGUAGES = new Set(['tr', 'en']);
@@ -41,19 +42,6 @@ const getInitialLanguage = () => {
 
 export function LanguageProvider({ children }) {
   const [language, setLanguageState] = useState(getInitialLanguage);
-  const [catalogs, setCatalogs] = useState(null);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    import('../i18n/translations').then(({ translations }) => {
-      if (isMounted) setCatalogs(translations);
-    });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   const setLanguage = useCallback((nextLanguage) => {
     if (!SUPPORTED_LANGUAGES.has(nextLanguage)) return;
@@ -62,38 +50,18 @@ export function LanguageProvider({ children }) {
   }, []);
 
   const t = useCallback((key, variables) => {
-    const translated = getTranslation(catalogs?.[language], key);
-    const fallback = getTranslation(catalogs?.tr, key);
+    const translated = getTranslation(translations[language], key);
+    const fallback = getTranslation(translations.tr, key);
     return interpolate(translated ?? fallback ?? key, variables);
-  }, [catalogs, language]);
+  }, [language]);
 
   useEffect(() => {
-    if (!catalogs) return;
     document.documentElement.lang = language;
     const description = document.querySelector('meta[name="description"]');
     if (description) description.setAttribute('content', t('meta.description'));
-  }, [catalogs, language, t]);
+  }, [language, t]);
 
   const value = useMemo(() => ({ language, setLanguage, t }), [language, setLanguage, t]);
-
-  if (!catalogs) {
-    return (
-      <div
-        role="status"
-        aria-label={language === 'en' ? 'Loading language' : 'Dil yükleniyor'}
-        style={{
-          minHeight: '100vh',
-          display: 'grid',
-          placeItems: 'center',
-          background: '#F4F0E7',
-          color: '#102F2D',
-          fontWeight: 700,
-        }}
-      >
-        Saklı Terapi
-      </div>
-    );
-  }
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }

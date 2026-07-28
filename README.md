@@ -109,11 +109,12 @@ npm run test:e2e
 | Tarayıcılar | Chromium, Firefox ve WebKit |
 | Mobil | Pixel 7 Chromium ve iPhone 15 WebKit |
 | Erişilebilirlik | 6 kritik ekran × masaüstü/mobil WCAG A ve AA taraması |
+| Performans | 150 KiB başlangıç aktarım bütçesi |
 | Güvenlik ve teslim | ESLint, production dependency audit ve Vite production build |
 
 Uçtan uca paket; ana sayfa, kalıcı dil tercihi, blur onayı, üç demo rolü, belge görüntüleme ve seans odası akışını doğrular. Erişilebilirlik kontrolleri axe-core ile otomatikleştirilmiştir; otomatik tarama manuel klavye ve yardımcı teknoloji değerlendirmesinin yerini tutmaz.
 
-Tüm kontroller `main` dalına gönderilen her değişiklikte GitHub Actions tarafından yeniden çalıştırılır. Belge görsellerini güncel yerel demo üzerinden yeniden üretmek için geliştirme sunucusu açıkken `npm run screenshots:portfolio` komutunu kullanın.
+Tüm kontroller `main` dalına gönderilen her değişiklikte GitHub Actions tarafından yeniden çalıştırılır. Derleme sonrasında başlangıç performans bütçesini doğrulamak için `npm run check:performance`, belge görsellerini güncel yerel demo üzerinden yeniden üretmek için geliştirme sunucusu açıkken `npm run screenshots:portfolio` komutunu kullanın.
 
 ## Proje Yapısı
 
