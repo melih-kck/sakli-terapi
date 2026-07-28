@@ -1,14 +1,15 @@
 # Saklı Terapi Marka Geçişi
 
-Son güncelleme: 26 Temmuz 2026
+Son güncelleme: 28 Temmuz 2026
 
 ## Tamamlananlar
 
 - [x] Kullanıcıya görünen marka adı, sayfa başlıkları ve uygulama metinleri Saklı Terapi olarak güncellendi.
 - [x] Marka sabitleri `src/config/brand.js` altında merkezileştirildi.
 - [x] `migration-018-brand-defaults.sql` üretim veritabanında çalıştırıldı.
-- [x] GitHub depo adı ve kamuya açık proje belgeleri Saklı Terapi markasına hazırlandı.
-- [x] Vercel proje adı, varsayılan üretim adresi ve `PUBLIC_APP_URL` için `sakli-terapi` adı esas alındı.
+- [x] GitHub deposu `melih-kck/sakli-terapi` adıyla herkese açıldı; açıklama, canlı demo bağlantısı, konu etiketleri ve özel güvenlik bildirimi yapılandırıldı.
+- [x] Vercel projesi `sakli-terapi` olarak yeniden adlandırıldı ve `PUBLIC_APP_URL` yeni üretim adresine bağlandı.
+- [x] `https://sakli-terapi.vercel.app` ana üretim adresi yapıldı; eski `https://gizlibiriz.vercel.app` adresi `308 Permanent Redirect` ile yeni adrese yönlendirildi.
 - [x] Lint, otomatik test, üretim derlemesi ve bağımlılık güvenlik denetimi yayın öncesi kontrol zincirine alındı.
 
 ## Alan Adı Alındıktan Sonra
