@@ -112,7 +112,7 @@ export default function AdminDashboard() {
     try {
       const signedUrl = await getVerificationDocumentUrl(document.storage_path);
       if (previewWindow) previewWindow.location.href = signedUrl;
-      else window.open(signedUrl, '_blank', 'noopener,noreferrer');
+      else window.location.assign(signedUrl);
     } catch (error) {
       previewWindow?.close();
       console.error('Mesleki belge açılamadı:', error);
