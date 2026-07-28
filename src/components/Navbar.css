@@ -5,15 +5,15 @@
   right: 0;
   height: 72px;
   z-index: var(--z-fixed);
-  background: rgba(244, 247, 245, 0.86);
+  background: rgba(228, 232, 229, 0.9);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(50, 106, 89, 0.1);
+  border-bottom: 1px solid rgba(49, 95, 80, 0.1);
   transition: all var(--transition-normal);
 }
 
 .navbar-scrolled {
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(237, 240, 238, 0.97);
   border-bottom-color: var(--border-medium);
   box-shadow: 0 4px 20px rgba(32, 49, 44, 0.1);
   height: 64px;
