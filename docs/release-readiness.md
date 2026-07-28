@@ -11,6 +11,7 @@ Son güncelleme: 26 Temmuz 2026
 - [x] Kurgusal uzman kataloğu, randevu, seans ve belge onay akışları hazırlandı
 - [x] Herkese açık GitHub portföy deposu, CI ve Vercel dağıtım yapısı hazır
 - [x] Otomatik lint, test, build ve yüksek önem düzeyi bağımlılık denetimi var
+- [x] Kritik demo akışları masaüstü ve mobil Chromium'da uçtan uca otomatik test ediliyor
 - [x] Masaüstü ve mobil görünüm kabul kontrolü yapıldı
 
 ## Hazır Teknik Altyapı

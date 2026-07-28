@@ -81,9 +81,10 @@ npm audit --omit=dev --audit-level=high
 npm run lint
 npm test
 npm run build
+npm run test:e2e
 ```
 
-Bu kontroller `main` dalına gönderilen her değişiklikte GitHub Actions tarafından yeniden çalıştırılır.
+Uçtan uca paket; masaüstü ve mobil Chromium'da ana sayfa, dil tercihi, blur onayı, demo rolleri ve seans odası akışını doğrular. Bu kontroller `main` dalına gönderilen her değişiklikte GitHub Actions tarafından yeniden çalıştırılır.
 
 ## Proje Yapısı
 
