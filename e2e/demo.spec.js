@@ -124,10 +124,7 @@ for (const roleCase of roles) {
   });
 }
 
-test('yönetici demo belgesini açılır pencere engellense bile görüntüler', async ({ page }) => {
-  await page.addInitScript(() => {
-    window.open = () => null;
-  });
+test('yönetici demo belgesini aynı sekmede güvenilir biçimde görüntüler', async ({ page }) => {
   await openDemoRole(page, 'admin', '/admin');
 
   await page.locator('summary').click();

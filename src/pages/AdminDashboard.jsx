@@ -106,15 +106,11 @@ export default function AdminDashboard() {
   };
 
   const handleDocumentView = async (document) => {
-    const previewWindow = window.open('about:blank', '_blank');
-    if (previewWindow) previewWindow.opener = null;
     setProcessingId(`document-view-${document.id}`);
     try {
       const signedUrl = await getVerificationDocumentUrl(document.storage_path);
-      if (previewWindow) previewWindow.location.href = signedUrl;
-      else window.location.assign(signedUrl);
+      window.location.assign(signedUrl);
     } catch (error) {
-      previewWindow?.close();
       console.error('Mesleki belge açılamadı:', error);
       showError('Belge Açılamadı', 'Güvenli belge bağlantısı oluşturulamadı.');
     } finally {
