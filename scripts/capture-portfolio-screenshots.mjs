@@ -12,6 +12,7 @@ const context = await browser.newContext({
   viewport: { width: 1440, height: 900 },
   locale: 'tr-TR',
   colorScheme: 'light',
+  reducedMotion: 'reduce',
 });
 const page = await context.newPage();
 
@@ -19,9 +20,13 @@ await page.addInitScript(() => {
   window.localStorage.setItem('sakli_terapi_language', 'tr');
 });
 
+const dismissDemoNotice = async () => {
+  const closeButton = page.getByRole('button', { name: 'Demo bilgisini kapat' });
+  if (await closeButton.isVisible()) await closeButton.click();
+};
+
 await page.goto(`${baseURL}/`, { waitUntil: 'networkidle' });
-const noticeClose = page.getByRole('button', { name: 'Demo bilgisini kapat' });
-if (await noticeClose.isVisible()) await noticeClose.click();
+await dismissDemoNotice();
 await page.screenshot({
   path: fileURLToPath(new URL('landing-overview.jpg', outputDirectory)),
   type: 'jpeg',
@@ -29,6 +34,7 @@ await page.screenshot({
 });
 
 await page.goto(`${baseURL}/giris`, { waitUntil: 'networkidle' });
+await dismissDemoNotice();
 await page.screenshot({
   path: fileURLToPath(new URL('privacy-demo.jpg', outputDirectory)),
   type: 'jpeg',
@@ -39,8 +45,7 @@ await page.locator('#demo-login-admin').click();
 await page.waitForURL('**/admin');
 const toastClose = page.getByRole('button', { name: 'Bildirimi kapat' });
 if (await toastClose.isVisible()) await toastClose.click();
-const adminNoticeClose = page.getByRole('button', { name: 'Demo bilgisini kapat' });
-if (await adminNoticeClose.isVisible()) await adminNoticeClose.click();
+await dismissDemoNotice();
 await page.locator('summary').click();
 await page.screenshot({
   path: fileURLToPath(new URL('admin-review.jpg', outputDirectory)),

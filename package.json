@@ -35,6 +35,7 @@
     "test:e2e:accessibility": "npm run build && playwright test e2e/accessibility.spec.js --project=chromium-desktop --project=chromium-mobile",
     "test:e2e:cross-browser": "npm run build && playwright test e2e/demo.spec.js",
     "test:e2e:report": "playwright show-report",
+    "check:performance": "node scripts/check-performance-budget.mjs",
     "screenshots:portfolio": "node scripts/capture-portfolio-screenshots.mjs",
     "preview": "vite preview"
   },

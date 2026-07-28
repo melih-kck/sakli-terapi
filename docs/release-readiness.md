@@ -1,6 +1,6 @@
 # Teslim Hazırlığı
 
-Son güncelleme: 28 Temmuz 2026
+Son güncelleme: 29 Temmuz 2026
 
 ## Profesyonel Portföy Sürümü
 
@@ -14,6 +14,7 @@ Son güncelleme: 28 Temmuz 2026
 - [x] Kritik demo akışları Chromium, Firefox ve WebKit masaüstü/mobil profillerinde uçtan uca otomatik test ediliyor
 - [x] Kritik ekranlar WCAG A/AA kuralları için masaüstü ve mobilde otomatik taranıyor
 - [x] Azaltılmış hareket tercihi ve erişilebilir renk kontrastları destekleniyor
+- [x] Dış font bağımlılığı kaldırıldı, LCP görseli önceden yükleniyor ve başlangıç aktarımı 150 KiB bütçesiyle korunuyor
 - [x] Masaüstü ve mobil görünüm kabul kontrolü yapıldı
 
 ## Hazır Teknik Altyapı
