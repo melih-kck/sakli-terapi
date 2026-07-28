@@ -138,7 +138,7 @@
 .verification-review-reason {
   max-width: 620px;
   margin-top: var(--space-xs);
-  color: var(--danger-dark);
+  color: var(--danger);
   font-size: var(--text-sm);
   overflow-wrap: anywhere;
 }
@@ -153,12 +153,12 @@
 
 .verification-status.is-approved {
   background: var(--success-bg);
-  color: var(--success-dark);
+  color: var(--success);
 }
 
 .verification-status.is-rejected {
   background: var(--danger-bg);
-  color: var(--danger-dark);
+  color: var(--danger);
 }
 
 @media (max-width: 768px) {

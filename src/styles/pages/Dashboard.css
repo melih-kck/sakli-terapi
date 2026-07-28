@@ -146,7 +146,7 @@
   padding: var(--space-md);
   border: 1px solid var(--danger);
   border-radius: var(--radius-md);
-  background: rgba(255, 82, 82, 0.05);
+  background: var(--danger-bg);
 }
 
 .session-cancel-actions {
@@ -162,7 +162,7 @@
   align-items: center;
   gap: var(--space-md);
   padding: var(--space-md);
-  border: 1px solid rgba(245, 158, 11, 0.28);
+  border: 1px solid rgba(216, 174, 117, 0.28);
   border-radius: var(--radius-md);
   background: var(--warning-bg);
 }
@@ -355,16 +355,16 @@
 
 .verification-status.is-approved {
   background: var(--success-bg);
-  color: var(--success-dark);
+  color: var(--success);
 }
 
 .verification-status.is-rejected {
   background: var(--danger-bg);
-  color: var(--danger-dark);
+  color: var(--danger);
 }
 
 .admin-danger-action {
-  color: var(--danger-dark);
+  color: var(--danger);
   border-color: var(--danger);
 }
 
@@ -588,14 +588,14 @@
 }
 
 .appointment-payment-badge.is-pending {
-  background: rgba(245, 158, 11, 0.12);
-  color: #fbbf24;
+  background: var(--warning-bg);
+  color: var(--warning);
 }
 
 .appointment-payment-badge.is-deferred {
-  color: #315a4a;
-  background: #e7f4ee;
-  border-color: #b8ddcd;
+  color: var(--primary-lighter);
+  background: var(--primary-bg);
+  border-color: rgba(120, 184, 164, 0.28);
 }
 
 .appointment-payment-badge.is-refunded {

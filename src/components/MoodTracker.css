@@ -28,7 +28,7 @@
 .mood-option.selected {
   border-color: var(--primary);
   background: var(--primary-bg);
-  box-shadow: 0 0 0 3px rgba(74, 58, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(120, 184, 164, 0.15);
 }
 
 .mood-emoji {

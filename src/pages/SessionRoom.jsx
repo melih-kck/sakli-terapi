@@ -26,13 +26,13 @@ import '../styles/pages/Session.css';
 
 const drawCanvasNotice = (ctx, canvas, title, subtitle) => {
   ctx.filter = 'none';
-  ctx.fillStyle = '#0f172a';
+  ctx.fillStyle = '#101715';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#cbd5e1';
+  ctx.fillStyle = '#bac5c0';
   ctx.font = '600 28px Arial, sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText(title, canvas.width / 2, canvas.height / 2 - 10);
-  ctx.fillStyle = '#94a3b8';
+  ctx.fillStyle = '#8f9f98';
   ctx.font = '18px Arial, sans-serif';
   ctx.fillText(subtitle, canvas.width / 2, canvas.height / 2 + 28);
 };
@@ -1199,7 +1199,7 @@ export default function SessionRoom() {
             {messages.map((m) => (
               <div key={m.id} className={`chat-message ${m.sender === 'system' ? 'system' : (m.sender === (isClient ? 'client' : 'psychologist') ? 'client' : 'psychologist')}`} style={{ textAlign: m.sender === 'system' ? 'center' : 'left' }}>
                 {m.sender === 'system' ? (
-                  <span style={{ fontSize: '10px', color: '#94a3b8', margin: '4px 0' }}>--- {m.text} ---</span>
+                  <span style={{ fontSize: '10px', color: 'var(--text-tertiary)', margin: '4px 0' }}>--- {m.text} ---</span>
                 ) : (
                   <div className="message-bubble" style={{ alignSelf: m.sender === (isClient ? 'client' : 'psychologist') ? 'flex-end' : 'flex-start' }}>
                     <p>{m.text}</p>

@@ -8,7 +8,7 @@
   height: 100vh;
   padding-top: 72px;
   box-sizing: border-box;
-  background: #0f172a;
+  background: var(--bg-primary);
   color: white;
 }
 
@@ -27,9 +27,9 @@
 .session-access-panel {
   width: min(720px, 100%);
   padding: var(--space-2xl);
-  border: 1px solid #334155;
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  background: #1e293b;
+  background: var(--bg-secondary);
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
 }
 
@@ -51,7 +51,7 @@
 
 .session-access-panel p {
   margin: 0;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   line-height: 1.7;
 }
 
@@ -64,15 +64,15 @@
 
 .session-access-summary div {
   padding: var(--space-md);
-  border: 1px solid #334155;
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
-  background: #0f172a;
+  background: var(--bg-primary);
 }
 
 .session-access-summary span {
   display: block;
   margin-bottom: 4px;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   font-size: var(--text-xs);
 }
 
@@ -94,8 +94,8 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--space-md) var(--space-lg);
-  background: #1e293b;
-  border-bottom: 1px solid #334155;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .session-header-left {
@@ -109,7 +109,7 @@
   align-items: center;
   gap: 6px;
   font-size: var(--text-sm);
-  color: #94a3b8;
+  color: var(--text-tertiary);
 }
 
 .session-status.active {
@@ -120,12 +120,12 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #94a3b8;
+  background: var(--text-tertiary);
 }
 
 .session-status.active .status-dot {
   background: var(--success);
-  box-shadow: 0 0 8px rgba(0, 201, 167, 0.5);
+  box-shadow: 0 0 8px rgba(121, 189, 153, 0.38);
 }
 
 .session-timer {
@@ -133,7 +133,7 @@
   font-size: var(--text-lg);
   font-weight: var(--weight-bold);
   padding: 4px 8px;
-  background: #0f172a;
+  background: var(--bg-primary);
   border-radius: var(--radius-sm);
 }
 
@@ -167,11 +167,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #1e293b;
+  background: var(--bg-secondary);
   border-radius: var(--radius-lg);
   width: 100%;
   height: 100%;
-  border: 1px solid #334155;
+  border: 1px solid var(--border-light);
   transition: filter 0.3s ease;
   overflow: hidden;
 }
@@ -216,7 +216,7 @@
 }
 
 .video-subtitle {
-  color: #94a3b8;
+  color: var(--text-tertiary);
   font-size: var(--text-sm);
 }
 
@@ -239,9 +239,9 @@
   gap: var(--space-md);
   max-width: 520px;
   padding: var(--space-lg);
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  border: 1px solid rgba(143, 159, 152, 0.24);
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.78);
+  background: rgba(16, 23, 21, 0.82);
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
 }
 
@@ -252,8 +252,8 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(139, 92, 246, 0.18);
-  color: #c4b5fd;
+  background: var(--primary-bg);
+  color: var(--primary-lighter);
   font-size: 1.35rem;
 }
 
@@ -282,10 +282,10 @@
   align-items: center;
   min-height: 40px;
   padding: 0 var(--space-md);
-  border: 1px solid rgba(251, 191, 36, 0.34);
+  border: 1px solid rgba(216, 174, 117, 0.34);
   border-radius: 8px;
-  background: rgba(251, 191, 36, 0.1);
-  color: #fde68a;
+  background: var(--warning-bg);
+  color: var(--warning);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
 }
@@ -297,12 +297,12 @@
   left: var(--space-lg);
   width: 310px;
   max-width: calc(100% - var(--space-lg) * 2);
-  background: rgba(15, 23, 42, 0.9);
+  background: rgba(16, 23, 21, 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   padding: 14px;
   border-radius: 8px;
-  border: 1px solid #334155;
+  border: 1px solid var(--border-light);
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.34);
   z-index: 10;
 }
@@ -325,7 +325,7 @@
 .blur-eyebrow {
   display: block;
   margin-bottom: 3px;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   font-size: 10px;
   font-weight: var(--weight-bold);
   text-transform: uppercase;
@@ -335,10 +335,10 @@
 .blur-strength {
   flex: 0 0 auto;
   padding: 4px 8px;
-  border: 1px solid rgba(148, 163, 184, 0.24);
+  border: 1px solid rgba(143, 159, 152, 0.24);
   border-radius: 6px;
-  background: rgba(30, 41, 59, 0.92);
-  color: #cbd5e1;
+  background: rgba(32, 43, 40, 0.92);
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: var(--weight-bold);
 }
@@ -350,11 +350,11 @@
   gap: var(--space-sm);
   font-size: var(--text-sm);
   margin-bottom: 8px;
-  color: #e2e8f0;
+  color: var(--text-primary);
 }
 
 .blur-label span {
-  color: #94a3b8;
+  color: var(--text-tertiary);
   font-size: 12px;
 }
 
@@ -369,7 +369,7 @@
   flex: 0 0 32px;
   font-size: 10px;
   font-weight: var(--weight-bold);
-  color: #94a3b8;
+  color: var(--text-tertiary);
   text-transform: uppercase;
 }
 
@@ -391,10 +391,10 @@
 
 .blur-level-button {
   height: 30px;
-  border: 1px solid #475569;
+  border: 1px solid var(--border-medium);
   border-radius: 6px;
-  background: #334155;
-  color: #94a3b8;
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
   font-size: 12px;
   font-weight: var(--weight-bold);
   display: flex;
@@ -405,12 +405,12 @@
 }
 
 .blur-level-button:hover {
-  background: #475569;
+  background: var(--bg-elevated);
   color: white;
 }
 
 .blur-level-button.active {
-  background: var(--primary);
+  background: var(--primary-dark);
   color: white;
   border-color: var(--primary-light);
 }
@@ -421,16 +421,16 @@
   gap: 9px;
   margin-top: 10px;
   padding: 10px;
-  border: 1px solid rgba(251, 191, 36, 0.4);
+  border: 1px solid rgba(216, 174, 117, 0.4);
   border-radius: 7px;
-  background: rgba(251, 191, 36, 0.1);
-  color: #fef3c7;
+  background: var(--warning-bg);
+  color: var(--accent-light);
   cursor: pointer;
 }
 
 .blur-clear-consent.confirmed {
-  border-color: rgba(248, 113, 113, 0.5);
-  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(223, 133, 130, 0.48);
+  background: var(--danger-bg);
 }
 
 .blur-clear-consent input {
@@ -449,14 +449,14 @@
 }
 
 .blur-clear-consent strong {
-  color: #fff7ed;
+  color: var(--text-primary);
   font-size: 12px;
   line-height: 1.35;
 }
 
 .blur-clear-consent small {
   margin-top: 2px;
-  color: #fde68a;
+  color: var(--warning);
   font-size: 10px;
   line-height: 1.4;
 }
@@ -470,7 +470,7 @@
 }
 
 .blur-preview-row > span {
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: var(--weight-medium);
 }
@@ -480,9 +480,9 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   width: 138px;
   padding: 3px;
-  border: 1px solid #334155;
+  border: 1px solid var(--border-light);
   border-radius: 8px;
-  background: #0f172a;
+  background: var(--bg-primary);
 }
 
 .blur-segmented button {
@@ -491,14 +491,14 @@
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   font-size: 11px;
   font-weight: var(--weight-bold);
   cursor: pointer;
 }
 
 .blur-segmented button.active {
-  background: var(--primary);
+  background: var(--primary-dark);
   color: white;
 }
 
@@ -509,8 +509,8 @@
   gap: var(--space-sm);
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid rgba(148, 163, 184, 0.2);
-  color: #94a3b8;
+  border-top: 1px solid rgba(143, 159, 152, 0.2);
+  color: var(--text-tertiary);
   font-size: 12px;
 }
 
@@ -520,14 +520,14 @@
 }
 
 .blur-send-status strong.clear {
-  color: #fca5a5;
+  color: var(--danger);
 }
 
 /* Chat Panel */
 .session-chat {
   width: 320px;
-  background: #1e293b;
-  border-left: 1px solid #334155;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-light);
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease;
@@ -549,7 +549,7 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--space-md);
-  border-bottom: 1px solid #334155;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .chat-header h4 {
@@ -558,7 +558,7 @@
 }
 
 .chat-header .btn-ghost {
-  color: #cbd5e1;
+  color: var(--text-secondary);
 }
 
 .chat-messages {
@@ -591,12 +591,12 @@
 }
 
 .chat-message.client .message-bubble {
-  background: var(--primary);
+  background: var(--primary-dark);
   border-bottom-right-radius: 2px;
 }
 
 .chat-message.psychologist .message-bubble {
-  background: #334155;
+  background: var(--bg-elevated);
   border-bottom-left-radius: 2px;
 }
 
@@ -615,13 +615,13 @@
   display: flex;
   gap: var(--space-xs);
   padding: var(--space-md);
-  border-top: 1px solid #334155;
+  border-top: 1px solid var(--border-light);
 }
 
 .chat-input input {
   flex: 1;
-  background: #0f172a;
-  border: 1px solid #334155;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
   color: white;
   border-radius: var(--radius-md);
   padding: 8px 12px;
@@ -638,8 +638,8 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--space-md) var(--space-xl);
-  background: #1e293b;
-  border-top: 1px solid #334155;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-light);
 }
 
 .controls-group {
@@ -655,8 +655,8 @@
   width: 60px;
   height: 60px;
   border-radius: 12px;
-  background: #334155;
-  border: 1px solid #475569;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-medium);
   color: white;
   font-size: 1.25rem;
   cursor: pointer;
@@ -669,7 +669,7 @@
 }
 
 .control-btn:hover {
-  background: #475569;
+  background: var(--bg-elevated);
 }
 
 .control-btn:disabled {
@@ -678,19 +678,19 @@
 }
 
 .control-btn.off {
-  background: rgba(255, 82, 82, 0.1);
+  background: var(--danger-bg);
   color: var(--danger);
-  border-color: rgba(255, 82, 82, 0.3);
+  border-color: rgba(223, 133, 130, 0.34);
 }
 
 .control-btn.active {
-  background: rgba(74, 58, 255, 0.1);
+  background: var(--primary-bg);
   color: var(--primary-light);
-  border-color: rgba(74, 58, 255, 0.3);
+  border-color: rgba(120, 184, 164, 0.34);
 }
 
 .control-btn.emergency {
-  background: var(--danger);
+  background: var(--danger-dark);
   border-color: var(--danger-dark);
 }
 
