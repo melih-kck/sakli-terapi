@@ -21,6 +21,7 @@ describe('BlurVideoDemo', () => {
     const slider = screen.getByLabelText('Görüntü gizliliği');
 
     expect(sentImage).toHaveStyle({ filter: 'blur(28px)' });
+    expect(sentImage).toHaveStyle({ transform: 'scale(1.05)' });
 
     fireEvent.change(slider, { target: { value: '0' } });
 
@@ -33,6 +34,7 @@ describe('BlurVideoDemo', () => {
     fireEvent.click(consent);
 
     expect(sentImage).toHaveStyle({ filter: 'blur(0px)' });
+    expect(sentImage).toHaveStyle({ transform: 'scale(1)' });
     expect(screen.getByText(/Karşı taraf şu anda/)).toHaveTextContent('Blursuz');
   });
 
