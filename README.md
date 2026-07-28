@@ -9,6 +9,24 @@ Saklı Terapi, çevrim içi psikolojik destek deneyiminde mahremiyet kontrolün�
 > [!IMPORTANT]
 > Bu sürüm bir sağlık hizmeti değildir. Gerçek kullanıcı, randevu, ödeme veya klinik kayıt kabul etmez; yalnızca kurgusal veriler kullanır.
 
+## Ürüne Bakış
+
+![Saklı Terapi ana sayfa ve etkileşimli portföy demosu](docs/screenshots/landing-overview.jpg)
+
+| Gizlilik kontrollü görüşme | Yönetici belge inceleme |
+|---|---|
+| ![Blur seviyesini gösteren etkileşimli görüşme demosu](docs/screenshots/privacy-demo.jpg) | ![Kurgusal mesleki belge inceleme ekranı](docs/screenshots/admin-review.jpg) |
+
+## Beş Dakikalık Değerlendirme Rotası
+
+1. Ana sayfada ürün hipotezini, demo sınırını ve mahremiyet yaklaşımını inceleyin.
+2. `Demoyu Aç` üzerinden danışan rolüne girip uzman keşfi ve kurgusal randevu akışını deneyin.
+3. Seans odasında blur seviyesini değiştirin; blursuz görüntü için gereken açık onayı doğrulayın.
+4. Uzman rolünde takvim, rumuzla temsil edilen danışan ve seans yönetimini inceleyin.
+5. Yönetici rolünde kurgusal belgeyi görüntüleyin, karar akışını ve denetim kaydını izleyin.
+
+Detaylı anlatım için [portföy demo rehberine](docs/portfolio-demo-guide.md) bakın.
+
 ## Ürün Deneyimi
 
 - Rumuz temelli danışan profili ve kontrollü gizlilik tercihleri
@@ -37,7 +55,7 @@ flowchart LR
 - **İstemci:** React, React Router ve Vite
 - **Veri ve kimlik:** Supabase Auth, PostgreSQL, RLS ve Storage
 - **Gerçek zamanlı iletişim:** PeerJS/WebRTC
-- **Kalite:** Vitest, React Testing Library, ESLint ve npm audit
+- **Kalite:** Vitest, React Testing Library, Playwright, axe-core, ESLint ve npm audit
 - **Operasyon:** GitHub Actions, Vercel ve Sentry
 
 ## Güvenlik Yaklaşımı
@@ -84,7 +102,18 @@ npm run build
 npm run test:e2e
 ```
 
-Uçtan uca paket; masaüstü ve mobil Chromium'da ana sayfa, dil tercihi, blur onayı, demo rolleri ve seans odası akışını doğrular. Bu kontroller `main` dalına gönderilen her değişiklikte GitHub Actions tarafından yeniden çalıştırılır.
+| Katman | Otomatik kapsam |
+|---|---|
+| Birim ve bileşen | 78 Vitest testi |
+| Kritik ürün yolculukları | 7 senaryo × 5 tarayıcı/cihaz profili |
+| Tarayıcılar | Chromium, Firefox ve WebKit |
+| Mobil | Pixel 7 Chromium ve iPhone 15 WebKit |
+| Erişilebilirlik | 6 kritik ekran × masaüstü/mobil WCAG A ve AA taraması |
+| Güvenlik ve teslim | ESLint, production dependency audit ve Vite production build |
+
+Uçtan uca paket; ana sayfa, kalıcı dil tercihi, blur onayı, üç demo rolü, belge görüntüleme ve seans odası akışını doğrular. Erişilebilirlik kontrolleri axe-core ile otomatikleştirilmiştir; otomatik tarama manuel klavye ve yardımcı teknoloji değerlendirmesinin yerini tutmaz.
+
+Tüm kontroller `main` dalına gönderilen her değişiklikte GitHub Actions tarafından yeniden çalıştırılır. Belge görsellerini güncel yerel demo üzerinden yeniden üretmek için geliştirme sunucusu açıkken `npm run screenshots:portfolio` komutunu kullanın.
 
 ## Proje Yapısı
 
@@ -96,6 +125,8 @@ src/components/  Paylaşılan arayüz bileşenleri
 src/context/     Kimlik, profil, seans ve bildirim durumu
 src/lib/         Supabase erişimi, güvenlik yardımcıları ve SQL migration'ları
 src/pages/       Ziyaretçi, danışan, uzman ve yönetici ekranları
+e2e/             Çapraz tarayıcı ve erişilebilirlik kabul testleri
+scripts/         Tekrarlanabilir portföy görseli üretimi
 ```
 
 ## Belgeler

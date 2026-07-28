@@ -110,13 +110,13 @@
 
 .emergency-card strong {
   font-size: var(--text-xs);
-  color: var(--danger);
+  color: var(--danger-dark);
   display: block;
 }
 
 .emergency-card p {
   font-size: var(--text-xs);
-  color: var(--text-secondary);
+  color: var(--text-primary);
   margin: 0;
 }
 

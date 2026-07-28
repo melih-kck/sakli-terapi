@@ -27,7 +27,8 @@ Saklı Terapi, çevrim içi psikolojik danışmanlıkta mahremiyet kaygısının
 - React ve Vite ile bileşen tabanlı istemci
 - Supabase Auth, PostgreSQL, RLS ve Storage
 - PeerJS/WebRTC ile gerçek zamanlı görüşme prototipi
-- Vitest ve React Testing Library ile otomatik testler
+- Vitest, React Testing Library, Playwright ve axe-core ile otomatik testler
+- Chromium, Firefox, WebKit, Pixel 7 ve iPhone 15 test matrisi
 - GitHub Actions, Sentry ve Vercel ile kalite ve dağıtım hattı
 
 ## Güvenlik ve Etik Sınır

@@ -32,7 +32,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "npm run build && playwright test",
+    "test:e2e:accessibility": "npm run build && playwright test e2e/accessibility.spec.js --project=chromium-desktop --project=chromium-mobile",
+    "test:e2e:cross-browser": "npm run build && playwright test e2e/demo.spec.js",
     "test:e2e:report": "playwright show-report",
+    "screenshots:portfolio": "node scripts/capture-portfolio-screenshots.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -44,6 +47,7 @@
     "react-router": "^8.3.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.62.0",
     "@testing-library/jest-dom": "^6.9.1",

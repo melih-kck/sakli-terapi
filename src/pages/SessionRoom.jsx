@@ -441,9 +441,16 @@ export default function SessionRoom() {
             'Güvenli demo görüntüsü',
             'Kamera izni gerekmez',
           );
-          const demoStream = demoCanvas.captureStream(15);
-          localStreamRef.current = demoStream;
-          blurStreamRef.current = demoStream;
+          const demoStream = typeof demoCanvas.captureStream === 'function'
+            ? demoCanvas.captureStream(15)
+            : null;
+          if (demoStream) {
+            localStreamRef.current = demoStream;
+            blurStreamRef.current = demoStream;
+          }
+          if (remoteVideoRef.current) {
+            remoteVideoRef.current.poster = demoCanvas.toDataURL('image/png');
+          }
           setCameraAvailable(false);
           setCamOn(true);
           camOnRef.current = true;
@@ -903,8 +910,9 @@ export default function SessionRoom() {
     const demoStream = shouldUseBlurStream
       ? blurStreamRef.current
       : localStreamRef.current;
+    const canStartVisualDemo = IS_DEMO_MODE && sessionChannel === 'video-blur';
 
-    if (remoteVideoRef.current && demoStream) {
+    if (remoteVideoRef.current && (demoStream || canStartVisualDemo)) {
       demoModeRef.current = true;
       clearTimeout(retryTimerRef.current);
       clearTimeout(connectionAttemptTimerRef.current);
@@ -914,7 +922,9 @@ export default function SessionRoom() {
         connRef.current = null;
         staleConnection.close();
       }
-      remoteVideoRef.current.srcObject = demoStream;
+      if (demoStream) {
+        remoteVideoRef.current.srcObject = demoStream;
+      }
       setRemoteVideoMissing(false);
       setRemoteVideoReady(true);
       setSessionStatus('active');
