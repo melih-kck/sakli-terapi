@@ -45,7 +45,7 @@
 .content-eyebrow {
   display: inline-block;
   margin-bottom: var(--space-sm);
-  color: var(--primary-light);
+  color: var(--primary);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
   text-transform: uppercase;
@@ -63,7 +63,7 @@
   border: 1px solid var(--primary);
   padding: var(--space-xl);
   border-radius: var(--radius-lg);
-  box-shadow: 0 0 20px rgba(120, 184, 164, 0.12);
+  box-shadow: 0 0 20px rgba(50, 106, 89, 0.1);
   text-align: center;
 }
 

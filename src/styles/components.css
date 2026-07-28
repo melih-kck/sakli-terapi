@@ -38,11 +38,11 @@
 .btn-primary {
   background: var(--gradient-primary);
   color: var(--text-inverse);
-  box-shadow: var(--shadow-sm), 0 4px 16px rgba(50, 109, 91, 0.28);
+  box-shadow: var(--shadow-sm), 0 4px 16px rgba(47, 101, 85, 0.2);
 }
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md), 0 8px 24px rgba(50, 109, 91, 0.34);
+  box-shadow: var(--shadow-md), 0 8px 24px rgba(47, 101, 85, 0.24);
 }
 .btn-primary:active {
   transform: translateY(0);
@@ -51,12 +51,12 @@
 .btn-secondary {
   background: var(--secondary-dark);
   color: var(--text-inverse);
-  box-shadow: var(--shadow-sm), 0 4px 16px rgba(59, 92, 98, 0.28);
+  box-shadow: var(--shadow-sm), 0 4px 16px rgba(69, 99, 111, 0.2);
 }
 .btn-secondary:hover {
   background: var(--secondary);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md), 0 8px 24px rgba(59, 92, 98, 0.34);
+  box-shadow: var(--shadow-md), 0 8px 24px rgba(69, 99, 111, 0.24);
 }
 
 .btn-outline {
@@ -197,7 +197,7 @@
 .input-group textarea:focus {
   border-color: var(--primary);
   background: var(--bg-primary);
-  box-shadow: 0 0 0 4px rgba(120, 184, 164, 0.14);
+  box-shadow: 0 0 0 4px rgba(50, 106, 89, 0.12);
 }
 
 .input-group input::placeholder,
@@ -307,9 +307,9 @@
   line-height: 1.4;
 }
 
-.badge-primary { background: var(--primary-bg); color: var(--primary-light); }
-.badge-secondary { background: var(--secondary-bg); color: var(--secondary-light); }
-.badge-accent { background: var(--accent-bg); color: var(--accent-light); }
+.badge-primary { background: var(--primary-bg); color: var(--primary-dark); }
+.badge-secondary { background: var(--secondary-bg); color: var(--secondary-dark); }
+.badge-accent { background: var(--accent-bg); color: var(--accent-dark); }
 .badge-success { background: var(--success-bg); color: var(--success); }
 .badge-warning { background: var(--warning-bg); color: var(--warning); }
 .badge-danger { background: var(--danger-bg); color: var(--danger); }
@@ -634,7 +634,7 @@
   background: var(--primary-dark);
   color: var(--text-inverse);
   border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(120, 184, 164, 0.15);
+  box-shadow: 0 0 0 4px rgba(50, 106, 89, 0.12);
 }
 
 .step.completed .step-number {

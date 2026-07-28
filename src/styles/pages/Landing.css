@@ -10,7 +10,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  background-color: #173b34;
+  background-color: #315a52;
   position: relative;
   overflow: hidden;
   padding: 28px 0;
@@ -24,8 +24,8 @@
   background-repeat: no-repeat;
   background-position: calc(50% + 330px) 54%;
   background-size: 360px;
-  filter: hue-rotate(240deg) saturate(0.55) brightness(1.05);
-  opacity: 0.82;
+  filter: hue-rotate(300deg) saturate(0.38) brightness(1.18);
+  opacity: 0.72;
   pointer-events: none;
 }
 

@@ -9,11 +9,11 @@
   gap: 10px;
   width: min(336px, calc(100vw - 32px));
   padding: 10px 12px;
-  border: 1px solid rgba(26, 102, 87, 0.24);
+  border: 1px solid rgba(97, 127, 138, 0.24);
   border-radius: 8px;
-  background: rgba(247, 253, 251, 0.96);
-  color: #153b34;
-  box-shadow: 0 10px 30px rgba(20, 48, 42, 0.16);
+  background: rgba(248, 251, 252, 0.96);
+  color: #29434b;
+  box-shadow: 0 10px 30px rgba(52, 86, 95, 0.14);
   backdrop-filter: blur(12px);
 }
 
@@ -21,8 +21,8 @@
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #1f806b;
-  box-shadow: 0 0 0 4px rgba(31, 128, 107, 0.12);
+  background: #617f8a;
+  box-shadow: 0 0 0 4px rgba(97, 127, 138, 0.12);
 }
 
 .demo-notice div {
@@ -42,7 +42,7 @@
 }
 
 .demo-notice a {
-  color: #146452;
+  color: #45636f;
   font-size: 0.78rem;
   font-weight: 700;
   white-space: nowrap;
@@ -57,7 +57,7 @@
   border: 0;
   border-radius: 4px;
   background: transparent;
-  color: #315c54;
+  color: #506870;
   font: inherit;
   font-size: 1.1rem;
   line-height: 1;
@@ -66,7 +66,7 @@
 
 .demo-notice-close:hover,
 .demo-notice-close:focus-visible {
-  background: rgba(31, 128, 107, 0.1);
+  background: rgba(97, 127, 138, 0.1);
   outline: none;
 }
 

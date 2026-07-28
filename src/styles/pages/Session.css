@@ -3,6 +3,39 @@
    ============================================ */
 
 .session-room {
+  --primary: #78b8a4;
+  --primary-light: #9acbbb;
+  --primary-lighter: #bedfd4;
+  --primary-dark: #326d5b;
+  --primary-bg: rgba(120, 184, 164, 0.12);
+  --secondary: #527a82;
+  --secondary-light: #759aa1;
+  --secondary-dark: #3b5c62;
+  --accent: #d5ab78;
+  --accent-light: #e5c79f;
+  --success: #79bd99;
+  --success-dark: #3f7a5b;
+  --success-bg: rgba(121, 189, 153, 0.12);
+  --warning: #d8ae75;
+  --warning-dark: #bd8952;
+  --warning-bg: rgba(216, 174, 117, 0.13);
+  --danger: #df8582;
+  --danger-dark: #9f494d;
+  --danger-bg: rgba(223, 133, 130, 0.12);
+  --info: #85adb4;
+  --info-bg: rgba(133, 173, 180, 0.13);
+  --bg-primary: #101715;
+  --bg-secondary: #17201e;
+  --bg-tertiary: #202b28;
+  --bg-elevated: #283531;
+  --text-primary: #f2f5f3;
+  --text-secondary: #bac5c0;
+  --text-tertiary: #8f9f98;
+  --border-light: #2c3b37;
+  --border-medium: #40534d;
+  --border-dark: #60736c;
+  --gradient-primary: linear-gradient(135deg, #326d5b 0%, #477f6d 100%);
+  color-scheme: dark;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -10,6 +43,30 @@
   box-sizing: border-box;
   background: var(--bg-primary);
   color: white;
+}
+
+.session-room .navbar {
+  background: rgba(16, 23, 21, 0.78);
+  border-bottom-color: rgba(190, 223, 212, 0.08);
+}
+
+.session-room .navbar-scrolled {
+  background: rgba(16, 23, 21, 0.96);
+  box-shadow: 0 4px 20px rgba(4, 12, 9, 0.42);
+}
+
+.session-room .navbar-demo-badge {
+  border-color: rgba(154, 203, 187, 0.34);
+  background: rgba(120, 184, 164, 0.1);
+  color: var(--primary-light);
+}
+
+.session-room .nav-link.active {
+  color: var(--primary-light);
+}
+
+.session-room .nav-link.active::after {
+  background: var(--primary-light);
 }
 
 .session-room-blocked {

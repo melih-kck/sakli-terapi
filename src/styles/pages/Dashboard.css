@@ -162,7 +162,7 @@
   align-items: center;
   gap: var(--space-md);
   padding: var(--space-md);
-  border: 1px solid rgba(216, 174, 117, 0.28);
+  border: 1px solid rgba(145, 99, 53, 0.24);
   border-radius: var(--radius-md);
   background: var(--warning-bg);
 }
@@ -572,7 +572,7 @@
 
 .appointment-status.is-upcoming {
   background: var(--primary-bg);
-  color: var(--primary-lighter);
+  color: var(--primary);
 }
 
 .appointment-status.is-completed,
@@ -593,9 +593,9 @@
 }
 
 .appointment-payment-badge.is-deferred {
-  color: var(--primary-lighter);
+  color: var(--primary);
   background: var(--primary-bg);
-  border-color: rgba(120, 184, 164, 0.28);
+  border-color: rgba(50, 106, 89, 0.22);
 }
 
 .appointment-payment-badge.is-refunded {
