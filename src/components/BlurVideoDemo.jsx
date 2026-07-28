@@ -18,6 +18,7 @@ export default function BlurVideoDemo() {
   const appliedPreset = getSessionBlurPreset(appliedLevel);
   const levelLabels = t('loginPage.blurDemo.levels');
   const isClearRequested = requestedLevel === 0;
+  const imageScale = appliedPreset.pixels === 0 ? 1 : 1.05;
 
   const handleLevelChange = (event) => {
     const nextLevel = normalizeSessionBlurLevel(event.target.value);
@@ -50,7 +51,13 @@ export default function BlurVideoDemo() {
             className="blur-demo-remote-image"
             src={participantImage}
             alt={t('loginPage.blurDemo.sentImageAlt')}
-            style={{ filter: `blur(${appliedPreset.pixels}px)`, transform: 'scale(1.09)' }}
+            width="1200"
+            height="900"
+            decoding="async"
+            style={{
+              filter: `blur(${appliedPreset.pixels}px)`,
+              transform: `scale(${imageScale})`,
+            }}
           />
 
           <div className="blur-demo-call-top" aria-hidden="true">
@@ -67,7 +74,13 @@ export default function BlurVideoDemo() {
           </div>
 
           <div className="blur-demo-local">
-            <img src={participantImage} alt="" />
+            <img
+              src={participantImage}
+              alt=""
+              width="1200"
+              height="900"
+              decoding="async"
+            />
             <span>{t('loginPage.blurDemo.localPreview')}</span>
             <small>{t('loginPage.blurDemo.onlyYou')}</small>
           </div>
