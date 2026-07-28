@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useReview } from '../context/ReviewContext';
 import { useSession } from '../context/SessionContext';
 import { useToast } from '../context/ToastContext';
+import { useLanguage } from '../context/LanguageContext';
 import { supabase } from '../lib/supabase';
 import { getAuthRedirectUrl } from '../lib/auth';
 import { BRAND, getMailto } from '../config/brand';
@@ -48,16 +49,17 @@ function ContentSection({ title, children }) {
 }
 
 const reviewAreas = [
-  { key: 'listening', label: 'Dinleme' },
-  { key: 'empathy', label: 'Empati' },
-  { key: 'clarity', label: 'Açıklık' },
-  { key: 'trust', label: 'Güven' },
+  { key: 'listening', index: 0 },
+  { key: 'empathy', index: 1 },
+  { key: 'clarity', index: 2 },
+  { key: 'trust', index: 3 },
 ];
 
 export function ReviewPage() {
   const { user, isClient } = useAuth();
   const { submitReview } = useReview();
   const { success, warning } = useToast();
+  const { t } = useLanguage();
   const { sessions } = useSession();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session');
@@ -108,15 +110,15 @@ export function ReviewPage() {
 
   return (
     <PageShell
-      eyebrow="Danışan Değerlendirmesi"
-      title="Seans Deneyimini Paylaş"
-      subtitle="Geri bildiriminiz psikologların hizmet kalitesini izlemesine ve diğer danışanların daha bilinçli seçim yapmasına yardımcı olur."
+      eyebrow={t('support.reviews.eyebrow')}
+      title={t('support.reviews.title')}
+      subtitle={t('support.reviews.subtitle')}
       aside={(
         <div className="content-info-panel">
-          <h3>Gizlilik Notu</h3>
-          <p>Değerlendirmeler rumuzla veya anonim olarak görünür. Kimlik, e-posta ve ödeme bilgileriniz paylaşılmaz.</p>
+          <h3>{t('support.reviews.privacyTitle')}</h3>
+          <p>{t('support.reviews.privacyBody')}</p>
           <div className="content-metric">
-            <span>Ortalama puan</span>
+            <span>{t('support.reviews.average')}</span>
             <strong>{averageRating.toFixed(1)}/5</strong>
           </div>
         </div>
@@ -125,29 +127,29 @@ export function ReviewPage() {
       <form className="content-form-panel" onSubmit={handleSubmit}>
         {submitted ? (
           <div className="content-success-box">
-            <h2>Teşekkürler</h2>
-            <p>Değerlendirmeniz kaydedildi ve psikolog profilindeki değerlendirme alanına yansıtıldı.</p>
+            <h2>{t('support.reviews.thanks')}</h2>
+            <p>{t('support.reviews.saved')}</p>
             <Link className="btn btn-primary" to={user?.role === 'client' ? '/panel' : user?.role === 'admin' ? '/admin' : '/psikologlar'}>
-              Devam Et
+              {t('support.reviews.continue')}
             </Link>
           </div>
         ) : !canReviewSession ? (
           <div className="content-empty-box">
-            <h3>Değerlendirilecek seans bulunamadı</h3>
-            <p>Değerlendirme bırakmak için tamamlanmış ve daha önce yorumlanmamış bir seans seçmelisiniz.</p>
-            <Link className="btn btn-primary" style={{ marginTop: '15px' }} to="/panel">Panele Dön</Link>
+            <h3>{t('support.reviews.unavailable')}</h3>
+            <p>{t('support.reviews.unavailableBody')}</p>
+            <Link className="btn btn-primary" style={{ marginTop: '15px' }} to="/panel">{t('support.reviews.back')}</Link>
           </div>
         ) : (
           <>
             <div className="content-form-header">
-              <h2>Değerlendirme Formu</h2>
-              <p>Son görüşmenizdeki deneyimi 1 ile 5 arasında puanlayın.</p>
+              <h2>{t('support.reviews.form')}</h2>
+              <p>{t('support.reviews.formBody')}</p>
             </div>
 
             <div className="review-rating-grid">
               {reviewAreas.map(area => (
                 <div key={area.key} className="review-rating-row">
-                  <span>{area.label}</span>
+                  <span>{t('support.reviews.areas')[area.index]}</span>
                   <RatingStars
                     rating={ratings[area.key]}
                     interactive
@@ -160,24 +162,24 @@ export function ReviewPage() {
             </div>
 
             <div className="input-group">
-              <label htmlFor="review-comment">Yorumunuz</label>
+              <label htmlFor="review-comment">{t('support.reviews.comment')}</label>
               <textarea
                 id="review-comment"
                 rows="6"
                 value={comment}
                 onChange={(event) => setComment(event.target.value)}
-                placeholder="Sizin için faydalı olan noktaları ve gelişmesini istediğiniz alanları yazın."
+                placeholder={t('support.reviews.commentPlaceholder')}
               />
             </div>
 
             <label className="checkbox-group content-checkbox">
               <input type="checkbox" checked={anonymous} onChange={(event) => setAnonymous(event.target.checked)} />
-              <span>Değerlendirmem anonim görünsün.</span>
+              <span>{t('support.reviews.anonymous')}</span>
             </label>
 
             <div className="content-actions">
-              <Link className="btn btn-ghost" to="/panel">Vazgeç</Link>
-              <button className="btn btn-primary" type="submit">Değerlendirmeyi Gönder</button>
+              <Link className="btn btn-ghost" to="/panel">{t('support.reviews.cancel')}</Link>
+              <button className="btn btn-primary" type="submit">{t('support.reviews.submit')}</button>
             </div>
           </>
         )}
@@ -188,6 +190,7 @@ export function ReviewPage() {
 
 export function ReviewsPage() {
   const { user } = useAuth();
+  const { language, t } = useLanguage();
   const { fetchReviewsForPsychologist } = useReview();
   const psychologistId = user?.psychologistId || user?.psychologistProfile?.id || user?.id;
   const [ownReviews, setOwnReviews] = useState([]);
@@ -212,30 +215,30 @@ export function ReviewsPage() {
 
   return (
     <PageShell
-      eyebrow="Psikolog Paneli"
-      title="Değerlendirmeler"
-      subtitle="Danışanlardan gelen yorumları, ortalama puanı ve geri bildirim başlıklarını tek yerde takip edin."
+      eyebrow={t('support.reviews.psychologistEyebrow')}
+      title={t('support.reviews.psychologistTitle')}
+      subtitle={t('support.reviews.psychologistSubtitle')}
       aside={(
         <div className="content-info-panel">
-          <h3>Özet</h3>
+          <h3>{t('support.reviews.summary')}</h3>
           <div className="content-metric">
-            <span>Toplam değerlendirme</span>
+            <span>{t('support.reviews.total')}</span>
             <strong>{ownReviews.length}</strong>
           </div>
           <div className="content-metric">
-            <span>Ortalama puan</span>
+            <span>{t('support.reviews.average')}</span>
             <strong>{average ? `${average.toFixed(1)}/5` : '-'}</strong>
           </div>
-          <Link className="btn btn-outline btn-block" to="/psikolog-panel">Panele Dön</Link>
+          <Link className="btn btn-outline btn-block" to="/psikolog-panel">{t('support.reviews.back')}</Link>
         </div>
       )}
     >
-      <ContentSection title="Son Değerlendirmeler">
+      <ContentSection title={t('support.reviews.latest')}>
         {ownReviews.length === 0 ? (
           <div className="content-empty-box">
-            <h3>Henüz değerlendirme yok</h3>
-            <p>Danışanlar seans sonrası yorum bıraktığında burada listelenecek. Şimdilik randevu takibinizi panelden sürdürebilirsiniz.</p>
-            <Link className="btn btn-primary" to="/psikolog-panel">Randevu Programına Git</Link>
+            <h3>{t('support.reviews.none')}</h3>
+            <p>{t('support.reviews.noneBody')}</p>
+            <Link className="btn btn-primary" to="/psikolog-panel">{t('support.reviews.appointments')}</Link>
           </div>
         ) : (
           <div className="review-list-page">
@@ -244,7 +247,7 @@ export function ReviewsPage() {
                 <div className="review-detail-head">
                   <div>
                     <strong>{review.clientAlias}</strong>
-                    <span>{new Date(review.date).toLocaleDateString('tr-TR')} • {review.sessionNumber}. seans</span>
+                    <span>{new Date(review.date).toLocaleDateString(language === 'en' ? 'en-US' : 'tr-TR')} • {t('support.reviews.sessionNumber', { count: review.sessionNumber })}</span>
                   </div>
                   <RatingStars rating={review.rating} size="sm" />
                 </div>
@@ -255,15 +258,15 @@ export function ReviewsPage() {
         )}
       </ContentSection>
 
-      <ContentSection title="Değerlendirme Kriterleri">
+      <ContentSection title={t('support.reviews.criteria')}>
         <div className="content-grid-2">
           <div className="content-note">
-            <h3>Kalite</h3>
-            <p>Dinleme, empati, açıklık ve profesyonellik puanları genel ortalamaya dahil edilir.</p>
+            <h3>{t('support.reviews.quality')}</h3>
+            <p>{t('support.reviews.qualityBody')}</p>
           </div>
           <div className="content-note">
-            <h3>Anonimlik</h3>
-            <p>Danışan kimliği korunur; yorumlar yalnızca rumuz veya anonim ifade ile gösterilir.</p>
+            <h3>{t('support.reviews.anonymity')}</h3>
+            <p>{t('support.reviews.anonymityBody')}</p>
           </div>
         </div>
       </ContentSection>
@@ -289,51 +292,36 @@ const faqGroups = {
   ],
 };
 
-const demoFaqGroups = {
-  genel: [
-    [`${BRAND.name} neyi gösteriyor?`, 'Danışan, uzman ve yönetici rollerini; rumuz, uzman keşfi, kurgusal randevu, seans simülasyonu ve belge onayı akışlarıyla gösteren etkileşimli bir ürün prototipidir.'],
-    ['Bu sitedeki kişiler gerçek mi?', 'Hayır. Profiller, belgeler, randevular, bildirimler ve değerlendirmelerin tamamı kurgusaldır.'],
-    ['Gerçek bilgilerimi girmeli miyim?', 'Hayır. Demo alanlarına kişisel, sağlık, iletişim, kimlik veya mesleki belge bilgisi girilmemelidir.'],
-  ],
-  randevu: [
-    ['Demo randevusuna nasıl katılırım?', 'Danışan rolünü açtıktan sonra paneldeki güncel demo randevusunun seans düğmesiyle görüşme simülasyonuna geçebilirsiniz.'],
-    ['Görüşme seçenekleri çalışıyor mu?', 'Metin, ses ve bulanık görüntü ürün akışları gösterilir. Demo, gerçek bir sağlık görüşmesi veya klinik kayıt oluşturmaz.'],
-    ['Ücret veya ödeme var mı?', 'Hayır. Portföy sürümünde ücret ve ödeme tamamen kapalıdır.'],
-  ],
-  hesap: [
-    ['Demo hesabı nasıl açılır?', 'Giriş sayfasından danışan, uzman veya yönetici rolünü tek tıkla seçin. E-posta veya şifre gerekmez.'],
-    ['Demo işlemleri nerede saklanır?', 'Rol seçimi ve kurgusal demo işlemleri yalnızca tarayıcının yerel depolama alanında tutulabilir.'],
-    ['Demo verilerini sıfırlayabilir miyim?', 'Yönetici panelindeki Demo Verilerini Sıfırla düğmesiyle yönetici başvuru akışını başlangıç durumuna döndürebilirsiniz.'],
-  ],
-};
-
 export function FaqPage() {
+  const { t } = useLanguage();
   const [activeGroup, setActiveGroup] = useState('genel');
   const [openIndex, setOpenIndex] = useState(0);
-  const visibleFaqGroups = IS_DEMO_MODE ? demoFaqGroups : faqGroups;
+  const visibleFaqGroups = IS_DEMO_MODE
+    ? t('support.faq.demoGroups', { brand: BRAND.name })
+    : faqGroups;
 
   return (
     <PageShell
-      eyebrow="Destek"
-      title="Sık Sorulan Sorular"
+      eyebrow={t('support.faq.eyebrow')}
+      title={t('support.faq.title')}
       subtitle={IS_DEMO_MODE
-        ? 'Portföy prototipinin kapsamı ve örnek ürün akışlarıyla ilgili başlıklar.'
-        : 'Gizlilik, randevu ve hesap işlemleriyle ilgili en çok sorulan başlıklar.'}
+        ? t('support.faq.demoSubtitle')
+        : t('support.faq.liveSubtitle')}
       aside={(
         <div className="content-info-panel">
-          <h3>{IS_DEMO_MODE ? 'Projeyi inceliyor musunuz?' : 'Yanıt bulamadınız mı?'}</h3>
+          <h3>{IS_DEMO_MODE ? t('support.faq.demoAsideTitle') : t('support.faq.liveAsideTitle')}</h3>
           <p>
             {IS_DEMO_MODE
-              ? 'Araştırma sorusu, teknik mimari ve üretim sınırları Hakkında sayfasında özetlenmiştir.'
-              : 'Destek ekibine e-posta göndererek hesabınız veya randevunuzla ilgili yardım alabilirsiniz.'}
+              ? t('support.faq.demoAsideText')
+              : t('support.faq.liveAsideText')}
           </p>
           {IS_DEMO_MODE
-            ? <Link className="btn btn-outline btn-block" to="/hakkinda">Proje Kapsamını Aç</Link>
-            : <a className="btn btn-outline btn-block" href={getMailto(BRAND.supportEmail)}>Destek Ekibine Yaz</a>}
+            ? <Link className="btn btn-outline btn-block" to="/hakkinda">{t('support.faq.demoAction')}</Link>
+            : <a className="btn btn-outline btn-block" href={getMailto(BRAND.supportEmail)}>{t('support.faq.liveAction')}</a>}
         </div>
       )}
     >
-      <div className="content-tabs" role="tablist" aria-label="SSS kategorileri">
+      <div className="content-tabs" role="tablist" aria-label={t('support.faq.tabsLabel')}>
         {Object.keys(visibleFaqGroups).map(group => (
           <button
             key={group}
@@ -343,7 +331,7 @@ export function FaqPage() {
             aria-selected={activeGroup === group}
             onClick={() => { setActiveGroup(group); setOpenIndex(0); }}
           >
-            {group === 'genel' ? 'Genel' : group === 'randevu' ? 'Randevu' : 'Hesap'}
+            {t(`support.faq.categories.${group}`)}
           </button>
         ))}
       </div>
@@ -369,32 +357,29 @@ export function FaqPage() {
 }
 
 export function PrivacyPolicyPage() {
+  const { t } = useLanguage();
+
   if (IS_DEMO_MODE) {
+    const sections = t('support.privacy.sections');
+
     return (
       <PageShell
-        eyebrow="Demo gizliliği"
-        title="Portföy Sürümü Gizlilik Bilgisi"
-        subtitle={`${BRAND.name} portföy demosu, gerçek sağlık verisi toplamadan incelenmek üzere yapılandırılmıştır.`}
+        eyebrow={t('support.privacy.eyebrow')}
+        title={t('support.privacy.title')}
+        subtitle={t('support.privacy.subtitle', { brand: BRAND.name })}
         aside={(
           <div className="content-info-panel">
-            <h3>Kısa Özet</h3>
-            <p>Gerçek hesap, başvuru, belge, randevu, ödeme veya klinik kayıt kabul edilmez.</p>
-            <span className="content-date">Son güncelleme: 26 Temmuz 2026</span>
+            <h3>{t('support.privacy.summaryTitle')}</h3>
+            <p>{t('support.privacy.summary')}</p>
+            <span className="content-date">{t('support.privacy.updated')}</span>
           </div>
         )}
       >
-        <ContentSection title="Demo Verileri">
-          <p>Görünen bütün kullanıcılar, uzman profilleri, belgeler, bildirimler, randevular ve değerlendirmeler kurgusaldır. Herhangi bir gerçek kişi veya kurumu temsil etmez.</p>
-        </ContentSection>
-        <ContentSection title="Tarayıcıda Saklananlar">
-          <p>Seçtiğiniz demo rolü ve demo içinde yaptığınız kurgusal işlemler yalnızca tarayıcınızın yerel depolama alanında tutulabilir. Demo verilerini tarayıcı ayarlarından temizleyebilir veya yönetici panelinden başlangıç durumuna döndürebilirsiniz.</p>
-        </ContentSection>
-        <ContentSection title="Girmemeniz Gereken Bilgiler">
-          <p>Demo alanlarına gerçek ad, iletişim bilgisi, sağlık bilgisi, diploma, kimlik belgesi veya üçüncü kişilere ait veri girmeyin. Portföy sürümü bu verileri kabul etmek amacıyla tasarlanmamıştır.</p>
-        </ContentSection>
-        <ContentSection title="Üretim Sürümü">
-          <p>Gerçek kullanıcı alımı ancak sağlık mevzuatı, uzaktan hizmet, veri koruma, sözleşme ve ödeme gereklilikleri tamamlandıktan sonra ayrı bir canlı ortamda etkinleştirilecektir.</p>
-        </ContentSection>
+        {sections.map(([title, body]) => (
+          <ContentSection key={title} title={title}>
+            <p>{body}</p>
+          </ContentSection>
+        ))}
       </PageShell>
     );
   }
@@ -437,33 +422,34 @@ export function PrivacyPolicyPage() {
 }
 
 export function TermsPage() {
+  const { t } = useLanguage();
+
   if (IS_DEMO_MODE) {
+    const limits = t('support.terms.limits');
+
     return (
       <PageShell
-        eyebrow="Demo koşulları"
-        title="Portföy Sürümü Kullanım Koşulları"
-        subtitle="Etkileşimli prototipi incelerken geçerli olan güvenli kullanım sınırları."
+        eyebrow={t('support.terms.eyebrow')}
+        title={t('support.terms.title')}
+        subtitle={t('support.terms.subtitle')}
         aside={(
           <div className="content-info-panel">
-            <h3>Önemli</h3>
-            <p>Bu sürüm sağlık hizmeti veya acil müdahale sağlamaz ve gerçek randevu oluşturmaz.</p>
-            <span className="content-date">Son güncelleme: 26 Temmuz 2026</span>
+            <h3>{t('support.terms.important')}</h3>
+            <p>{t('support.terms.summary')}</p>
+            <span className="content-date">{t('support.terms.updated')}</span>
           </div>
         )}
       >
-        <ContentSection title="Amaç">
-          <p>{BRAND.name}, ürün ve mühendislik portföyü amacıyla sunulan çalışan bir prototiptir. Arayüz ve iş akışları yalnızca kurgusal verilerle incelenebilir.</p>
+        <ContentSection title={t('support.terms.purposeTitle')}>
+          <p>{t('support.terms.purpose', { brand: BRAND.name })}</p>
         </ContentSection>
-        <ContentSection title="Kullanım Sınırları">
+        <ContentSection title={t('support.terms.limitsTitle')}>
           <ul className="content-list">
-            <li>Gerçek kişisel veya sağlık verisi girilmemelidir.</li>
-            <li>Demo profilleri gerçek uzman veya mesleki yetki olarak yorumlanmamalıdır.</li>
-            <li>Demo randevuları, mesajları ve yönetici kararları gerçek dünyada sonuç doğurmaz.</li>
-            <li>Acil durumda platform yerine 112 Acil Çağrı Merkezi aranmalıdır.</li>
+            {limits.map(item => <li key={item}>{item}</li>)}
           </ul>
         </ContentSection>
-        <ContentSection title="Gelecek Canlı Sürüm">
-          <p>Gerçek hizmet koşulları, sorumluluk dağılımı, ücret, iptal ve veri işleme hükümleri gerekli izin ve hukuk incelemelerinden sonra ayrıca yayımlanacaktır.</p>
+        <ContentSection title={t('support.terms.futureTitle')}>
+          <p>{t('support.terms.future')}</p>
         </ContentSection>
       </PageShell>
     );

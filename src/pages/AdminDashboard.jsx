@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useLanguage } from '../context/LanguageContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import '../styles/pages/Dashboard.css';
@@ -17,27 +18,9 @@ import {
   reviewVerificationDocument,
   suspendPsychologist,
 } from '../lib/admin';
-import {
-  DOCUMENT_STATUS_LABELS,
-  DOCUMENT_TYPE_LABELS,
-} from '../lib/verification-documents';
 import { IS_DEMO_MODE } from '../config/runtime';
 
-const statusLabels = {
-  approved: 'Aktif',
-  rejected: 'Reddedildi',
-  suspended: 'Askıda',
-};
-
-const actionLabels = {
-  psychologist_approved: 'Onaylandı',
-  psychologist_rejected: 'Reddedildi',
-  psychologist_suspended: 'Askıya alındı',
-  verification_document_approved: 'Belge onaylandı',
-  verification_document_rejected: 'Belge reddedildi',
-};
-
-const formatDate = (value, withTime = false) => new Intl.DateTimeFormat('tr-TR', withTime ? {
+const formatDate = (value, locale, withTime = false) => new Intl.DateTimeFormat(locale, withTime ? {
   dateStyle: 'short',
   timeStyle: 'short',
 } : {
@@ -47,7 +30,9 @@ const formatDate = (value, withTime = false) => new Intl.DateTimeFormat('tr-TR',
 export default function AdminDashboard() {
   const { user, isAuthenticated } = useAuth();
   const { success, error: showError } = useToast();
+  const { language, t } = useLanguage();
   const navigate = useNavigate();
+  const locale = language === 'en' ? 'en-US' : 'tr-TR';
 
   const [activeTab, setActiveTab] = useState('pending');
   const [pendingList, setPendingList] = useState([]);
@@ -193,24 +178,24 @@ export default function AdminDashboard() {
     const documents = psychologist.verification_documents || [];
     const pendingCount = documents.filter(document => document.status === 'pending').length;
 
-    if (documents.length === 0) return <span className="admin-no-documents">Belge yok</span>;
+    if (documents.length === 0) return <span className="admin-no-documents">{t('admin.noDocuments')}</span>;
 
     return (
       <details className="admin-document-review">
         <summary>
-          {documents.length} belge
-          {pendingCount > 0 && <span className="badge badge-warning">{pendingCount} yeni</span>}
+          {t('admin.documentCount', { count: documents.length })}
+          {pendingCount > 0 && <span className="badge badge-warning">{t('admin.newCount', { count: pendingCount })}</span>}
         </summary>
         <div className="admin-document-list">
           {documents.map(document => (
             <div className="admin-document-row" key={document.id}>
               <div>
-                <strong>{DOCUMENT_TYPE_LABELS[document.document_type] || 'Mesleki belge'}</strong>
+                <strong>{t(`admin.documentTypes.${document.document_type}`) || t('admin.professionalDocument')}</strong>
                 <span title={document.original_name}>{document.original_name}</span>
                 {document.review_reason && <small>{document.review_reason}</small>}
               </div>
               <span className={`badge verification-status is-${document.status}`}>
-                {DOCUMENT_STATUS_LABELS[document.status] || document.status}
+                {t(`admin.documentStatuses.${document.status}`) || document.status}
               </span>
               <div className="admin-document-actions">
                 <button
@@ -219,7 +204,7 @@ export default function AdminDashboard() {
                   disabled={processingId === `document-view-${document.id}`}
                   onClick={() => handleDocumentView(document)}
                 >
-                  Görüntüle
+                  {t('admin.view')}
                 </button>
                 {document.status !== 'approved' && (
                   <button
@@ -228,7 +213,7 @@ export default function AdminDashboard() {
                     disabled={processingId === `document-review-${document.id}`}
                     onClick={() => handleDocumentReview(document, psychologist.display_name, 'approved')}
                   >
-                    Onayla
+                    {t('admin.approve')}
                   </button>
                 )}
                 {document.status !== 'rejected' && (
@@ -238,7 +223,7 @@ export default function AdminDashboard() {
                     disabled={processingId === `document-review-${document.id}`}
                     onClick={() => handleDocumentReview(document, psychologist.display_name, 'rejected')}
                   >
-                    Reddet
+                    {t('admin.reject')}
                   </button>
                 )}
               </div>
@@ -251,17 +236,17 @@ export default function AdminDashboard() {
 
   const renderPsychologistRows = (list, mode) => list.map((psychologist) => (
     <tr key={psychologist.id}>
-      <td className="p-md text-sm text-secondary">{formatDate(psychologist.created_at)}</td>
-      <td className="p-md font-semibold">{psychologist.display_name || 'İsimsiz'}</td>
+      <td className="p-md text-sm text-secondary">{formatDate(psychologist.created_at, locale)}</td>
+      <td className="p-md font-semibold">{psychologist.display_name || t('admin.unnamed')}</td>
       <td className="p-md text-sm">{psychologist.email}</td>
       <td className="p-md admin-documents-cell">{renderVerificationDocuments(psychologist)}</td>
       <td className="p-md">
         {mode === 'pending' ? (
-          <>{psychologist.title} <span className="text-secondary">({psychologist.experience} yıl)</span></>
+          <>{psychologist.title} <span className="text-secondary">({psychologist.experience} {t('admin.year')})</span></>
         ) : (
           <>
             <span className={`badge ${psychologist.approval_status === 'approved' ? 'badge-success' : 'badge-warning'}`}>
-              {statusLabels[psychologist.approval_status]}
+              {t(`admin.statusLabels.${psychologist.approval_status}`)}
             </span>
             {psychologist.review_reason && <div className="admin-review-reason">{psychologist.review_reason}</div>}
           </>
@@ -272,22 +257,22 @@ export default function AdminDashboard() {
           {mode === 'pending' && (
             <>
               <button type="button" className="btn btn-outline btn-sm" disabled={processingId === psychologist.id} onClick={() => handleReasonedAction(psychologist.id, psychologist.display_name, 'reject')}>
-                Reddet
+                {t('admin.reject')}
               </button>
               <button
                 type="button"
                 className="btn btn-primary btn-sm"
                 disabled={processingId === psychologist.id || !psychologist.verification_documents?.some(document => document.status === 'approved')}
-                title={psychologist.verification_documents?.some(document => document.status === 'approved') ? 'Psikolog profilini etkinleştir' : 'Önce en az bir belgeyi onaylayın'}
+                title={psychologist.verification_documents?.some(document => document.status === 'approved') ? t('admin.approveTitle') : t('admin.approveDocumentFirst')}
                 onClick={() => handleApprove(psychologist)}
               >
-                Onayla
+                {t('admin.approve')}
               </button>
             </>
           )}
           {mode === 'approved' && (
             <button type="button" className="btn btn-outline btn-sm admin-danger-action" disabled={processingId === psychologist.id} onClick={() => handleReasonedAction(psychologist.id, psychologist.display_name, 'suspend')}>
-              Askıya Al
+              {t('admin.suspend')}
             </button>
           )}
           {mode === 'inactive' && (
@@ -295,10 +280,10 @@ export default function AdminDashboard() {
               type="button"
               className="btn btn-outline btn-sm"
               disabled={processingId === psychologist.id || !psychologist.verification_documents?.some(document => document.status === 'approved')}
-              title={psychologist.verification_documents?.some(document => document.status === 'approved') ? 'Psikolog profilini yeniden etkinleştir' : 'Önce en az bir belgeyi onaylayın'}
+              title={psychologist.verification_documents?.some(document => document.status === 'approved') ? t('admin.reactivateTitle') : t('admin.approveDocumentFirst')}
               onClick={() => handleApprove(psychologist)}
             >
-              Yeniden Etkinleştir
+              {t('admin.reactivate')}
             </button>
           )}
         </div>
@@ -319,16 +304,16 @@ export default function AdminDashboard() {
         <div className="container mt-xl">
           <div className="dash-header mb-2xl">
             <div>
-              <h1 className="dash-title">Yönetici Paneli</h1>
+              <h1 className="dash-title">{t('admin.title')}</h1>
               <p className="dash-subtitle">
                 {IS_DEMO_MODE
-                  ? 'Kurgusal başvurularla belge inceleme ve karar akışı'
-                  : 'Psikolog başvuruları ve yönetici işlem geçmişi'}
+                  ? t('admin.demoSubtitle')
+                  : t('admin.liveSubtitle')}
               </p>
             </div>
             {IS_DEMO_MODE && (
               <button type="button" className="btn btn-outline btn-sm" onClick={handleDemoReset}>
-                Demo Verilerini Sıfırla
+                {t('admin.reset')}
               </button>
             )}
           </div>
@@ -336,51 +321,51 @@ export default function AdminDashboard() {
           <div className="grid grid-3 gap-md mb-2xl">
             <div className="dash-stat-card">
               <span className="dash-stat-value">{approvedList.length}</span>
-              <span className="dash-stat-label">Aktif Psikolog</span>
+              <span className="dash-stat-label">{t('admin.activePsychologists')}</span>
             </div>
             <div className="dash-stat-card">
               <span className="dash-stat-value">{pendingList.length}</span>
-              <span className="dash-stat-label">Onay Bekleyen</span>
+              <span className="dash-stat-label">{t('admin.pendingApproval')}</span>
             </div>
             <div className="dash-stat-card">
               <span className="dash-stat-value">{inactiveList.length}</span>
-              <span className="dash-stat-label">Pasif Hesap</span>
+              <span className="dash-stat-label">{t('admin.inactiveAccounts')}</span>
             </div>
           </div>
 
           <div className="admin-workspace">
-            <div className="tab-navigation admin-tabs" role="tablist" aria-label="Yönetici kayıtları">
+            <div className="tab-navigation admin-tabs" role="tablist" aria-label={t('admin.tabsLabel')}>
               <button type="button" role="tab" aria-selected={activeTab === 'pending'} className={`tab-item ${activeTab === 'pending' ? 'active' : ''}`} onClick={() => setActiveTab('pending')}>
-                Bekleyenler {pendingList.length > 0 && <span className="badge badge-warning">{pendingList.length}</span>}
+                {t('admin.pending')} {pendingList.length > 0 && <span className="badge badge-warning">{pendingList.length}</span>}
               </button>
               <button type="button" role="tab" aria-selected={activeTab === 'approved'} className={`tab-item ${activeTab === 'approved' ? 'active' : ''}`} onClick={() => setActiveTab('approved')}>
-                Aktif
+                {t('admin.active')}
               </button>
               <button type="button" role="tab" aria-selected={activeTab === 'inactive'} className={`tab-item ${activeTab === 'inactive' ? 'active' : ''}`} onClick={() => setActiveTab('inactive')}>
-                Pasif
+                {t('admin.inactive')}
               </button>
               <button type="button" role="tab" aria-selected={activeTab === 'audit'} className={`tab-item ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>
-                İşlem Geçmişi
+                {t('admin.audit')}
               </button>
             </div>
 
             {isLoading ? (
-              <div className="admin-empty-state">Veriler yükleniyor...</div>
+              <div className="admin-empty-state">{t('admin.loading')}</div>
             ) : activeTab === 'audit' ? (
               auditLog.length === 0 ? (
-                <div className="admin-empty-state">Henüz yönetici işlemi bulunmuyor.</div>
+                <div className="admin-empty-state">{t('admin.noAudit')}</div>
               ) : (
                 <div className="table-responsive">
                   <table className="admin-table">
                     <thead>
-                      <tr><th>Tarih</th><th>Psikolog</th><th>İşlem</th><th>Neden</th></tr>
+                      <tr><th>{t('admin.date')}</th><th>{t('admin.psychologist')}</th><th>{t('admin.action')}</th><th>{t('admin.reason')}</th></tr>
                     </thead>
                     <tbody>
                       {auditLog.map((entry) => (
                         <tr key={entry.id}>
-                          <td>{formatDate(entry.created_at, true)}</td>
-                          <td>{entry.metadata?.display_name || 'Silinmiş hesap'}</td>
-                          <td>{actionLabels[entry.action] || entry.action}</td>
+                          <td>{formatDate(entry.created_at, locale, true)}</td>
+                          <td>{entry.metadata?.display_name || t('admin.deletedAccount')}</td>
+                          <td>{t(`admin.actionLabels.${entry.action}`) || entry.action}</td>
                           <td>{entry.metadata?.reason || '—'}</td>
                         </tr>
                       ))}
@@ -389,12 +374,19 @@ export default function AdminDashboard() {
                 </div>
               )
             ) : activeList.length === 0 ? (
-              <div className="admin-empty-state">Bu bölümde kayıt bulunmuyor.</div>
+              <div className="admin-empty-state">{t('admin.noRecords')}</div>
             ) : (
               <div className="table-responsive">
                 <table className="admin-table">
                   <thead>
-                    <tr><th>Kayıt Tarihi</th><th>Ad Soyad</th><th>E-posta</th><th>Belgeler</th><th>Durum</th><th>İşlem</th></tr>
+                    <tr>
+                      <th>{t('admin.registered')}</th>
+                      <th>{t('admin.fullName')}</th>
+                      <th>{t('admin.email')}</th>
+                      <th>{t('admin.documents')}</th>
+                      <th>{t('admin.status')}</th>
+                      <th>{t('admin.action')}</th>
+                    </tr>
                   </thead>
                   <tbody>{renderPsychologistRows(activeList, activeTab)}</tbody>
                 </table>

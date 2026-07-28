@@ -5,6 +5,7 @@ import DemoNotice from './components/DemoNotice';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { FEATURES, IS_DEMO_MODE } from './config/runtime';
+import { useLanguage } from './context/LanguageContext';
 
 // Pages imported using React.lazy for performance
 const Landing = lazy(() => import('./pages/Landing'));
@@ -34,27 +35,33 @@ const ReviewPage = lazyNamed(() => import('./pages/SupportPages'), 'ReviewPage')
 const ReviewsPage = lazyNamed(() => import('./pages/SupportPages'), 'ReviewsPage');
 const TermsPage = lazyNamed(() => import('./pages/SupportPages'), 'TermsPage');
 
-const NotFound = () => (
-  <div className="page not-found-page">
-    <Navbar />
-    <main className="page-content not-found-main">
-      <section className="not-found-content">
-        <span className="not-found-code" aria-hidden="true">404</span>
-        <h1>Sayfa bulunamadı</h1>
-        <p>Aradığınız sayfa mevcut değil veya taşınmış olabilir.</p>
-        <Link to="/" className="btn btn-primary">Ana Sayfaya Dön</Link>
-      </section>
-    </main>
-    <Footer />
-  </div>
-);
+const NotFound = () => {
+  const { t } = useLanguage();
+  return (
+    <div className="page not-found-page">
+      <Navbar />
+      <main className="page-content not-found-main">
+        <section className="not-found-content">
+          <span className="not-found-code" aria-hidden="true">404</span>
+          <h1>{t('app.notFoundTitle')}</h1>
+          <p>{t('app.notFoundDescription')}</p>
+          <Link to="/" className="btn btn-primary">{t('app.returnHome')}</Link>
+        </section>
+      </main>
+      <Footer />
+    </div>
+  );
+};
 
-const PageLoader = () => (
-  <div role="status" aria-label="Sayfa yükleniyor" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-primary)' }}>
-    <div className="spinner" aria-hidden="true" style={{ width: '40px', height: '40px', border: '4px solid var(--border-medium)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-  </div>
-);
+const PageLoader = () => {
+  const { t } = useLanguage();
+  return (
+    <div role="status" aria-label={t('app.loadingLabel')} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-primary)' }}>
+      <div className="spinner" aria-hidden="true" style={{ width: '40px', height: '40px', border: '4px solid var(--border-medium)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+};
 
 const ProtectedRoute = ({ children, role, requireAdminMfa = true }) => {
   const { isAuthenticated, user, mfaStatus } = useAuth();
@@ -84,6 +91,7 @@ const ProtectedRoute = ({ children, role, requireAdminMfa = true }) => {
 };
 
 function App() {
+  const { t } = useLanguage();
   const registrationEnabled = FEATURES.publicRegistration || FEATURES.professionalApplications;
   const sessionExperienceEnabled = IS_DEMO_MODE || FEATURES.liveSessions;
 
@@ -113,8 +121,8 @@ function App() {
                   ? <SessionRoom />
                   : (
                     <DemoRestricted
-                      title="Canlı seans özelliği kapalı"
-                      description="Gerçek görüşmeler, kapalı pilot ve operasyon onayları tamamlanana kadar kullanıma açılmayacaktır."
+                      title={t('app.sessionsClosedTitle')}
+                      description={t('app.sessionsClosedDescription')}
                     />
                   )}
               </ProtectedRoute>

@@ -1,4 +1,5 @@
 import './MoodTracker.css';
+import { useLanguage } from '../context/LanguageContext';
 
 const MOODS = [
   { value: 1, emoji: '😢', label: 'Çok Kötü' },
@@ -9,19 +10,22 @@ const MOODS = [
 ];
 
 export default function MoodTracker({ value, onChange, history = [], size = 'md' }) {
+  const { language, t } = useLanguage();
+  const moodLabels = t('moods');
+
   return (
     <div className={`mood-tracker mood-tracker-${size}`}>
       <div className="mood-options">
-        {MOODS.map(mood => (
+        {MOODS.map((mood, index) => (
           <button
             key={mood.value}
             className={`mood-option ${value === mood.value ? 'selected' : ''}`}
             onClick={() => onChange && onChange(mood.value)}
-            title={mood.label}
+            title={moodLabels[index]}
             id={`mood-${mood.value}`}
           >
             <span className="mood-emoji">{mood.emoji}</span>
-            <span className="mood-label">{mood.label}</span>
+            <span className="mood-label">{moodLabels[index]}</span>
           </button>
         ))}
       </div>
@@ -38,7 +42,7 @@ export default function MoodTracker({ value, onChange, history = [], size = 'md'
                   <span className="mood-bar-emoji">{MOODS[entry.mood - 1]?.emoji}</span>
                 </div>
                 <span className="mood-bar-day">
-                  {new Date(entry.date).toLocaleDateString('tr-TR', { weekday: 'short' }).slice(0, 3)}
+                  {new Date(entry.date).toLocaleDateString(language === 'en' ? 'en-US' : 'tr-TR', { weekday: 'short' }).slice(0, 3)}
                 </span>
               </div>
             ))}

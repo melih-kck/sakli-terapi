@@ -3,9 +3,10 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useNotifications } from '../context/NotificationContext';
 import { useToast } from '../context/ToastContext';
+import { useLanguage } from '../context/LanguageContext';
 import '../styles/pages/Notifications.css';
 
-const formatNotificationDate = (value) => new Intl.DateTimeFormat('tr-TR', {
+const formatNotificationDate = (value, locale) => new Intl.DateTimeFormat(locale, {
   dateStyle: 'medium',
   timeStyle: 'short',
 }).format(new Date(value));
@@ -20,10 +21,12 @@ export default function NotificationsPage() {
     markAllAsRead,
   } = useNotifications();
   const { error: showError } = useToast();
+  const { language, t } = useLanguage();
+  const locale = language === 'en' ? 'en-US' : 'tr-TR';
 
   const handleMarkAll = async () => {
     const result = await markAllAsRead();
-    if (!result.success) showError('Bildirimler Güncellenemedi', result.error);
+    if (!result.success) showError(t('notificationsPage.updateError'), result.error);
   };
 
   const handleOpen = async (notification) => {
@@ -37,18 +40,18 @@ export default function NotificationsPage() {
         <div className="container container-sm">
           <header className="notifications-header">
             <div>
-              <h1>Bildirimler</h1>
-              <p>Hesabınız ve randevularınızla ilgili güncellemeler.</p>
+              <h1>{t('notificationsPage.title')}</h1>
+              <p>{t('notificationsPage.subtitle')}</p>
             </div>
             {unreadCount > 0 && (
               <button type="button" className="btn btn-outline btn-sm" onClick={handleMarkAll}>
-                Tümünü okundu işaretle
+                {t('notificationsPage.markAll')}
               </button>
             )}
           </header>
 
           {isLoading && notifications.length === 0 && (
-            <div className="notifications-state">Bildirimler yükleniyor...</div>
+            <div className="notifications-state">{t('notificationsPage.loading')}</div>
           )}
 
           {!isLoading && loadError && (
@@ -58,22 +61,25 @@ export default function NotificationsPage() {
           {!isLoading && !loadError && notifications.length === 0 && (
             <div className="notifications-state">
               <span className="notifications-empty-icon" aria-hidden="true">🔔</span>
-              <h2>Henüz bildiriminiz yok</h2>
-              <p>Yeni bir hesap veya randevu güncellemesi olduğunda burada göreceksiniz.</p>
+              <h2>{t('notificationsPage.emptyTitle')}</h2>
+              <p>{t('notificationsPage.emptyBody')}</p>
             </div>
           )}
 
           {notifications.length > 0 && (
             <div className="notifications-list" aria-live="polite">
               {notifications.map((notification) => {
+                const demoCopy = t(`notificationsPage.demo.${notification.id}`);
+                const localizedTitle = Array.isArray(demoCopy) ? demoCopy[0] : notification.title;
+                const localizedMessage = Array.isArray(demoCopy) ? demoCopy[1] : notification.message;
                 const content = (
                   <>
                     <span className="notification-dot" aria-hidden="true" />
                     <span className="notification-copy">
-                      <strong>{notification.title}</strong>
-                      <span>{notification.message}</span>
+                      <strong>{localizedTitle}</strong>
+                      <span>{localizedMessage}</span>
                       <time dateTime={notification.createdAt}>
-                        {formatNotificationDate(notification.createdAt)}
+                        {formatNotificationDate(notification.createdAt, locale)}
                       </time>
                     </span>
                     {notification.actionUrl && <span className="notification-arrow" aria-hidden="true">→</span>}

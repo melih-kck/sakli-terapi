@@ -1,27 +1,29 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router';
-import { DEMO_DISCLOSURE, IS_DEMO_MODE } from '../config/runtime';
+import { IS_DEMO_MODE } from '../config/runtime';
+import { useLanguage } from '../context/LanguageContext';
 import './DemoNotice.css';
 
 export default function DemoNotice() {
   const [isDismissed, setIsDismissed] = useState(false);
   const location = useLocation();
+  const { t } = useLanguage();
 
   if (!IS_DEMO_MODE || isDismissed || location.pathname.startsWith('/seans/')) return null;
 
   return (
-    <aside className="demo-notice" aria-label="Demo sürümü bilgisi">
+    <aside className="demo-notice" aria-label={t('demo.noticeLabel')}>
       <span className="demo-notice-dot" aria-hidden="true" />
       <div>
-        <strong>{DEMO_DISCLOSURE.short}</strong>
-        <span>Gerçek sağlık hizmeti sunmaz.</span>
+        <strong>{t('demo.short')}</strong>
+        <span>{t('demo.noHealthService')}</span>
       </div>
-      <Link to="/hakkinda">Proje kapsamı</Link>
+      <Link to="/hakkinda">{t('demo.scope')}</Link>
       <button
         type="button"
         className="demo-notice-close"
-        aria-label="Demo bilgisini kapat"
-        title="Demo bilgisini kapat"
+        aria-label={t('demo.closeNotice')}
+        title={t('demo.closeNotice')}
         onClick={() => setIsDismissed(true)}
       >
         ×
