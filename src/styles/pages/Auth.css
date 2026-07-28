@@ -9,21 +9,21 @@
 /* Split Layout Decorative */
 .auth-decorative-content {
   text-align: center;
-  color: white;
+  color: var(--bg-elevated);
   position: relative;
   z-index: 1;
 }
 
 .auth-decorative-content h2 {
   font-size: var(--text-3xl);
-  color: white;
+  color: var(--bg-elevated);
   line-height: var(--leading-tight);
   margin-top: 0;
   margin-bottom: var(--space-sm);
 }
 
 .auth-decorative-content p {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 250, 240, 0.82);
   font-size: var(--text-lg);
   margin-bottom: var(--space-xl);
 }
@@ -43,7 +43,7 @@
 
 .auth-shape-1 {
   width: 200px; height: 200px;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 250, 240, 0.3);
   top: 10%; right: -20%;
 }
 
@@ -62,7 +62,7 @@
 }
 
 .auth-deco-feat {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 250, 240, 0.15);
   backdrop-filter: blur(8px);
   padding: var(--space-sm) var(--space-lg);
   border-radius: var(--radius-full);
@@ -188,7 +188,7 @@
   background: var(--primary-bg);
   color: var(--text-primary);
   border: 1px solid var(--primary);
-  box-shadow: 0 0 10px rgba(50, 106, 89, 0.12);
+  box-shadow: 0 0 10px rgba(189, 63, 54, 0.12);
   font-weight: var(--weight-semibold);
 }
 
@@ -270,7 +270,7 @@
   width: 220px;
   height: 220px;
   padding: var(--space-sm);
-  background: #ffffff;
+  background: var(--bg-elevated);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
 }
@@ -452,7 +452,7 @@
 .mood-btn.selected {
   border-color: var(--primary);
   background: var(--primary-bg);
-  box-shadow: 0 0 15px rgba(50, 106, 89, 0.12);
+  box-shadow: 0 0 15px rgba(189, 63, 54, 0.12);
 }
 
 .mood-btn.selected .mood-label { color: var(--text-primary); font-weight: bold; }
@@ -487,7 +487,7 @@
 }
 
 .style-option:hover { border-color: var(--primary-lighter); }
-.style-option.selected { border-color: var(--primary); background: var(--primary-bg); box-shadow: 0 0 10px rgba(50, 106, 89, 0.12); color: var(--text-primary); }
+.style-option.selected { border-color: var(--border-focus); background: var(--accent-bg); box-shadow: 0 0 10px rgba(189, 63, 54, 0.12); color: var(--text-primary); }
 
 .style-option input[type="radio"] {
   width: 18px; height: 18px;
@@ -584,7 +584,7 @@
 }
 
 .privacy-level-btn:hover { border-color: var(--primary-lighter); }
-.privacy-level-btn.active { border-color: var(--primary); background: var(--primary-bg); box-shadow: 0 0 15px rgba(50, 106, 89, 0.12); }
+.privacy-level-btn.active { border-color: var(--border-focus); background: var(--accent-bg); box-shadow: 0 0 15px rgba(189, 63, 54, 0.12); }
 
 .privacy-level-num {
   width: 30px; height: 30px;
@@ -598,7 +598,7 @@
 }
 
 .privacy-level-btn.active .privacy-level-num {
-  background: var(--primary-dark); color: white;
+  background: var(--primary-dark); color: var(--bg-elevated);
 }
 
 .privacy-level-name {

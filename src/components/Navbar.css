@@ -5,17 +5,17 @@
   right: 0;
   height: 72px;
   z-index: var(--z-fixed);
-  background: rgba(228, 232, 229, 0.9);
+  background: rgba(244, 240, 231, 0.9);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(49, 95, 80, 0.1);
+  border-bottom: 1px solid rgba(16, 47, 45, 0.1);
   transition: all var(--transition-normal);
 }
 
 .navbar-scrolled {
-  background: rgba(237, 240, 238, 0.97);
+  background: rgba(255, 250, 240, 0.97);
   border-bottom-color: var(--border-medium);
-  box-shadow: 0 4px 20px rgba(32, 49, 44, 0.1);
+  box-shadow: 0 4px 20px rgba(8, 35, 33, 0.1);
   height: 64px;
 }
 
@@ -40,7 +40,7 @@
   align-items: center;
   min-height: 22px;
   padding: 2px 7px;
-  border: 1px solid rgba(50, 106, 89, 0.22);
+  border: 1px solid rgba(16, 47, 45, 0.22);
   border-radius: 999px;
   background: var(--primary-bg);
   color: var(--primary-dark);
@@ -246,7 +246,7 @@
     align-items: flex-start;
     padding: 80px var(--space-lg) var(--space-lg);
     gap: var(--space-xs);
-    box-shadow: -10px 0 30px rgba(32, 49, 44, 0.16);
+    box-shadow: -10px 0 30px rgba(8, 35, 33, 0.16);
     transition: right var(--transition-normal);
     z-index: 5;
   }
@@ -279,7 +279,7 @@
     display: block;
     position: fixed;
     inset: 0;
-    background: rgba(21, 39, 34, 0.28);
+    background: rgba(8, 35, 33, 0.3);
     z-index: 4;
   }
 }

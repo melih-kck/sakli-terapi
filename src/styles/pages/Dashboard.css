@@ -595,7 +595,7 @@
 .appointment-payment-badge.is-deferred {
   color: var(--primary);
   background: var(--primary-bg);
-  border-color: rgba(50, 106, 89, 0.22);
+  border-color: rgba(16, 47, 45, 0.22);
 }
 
 .appointment-payment-badge.is-refunded {
