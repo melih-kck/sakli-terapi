@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import './RatingStars.css';
 
 export default function RatingStars({ rating = 0, maxStars = 5, size = 'md', interactive = false, onChange, showValue = true, count }) {
+  const { t } = useLanguage();
   const [hoverRating, setHoverRating] = useState(0);
 
   const handleClick = (value) => {
@@ -27,7 +29,7 @@ export default function RatingStars({ rating = 0, maxStars = 5, size = 'md', int
         className="rating-stars"
         style={{ gap: s.gap }}
         role={interactive ? 'group' : 'img'}
-        aria-label={interactive ? 'Puan seçin' : `${rating.toFixed(1)} / ${maxStars} yıldız`}
+        aria-label={interactive ? t('rating.select') : t('rating.outOf', { rating: rating.toFixed(1), max: maxStars })}
       >
         {Array.from({ length: maxStars }, (_, i) => {
           const value = i + 1;
@@ -41,7 +43,7 @@ export default function RatingStars({ rating = 0, maxStars = 5, size = 'md', int
               key={i}
               className={`star ${filled ? 'filled' : ''} ${half ? 'half' : ''} ${interactive ? 'interactive' : ''}`}
               style={{ fontSize: s.star }}
-              aria-label={`${value} yıldız`}
+              aria-label={t('rating.star', { count: value })}
               aria-pressed={rating === value}
               onClick={() => handleClick(value)}
               onMouseEnter={() => interactive && setHoverRating(value)}

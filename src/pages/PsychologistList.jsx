@@ -6,9 +6,11 @@ import RatingStars from '../components/RatingStars';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { IS_DEMO_MODE } from '../config/runtime';
+import { useLanguage } from '../context/LanguageContext';
 import '../styles/pages/Psychologists.css';
 
 export default function PsychologistList() {
+  const { language, t } = useLanguage();
   const [psychologists, setPsychologists] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -36,7 +38,7 @@ export default function PsychologistList() {
         console.warn('Psikologlar Supabase üzerinden çekilemedi:', error);
         if (isMounted) {
           setPsychologists(getDemoPsychologists());
-          setLoadError('Psikolog listesi şu anda yüklenemiyor. Lütfen biraz sonra tekrar deneyin.');
+          setLoadError(t('catalogue.loadError'));
         }
       } finally {
         if (isMounted) setIsLoading(false);
@@ -48,7 +50,7 @@ export default function PsychologistList() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [t]);
 
   const filtered = useMemo(() => {
     let result = [...psychologists];
@@ -81,7 +83,13 @@ export default function PsychologistList() {
     return result;
   }, [psychologists, search, selectedSpecs, minRating, expFilter, typeFilter, sortBy]);
 
-  const getSpecLabel = (id) => SPECIALIZATIONS.find(s => s.id === id)?.label || id;
+  const getSpecLabel = (id) => t(`specializations.${id}`) || SPECIALIZATIONS.find(s => s.id === id)?.label || id;
+  const getPsychologistName = (name) => {
+    if (language !== 'en') return name;
+    return name
+      .replace('Klinik Psikolog Demo', 'Clinical Psychologist Demo')
+      .replace('Aday Profil Demo', 'Candidate Profile Demo');
+  };
 
   const clearFilters = () => {
     setSearch(''); setSelectedSpecs([]); setMinRating(0); setExpFilter('all'); setTypeFilter('all');
@@ -93,11 +101,11 @@ export default function PsychologistList() {
       <main className="page-content">
         <div className="container">
           <div className="psy-header">
-            <h1>{IS_DEMO_MODE ? 'Kurgusal Uzman Kataloğu' : 'Psikologlarımız'}</h1>
+            <h1>{IS_DEMO_MODE ? t('catalogue.demoTitle') : t('catalogue.liveTitle')}</h1>
             <p>
               {IS_DEMO_MODE
-                ? 'Filtreleme ve profil keşfi akışını tamamen kurgusal verilerle inceleyin'
-                : 'Size en uygun psikoloğu bulun'}
+                ? t('catalogue.demoSubtitle')
+                : t('catalogue.liveSubtitle')}
             </p>
           </div>
 
@@ -105,30 +113,30 @@ export default function PsychologistList() {
             {/* Filters */}
             <aside className="sidebar psy-filters" id="psychologist-filters">
               <div className="input-group">
-                <label className="sr-only" htmlFor="psy-search">Psikolog ara</label>
-                <input type="text" placeholder="🔍 Psikolog ara..." value={search} onChange={(e) => setSearch(e.target.value)} id="psy-search" />
+                <label className="sr-only" htmlFor="psy-search">{t('catalogue.search')}</label>
+                <input type="text" placeholder={`🔍 ${t('catalogue.searchPlaceholder')}`} value={search} onChange={(e) => setSearch(e.target.value)} id="psy-search" />
               </div>
 
               <div className="filter-section">
-                <h4>Uzmanlık Alanı</h4>
+                <h4>{t('catalogue.specialization')}</h4>
                 <div className="filter-tags">
                   {SPECIALIZATIONS.slice(0, 8).map(spec => (
                     <button type="button" key={spec.id} className={`tag ${selectedSpecs.includes(spec.id) ? 'active' : ''}`} aria-pressed={selectedSpecs.includes(spec.id)} onClick={() => toggleSpec(spec.id)} id={`filter-spec-${spec.id}`}>
-                      {spec.icon} {spec.label}
+                      {spec.icon} {getSpecLabel(spec.id)}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div className="filter-section">
-                <h4>Minimum Puan</h4>
+                <h4>{t('catalogue.minimumRating')}</h4>
                 <RatingStars rating={minRating} interactive={true} onChange={setMinRating} size="md" showValue={false} />
               </div>
 
               <div className="filter-section">
-                <h4>Deneyim</h4>
+                <h4>{t('catalogue.experience')}</h4>
                 <div className="filter-radios">
-                  {[{ v: 'all', l: 'Tümü' }, { v: '1-5', l: '1-5 yıl' }, { v: '5-10', l: '5-10 yıl' }, { v: '10+', l: '10+ yıl' }].map(opt => (
+                  {[{ v: 'all', l: t('catalogue.all') }, { v: '1-5', l: t('catalogue.years1to5') }, { v: '5-10', l: t('catalogue.years5to10') }, { v: '10+', l: t('catalogue.years10plus') }].map(opt => (
                     <label key={opt.v} className="radio-group">
                       <input type="radio" name="exp" checked={expFilter === opt.v} onChange={() => setExpFilter(opt.v)} /> {opt.l}
                     </label>
@@ -137,9 +145,9 @@ export default function PsychologistList() {
               </div>
 
               <div className="filter-section">
-                <h4>Psikolog Türü</h4>
+                <h4>{t('catalogue.psychologistType')}</h4>
                 <div className="filter-radios">
-                  {[{ v: 'all', l: 'Tümü' }, { v: 'expert', l: 'Uzman Psikolog' }, { v: 'candidate', l: 'Aday Psikolog' }].map(opt => (
+                  {[{ v: 'all', l: t('catalogue.all') }, { v: 'expert', l: t('catalogue.expert') }, { v: 'candidate', l: t('catalogue.candidate') }].map(opt => (
                     <label key={opt.v} className="radio-group">
                       <input type="radio" name="type" checked={typeFilter === opt.v} onChange={() => setTypeFilter(opt.v)} /> {opt.l}
                     </label>
@@ -148,19 +156,19 @@ export default function PsychologistList() {
               </div>
 
               <button type="button" className="btn btn-ghost btn-sm btn-block" onClick={clearFilters} id="clear-filters">
-                Filtreleri Temizle
+                {t('catalogue.clearFilters')}
               </button>
             </aside>
 
             {/* Results */}
             <div className="psy-results">
               <div className="psy-toolbar">
-                <span className="psy-count">{isLoading ? 'Psikologlar yükleniyor...' : `${filtered.length} psikolog listeleniyor`}</span>
-                <label className="sr-only" htmlFor="psy-sort">Sıralama</label>
+                <span className="psy-count">{isLoading ? t('catalogue.loading') : t('catalogue.count', { count: filtered.length })}</span>
+                <label className="sr-only" htmlFor="psy-sort">{t('catalogue.sorting')}</label>
                 <select className="psy-sort" value={sortBy} onChange={(e) => setSortBy(e.target.value)} id="psy-sort">
-                  <option value="rating">En Yüksek Puan</option>
-                  <option value="reviews">En Çok Yorum</option>
-                  <option value="experience">En Deneyimli</option>
+                  <option value="rating">{t('catalogue.highestRating')}</option>
+                  <option value="reviews">{t('catalogue.mostReviews')}</option>
+                  <option value="experience">{t('catalogue.mostExperienced')}</option>
                 </select>
               </div>
 
@@ -171,14 +179,14 @@ export default function PsychologistList() {
                       <div className="psy-card-top">
                         <div className="avatar avatar-lg">{psych.initials}</div>
                         <div className="psy-card-info">
-                          <h4>{psych.name}</h4>
-                          <p className="psy-card-title">{psych.title}</p>
-                          {psych.isDemo && <span className="badge badge-success">Demo profili</span>}
-                          {psych.isCandidate && <span className="badge badge-accent">Aday Psikolog</span>}
+                          <h4>{getPsychologistName(psych.name)}</h4>
+                          <p className="psy-card-title">{psych.isCandidate ? t('common.candidatePsychologist') : t('common.clinicalPsychologist')}</p>
+                          {psych.isDemo && <span className="badge badge-success">{t('common.demoProfile')}</span>}
+                          {psych.isCandidate && <span className="badge badge-accent">{t('common.candidatePsychologist')}</span>}
                         </div>
                         <div className={`psy-status ${psych.isAvailable ? 'available' : ''}`}>
                           <span className="status-dot"></span>
-                          {psych.isAvailable ? 'Müsait' : 'Meşgul'}
+                          {psych.isAvailable ? t('common.available') : t('common.busy')}
                         </div>
                       </div>
                       <div className="psy-card-specs">
@@ -188,10 +196,10 @@ export default function PsychologistList() {
                       </div>
                       <div className="psy-card-rating">
                         <RatingStars rating={psych.rating} size="sm" count={psych.reviewCount} />
-                        <span className="psy-exp">{psych.experience} yıl deneyim</span>
+                        <span className="psy-exp">{t('common.yearsExperience', { count: psych.experience })}</span>
                       </div>
-                      <p className="psy-card-bio">{psych.shortBio}</p>
-                      <span className="btn btn-outline btn-sm btn-block">Profili İncele</span>
+                      <p className="psy-card-bio">{psych.isDemo ? t('catalogue.demoBio') : psych.shortBio}</p>
+                      <span className="btn btn-outline btn-sm btn-block">{t('catalogue.viewProfile')}</span>
                     </div>
                   </Link>
                 ))}
@@ -199,7 +207,7 @@ export default function PsychologistList() {
 
               {!isLoading && loadError && (
                 <div className="empty-state" role="alert">
-                  <h3 className="empty-state-title">Liste yüklenemedi</h3>
+                  <h3 className="empty-state-title">{t('catalogue.loadFailed')}</h3>
                   <p className="empty-state-description">{loadError}</p>
                 </div>
               )}
@@ -207,9 +215,9 @@ export default function PsychologistList() {
               {!isLoading && !loadError && filtered.length === 0 && (
                 <div className="empty-state">
                   <span className="empty-state-icon">🔍</span>
-                  <h3 className="empty-state-title">Sonuç bulunamadı</h3>
-                  <p className="empty-state-description">Filtrelerinizi değiştirerek tekrar deneyin.</p>
-                  <button type="button" className="btn btn-outline" onClick={clearFilters}>Filtreleri Temizle</button>
+                  <h3 className="empty-state-title">{t('catalogue.noResults')}</h3>
+                  <p className="empty-state-description">{t('catalogue.noResultsDescription')}</p>
+                  <button type="button" className="btn btn-outline" onClick={clearFilters}>{t('catalogue.clearFilters')}</button>
                 </div>
               )}
             </div>

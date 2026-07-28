@@ -8,6 +8,7 @@ import { SessionProvider, useSession } from './context/SessionContext';
 import { ReviewProvider } from './context/ReviewContext';
 import { ProfileProvider } from './context/ProfileContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { LanguageProvider } from './context/LanguageContext';
 import AppErrorBoundary from './components/AppErrorBoundary';
 import { initializeMonitoring } from './lib/monitoring';
 import App from './App.jsx';
@@ -49,11 +50,13 @@ initializeMonitoring().finally(() => {
     <React.StrictMode>
       <AppErrorBoundary>
         <BrowserRouter>
-          <ToastProvider>
-            <AuthProvider>
-              <InnerProviders />
-            </AuthProvider>
-          </ToastProvider>
+          <LanguageProvider>
+            <ToastProvider>
+              <AuthProvider>
+                <InnerProviders />
+              </AuthProvider>
+            </ToastProvider>
+          </LanguageProvider>
         </BrowserRouter>
       </AppErrorBoundary>
     </React.StrictMode>,

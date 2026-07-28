@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useReview } from '../context/ReviewContext';
 import { useSession } from '../context/SessionContext';
 import { useToast } from '../context/ToastContext';
+import { useLanguage } from '../context/LanguageContext';
 import {
   formatLocalDateIso,
   getSessionDateTime,
@@ -16,22 +17,25 @@ import RatingStars from '../components/RatingStars';
 import '../styles/pages/Dashboard.css';
 
 const statusDetails = {
-  upcoming: { label: 'Planlandı', className: 'is-upcoming' },
-  completed: { label: 'Tamamlandı', className: 'is-completed' },
-  cancelled: { label: 'İptal edildi', className: 'is-cancelled' },
+  upcoming: { className: 'is-upcoming' },
+  completed: { className: 'is-completed' },
+  cancelled: { className: 'is-cancelled' },
 };
 
 const paymentDetails = {
-  pending: { label: 'Ödeme entegrasyonu bekleniyor', className: 'is-pending' },
-  paid: { label: 'Ödeme alındı', className: 'is-paid' },
-  failed: { label: 'Ödeme başarısız', className: 'is-failed' },
-  refunded: { label: 'İade edildi', className: 'is-refunded' },
+  pending: { className: 'is-pending' },
+  paid: { className: 'is-paid' },
+  failed: { className: 'is-failed' },
+  refunded: { className: 'is-refunded' },
 };
 
-const getPaymentDetails = (session) => (
+const getPaymentDetails = (session, t) => (
   session.paymentRequired
-    ? (paymentDetails[session.paymentStatus] || paymentDetails.pending)
-    : { label: 'Tahsilat bu aşamada kapalı', className: 'is-deferred' }
+    ? {
+        ...(paymentDetails[session.paymentStatus] || paymentDetails.pending),
+        label: t(`dashboard.payments.${session.paymentStatus || 'pending'}`),
+      }
+    : { label: t('dashboard.payments.deferred'), className: 'is-deferred' }
 );
 
 export default function PsychDashboard() {
@@ -39,6 +43,7 @@ export default function PsychDashboard() {
   const { fetchReviewsForPsychologist } = useReview();
   const { updateSession, sessions } = useSession();
   const { success } = useToast();
+  const { language, t } = useLanguage();
   const [activeTab, setActiveTab] = useState('today');
   const [updatingSessionId, setUpdatingSessionId] = useState(null);
   const [myReviews, setMyReviews] = useState([]);
@@ -92,7 +97,10 @@ export default function PsychDashboard() {
   const tomorrowIso = formatDateIso(1);
   const legacyUtcTodayIso = new Date().toISOString().split('T')[0];
   const activeDateIso = activeTab === 'tomorrow' ? tomorrowIso : todayIso;
-  const activeDateLabel = activeTab === 'tomorrow' ? 'Yarın' : 'Bugün';
+  const locale = language === 'en' ? 'en-US' : 'tr-TR';
+  const activeDateLabel = activeTab === 'tomorrow'
+    ? t('dashboard.psychologist.tomorrow')
+    : t('dashboard.psychologist.today');
   const getDisplayDate = (appointment) => (
     appointment.date === legacyUtcTodayIso && todayIso !== legacyUtcTodayIso ? todayIso : appointment.date
   );
@@ -129,26 +137,26 @@ export default function PsychDashboard() {
       ));
 
   const emptyAppointmentMessage = activeTab === 'archive'
-    ? 'Tamamlanan veya iptal edilen randevu bulunmuyor.'
+    ? t('dashboard.psychologist.noArchive')
     : activeTab === 'upcoming'
-      ? 'Yaklaşan randevunuz bulunmuyor.'
-      : `${activeDateLabel} için planlanmış randevunuz bulunmuyor.`;
+      ? t('dashboard.psychologist.noUpcoming')
+      : t('dashboard.psychologist.noDay', { day: activeDateLabel });
 
-  const formatAppointmentDate = (date) => new Date(`${date}T12:00:00`).toLocaleDateString('tr-TR', {
+  const formatAppointmentDate = (date) => new Date(`${date}T12:00:00`).toLocaleDateString(locale, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
   });
 
-  const formatAppointmentDateShort = (date) => new Date(`${date}T12:00:00`).toLocaleDateString('tr-TR', {
+  const formatAppointmentDateShort = (date) => new Date(`${date}T12:00:00`).toLocaleDateString(locale, {
     day: 'numeric',
     month: 'short',
   });
 
   const getChannelDetails = (channel) => {
-    if (channel === 'video-blur') return { icon: '📹', label: 'Görüntülü (Blur)' };
-    if (channel === 'voice') return { icon: '🎙️', label: 'Sesli Görüşme' };
-    return { icon: '💬', label: 'Metin (Chat)' };
+    if (channel === 'video-blur') return { icon: '📹', label: t('dashboard.psychologist.channelVideo') };
+    if (channel === 'voice') return { icon: '🎙️', label: t('dashboard.psychologist.channelVoice') };
+    return { icon: '💬', label: t('dashboard.psychologist.channelText') };
   };
 
   const handleAppointmentUpdate = async (appointment, updates, toastTitle, toastMessage) => {
@@ -171,7 +179,7 @@ export default function PsychDashboard() {
     if (appointment.status === 'cancelled') {
       return (
         <>
-          <span className="appointment-muted-action">Arşivde</span>
+          <span className="appointment-muted-action">{t('dashboard.psychologist.archived')}</span>
         </>
       );
     }
@@ -179,8 +187,8 @@ export default function PsychDashboard() {
     if (appointment.status === 'completed') {
       return (
         <>
-          <Link to="/degerlendirmeler" className="btn btn-outline btn-sm">Değerlendirmeler</Link>
-          <span className="appointment-muted-action">Seans tamamlandı</span>
+          <Link to="/degerlendirmeler" className="btn btn-outline btn-sm">{t('dashboard.psychologist.reviews')}</Link>
+          <span className="appointment-muted-action">{t('dashboard.psychologist.sessionCompleted')}</span>
         </>
       );
     }
@@ -189,7 +197,7 @@ export default function PsychDashboard() {
       <>
         {requiresPayment && (
           <button type="button" className="btn btn-outline btn-sm" disabled>
-            Ödeme Bekleniyor
+            {t('dashboard.psychologist.paymentWaiting')}
           </button>
         )}
         <button
@@ -201,13 +209,13 @@ export default function PsychDashboard() {
             {
               status: 'cancelled',
             },
-            'Randevu İptal Edildi',
+            t('dashboard.psychologist.cancelToastTitle'),
             appointment.paymentStatus === 'paid'
-              ? 'Randevu arşive taşındı. İade değerlendirmesi için destek ekibiyle iletişime geçin.'
-              : 'Randevu arşive taşındı ve iptal edildi olarak işaretlendi.'
+              ? t('dashboard.psychologist.cancelPaidToast')
+              : t('dashboard.psychologist.cancelToast')
           )}
         >
-          İptal Et
+          {t('dashboard.psychologist.cancel')}
         </button>
         {canComplete && (
           <button
@@ -217,15 +225,15 @@ export default function PsychDashboard() {
             onClick={() => handleAppointmentUpdate(
               appointment,
               { status: 'completed', completedAt: new Date().toISOString() },
-              'Seans Tamamlandı',
-              'Randevu geçmiş seanslara taşındı.'
+              t('dashboard.psychologist.completedToastTitle'),
+              t('dashboard.psychologist.completedToast')
             )}
           >
-            Tamamlandı
+            {t('dashboard.psychologist.completed')}
           </button>
         )}
         {joinState.canJoin ? (
-          <Link to={`/seans/${appointment.id}`} className="btn btn-primary btn-sm">Randevuya Git</Link>
+          <Link to={`/seans/${appointment.id}`} className="btn btn-primary btn-sm">{t('dashboard.psychologist.goToAppointment')}</Link>
         ) : (
           <button type="button" className="btn btn-outline btn-sm" disabled>{joinState.label}</button>
         )}
@@ -233,7 +241,7 @@ export default function PsychDashboard() {
     );
   };
 
-  const todayStr = new Date().toLocaleDateString('tr-TR', {
+  const todayStr = new Date().toLocaleDateString(locale, {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 
@@ -246,7 +254,7 @@ export default function PsychDashboard() {
     const iso = formatLocalDateIso(date);
     return {
       iso,
-      label: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'][index],
+      label: t('dashboard.psychologist.weekdays')[index],
       count: activeAppointments.filter(appointment => getDisplayDate(appointment) === iso).length,
       isToday: iso === todayIso,
     };
@@ -254,17 +262,23 @@ export default function PsychDashboard() {
 
   const psychologistProfile = user.psychologistProfile || {};
   const approvalStatus = psychologistProfile.approvalStatus || 'pending';
+  const profileCheckLabels = t('dashboard.psychologist.profileChecks');
   const profileChecks = [
-    { label: 'Unvan', done: Boolean(psychologistProfile.title) },
-    { label: 'Kısa tanıtım', done: Boolean(psychologistProfile.shortBio) },
-    { label: 'Hakkımda', done: Boolean(psychologistProfile.bio) },
-    { label: 'Uzmanlık', done: (psychologistProfile.specializations || []).length > 0 },
-    { label: 'Yaklaşım', done: (psychologistProfile.approaches || []).length > 0 },
-    { label: 'Müsaitlik', done: Object.keys(psychologistProfile.availability || {}).length > 0 },
+    { label: profileCheckLabels[0], done: Boolean(psychologistProfile.title) },
+    { label: profileCheckLabels[1], done: Boolean(psychologistProfile.shortBio) },
+    { label: profileCheckLabels[2], done: Boolean(psychologistProfile.bio) },
+    { label: profileCheckLabels[3], done: (psychologistProfile.specializations || []).length > 0 },
+    { label: profileCheckLabels[4], done: (psychologistProfile.approaches || []).length > 0 },
+    { label: profileCheckLabels[5], done: Object.keys(psychologistProfile.availability || {}).length > 0 },
   ];
   const completedProfileChecks = profileChecks.filter(item => item.done).length;
   const profileCompleteness = Math.round((completedProfileChecks / profileChecks.length) * 100);
   const profileEditUrl = '/ayarlar?tab=profile';
+  const displayName = language === 'en'
+    ? user.name
+        ?.replace('Klinik Psikolog Demo Uzmanı', 'Clinical Psychologist Demo Expert')
+        .replace('Klinik Psikolog Demo', 'Clinical Psychologist Demo')
+    : user.name;
 
   return (
     <div className="page">
@@ -273,12 +287,12 @@ export default function PsychDashboard() {
         <div className="container mt-xl mb-3xl">
           <div className="dash-header mb-2xl">
             <div>
-              <h1 className="dash-title">Hoş geldiniz, {user.name || 'Uzman Psikolog'}</h1>
-              <p className="dash-subtitle">{todayStr} • Bugün {todayAppointments.length} randevunuz var.</p>
+              <h1 className="dash-title">{t('dashboard.psychologist.welcome', { name: displayName || t('dashboard.psychologist.defaultName') })}</h1>
+              <p className="dash-subtitle">{t('dashboard.psychologist.daySummary', { date: todayStr, count: todayAppointments.length })}</p>
             </div>
             <div className="dash-actions">
-              <Link to={profileEditUrl} className="btn btn-primary">Profilimi Düzenle</Link>
-              <Link to="/ayarlar" className="btn btn-outline">Takvim Ayarları</Link>
+              <Link to={profileEditUrl} className="btn btn-primary">{t('dashboard.psychologist.editProfile')}</Link>
+              <Link to="/ayarlar" className="btn btn-outline">{t('dashboard.psychologist.calendarSettings')}</Link>
             </div>
           </div>
 
@@ -286,20 +300,20 @@ export default function PsychDashboard() {
             <section className={`psychologist-review-notice is-${approvalStatus}`}>
               <div>
                 <strong>
-                  {approvalStatus === 'pending' && 'Başvurunuz inceleniyor'}
-                  {approvalStatus === 'rejected' && 'Başvurunuz onaylanmadı'}
-                  {approvalStatus === 'suspended' && 'Profiliniz askıya alındı'}
+                  {approvalStatus === 'pending' && t('dashboard.psychologist.reviewPending')}
+                  {approvalStatus === 'rejected' && t('dashboard.psychologist.reviewRejected')}
+                  {approvalStatus === 'suspended' && t('dashboard.psychologist.reviewSuspended')}
                 </strong>
                 <p>
                   {psychologistProfile.reviewReason
                     || (approvalStatus === 'pending'
-                      ? 'İnceleme tamamlandığında bildirim alacaksınız.'
-                      : 'Ayrıntılı bilgi için destek ekibiyle iletişime geçebilirsiniz.')}
+                      ? t('dashboard.psychologist.reviewPendingBody')
+                      : t('dashboard.psychologist.reviewSupportBody'))}
                 </p>
               </div>
               <div className="psychologist-review-actions">
-                <Link to="/ayarlar?tab=verification" className="btn btn-primary btn-sm">Belgeleri yönet</Link>
-                <Link to="/ayarlar?tab=profile" className="btn btn-outline btn-sm">Profili gözden geçir</Link>
+                <Link to="/ayarlar?tab=verification" className="btn btn-primary btn-sm">{t('dashboard.psychologist.manageDocuments')}</Link>
+                <Link to="/ayarlar?tab=profile" className="btn btn-outline btn-sm">{t('dashboard.psychologist.reviewProfile')}</Link>
               </div>
             </section>
           )}
@@ -310,16 +324,21 @@ export default function PsychDashboard() {
                 <div className="card-body">
                   <div className="appointment-schedule-header flex justify-between items-center mb-md">
                     <div>
-                      <h3 className="m-0">Randevu Programı</h3>
+                      <h3 className="m-0">{t('dashboard.psychologist.scheduleTitle')}</h3>
                       <p className="appointment-section-subtitle">
-                        {activeAppointments.length} aktif randevu • Bugün {todayAppointments.length} • Yarın {tomorrowAppointments.length} • Ödeme bekleyen {unpaidAppointments.length}
+                        {t('dashboard.psychologist.scheduleSummary', {
+                          active: activeAppointments.length,
+                          today: todayAppointments.length,
+                          tomorrow: tomorrowAppointments.length,
+                          unpaid: unpaidAppointments.length,
+                        })}
                       </p>
                     </div>
                     <div className="tabs-simple">
-                      <button type="button" className={`tab-simple ${activeTab === 'today' ? 'active' : ''}`} aria-pressed={activeTab === 'today'} onClick={() => setActiveTab('today')}>Bugün</button>
-                      <button type="button" className={`tab-simple ${activeTab === 'tomorrow' ? 'active' : ''}`} aria-pressed={activeTab === 'tomorrow'} onClick={() => setActiveTab('tomorrow')}>Yarın</button>
-                      <button type="button" className={`tab-simple ${activeTab === 'upcoming' ? 'active' : ''}`} aria-pressed={activeTab === 'upcoming'} onClick={() => setActiveTab('upcoming')}>Yaklaşan</button>
-                      <button type="button" className={`tab-simple ${activeTab === 'archive' ? 'active' : ''}`} aria-pressed={activeTab === 'archive'} onClick={() => setActiveTab('archive')}>Arşiv</button>
+                      <button type="button" className={`tab-simple ${activeTab === 'today' ? 'active' : ''}`} aria-pressed={activeTab === 'today'} onClick={() => setActiveTab('today')}>{t('dashboard.psychologist.today')}</button>
+                      <button type="button" className={`tab-simple ${activeTab === 'tomorrow' ? 'active' : ''}`} aria-pressed={activeTab === 'tomorrow'} onClick={() => setActiveTab('tomorrow')}>{t('dashboard.psychologist.tomorrow')}</button>
+                      <button type="button" className={`tab-simple ${activeTab === 'upcoming' ? 'active' : ''}`} aria-pressed={activeTab === 'upcoming'} onClick={() => setActiveTab('upcoming')}>{t('dashboard.psychologist.upcoming')}</button>
+                      <button type="button" className={`tab-simple ${activeTab === 'archive' ? 'active' : ''}`} aria-pressed={activeTab === 'archive'} onClick={() => setActiveTab('archive')}>{t('dashboard.psychologist.archive')}</button>
                     </div>
                   </div>
 
@@ -332,8 +351,11 @@ export default function PsychDashboard() {
                     )}
 
                     {visibleAppointments.map((appointment) => {
-                      const status = statusDetails[appointment.status] || statusDetails.upcoming;
-                      const payment = getPaymentDetails(appointment);
+                      const status = {
+                        ...(statusDetails[appointment.status] || statusDetails.upcoming),
+                        label: t(`dashboard.statuses.${appointment.status || 'upcoming'}`),
+                      };
+                      const payment = getPaymentDetails(appointment, t);
                       const displayDate = getDisplayDate(appointment);
 
                       return (
@@ -346,8 +368,8 @@ export default function PsychDashboard() {
                             <div className="timeline-card appointment-card">
                               <div className="appointment-card-header">
                                 <div className="appointment-client">
-                                  <span className="appointment-eyebrow">Randevu</span>
-                                  <h4>{appointment.clientAlias || 'Anonim Danışan'}</h4>
+                                  <span className="appointment-eyebrow">{t('dashboard.psychologist.appointment')}</span>
+                                  <h4>{appointment.clientAlias || t('dashboard.psychologist.anonymousClient')}</h4>
                                 </div>
                                 <div className="appointment-badge-group">
                                   <span className={`appointment-status ${status.className}`}>{status.label}</span>
@@ -357,26 +379,26 @@ export default function PsychDashboard() {
 
                               <div className="appointment-detail-grid">
                                 <div className="appointment-detail">
-                                  <span className="appointment-label">Tarih</span>
+                                  <span className="appointment-label">{t('dashboard.psychologist.date')}</span>
                                   <strong>{formatAppointmentDate(displayDate)}</strong>
                                 </div>
                                 <div className="appointment-detail">
-                                  <span className="appointment-label">Saat</span>
+                                  <span className="appointment-label">{t('dashboard.psychologist.time')}</span>
                                   <strong>{appointment.time}</strong>
                                 </div>
                                 <div className="appointment-detail">
-                                  <span className="appointment-label">Görüşme Tipi</span>
+                                  <span className="appointment-label">{t('dashboard.psychologist.channel')}</span>
                                   <strong>{getChannelDetails(appointment.channel).icon} {getChannelDetails(appointment.channel).label}</strong>
                                 </div>
                                 <div className="appointment-detail">
-                                  <span className="appointment-label">Randevu Kodu</span>
+                                  <span className="appointment-label">{t('dashboard.psychologist.reference')}</span>
                                   <strong>{getSessionReference(appointment.id)}</strong>
                                 </div>
                               </div>
 
                               <div className="appointment-card-footer">
                                 <span className="appointment-code">
-                                  Durum akışı: Planlandı → Seans → Arşiv
+                                  {t('dashboard.psychologist.flow')}
                                 </span>
                                 <div className="appointment-action-group">
                                   {renderAppointmentActions(appointment)}
@@ -394,16 +416,16 @@ export default function PsychDashboard() {
               <section className="card card-elevated animate-on-scroll">
                 <div className="card-body">
                   <div className="flex justify-between items-center mb-md">
-                    <h3 className="m-0">Son Değerlendirmelerim</h3>
-                    <Link to="/degerlendirmeler" className="text-primary text-sm">Tümünü Gör</Link>
+                    <h3 className="m-0">{t('dashboard.psychologist.latestReviews')}</h3>
+                    <Link to="/degerlendirmeler" className="text-primary text-sm">{t('dashboard.psychologist.viewAll')}</Link>
                   </div>
                   <div className="reviews-list-simple">
-                    {myReviews.length === 0 && <p className="text-tertiary">Henüz danışan değerlendirmesi bulunmuyor.</p>}
+                    {myReviews.length === 0 && <p className="text-tertiary">{t('dashboard.psychologist.noReviews')}</p>}
                     {myReviews.map(review => (
                       <div key={review.id} className="review-item-simple">
                         <div className="flex justify-between mb-xs">
                           <span className="font-medium">{review.clientAlias}</span>
-                          <span className="text-xs text-tertiary">{new Date(review.date).toLocaleDateString('tr-TR')}</span>
+                          <span className="text-xs text-tertiary">{new Date(review.date).toLocaleDateString(locale)}</span>
                         </div>
                         <RatingStars rating={review.rating} size="sm" showValue={false} />
                         <p className="text-sm mt-xs m-0">{review.comment}</p>
@@ -419,8 +441,8 @@ export default function PsychDashboard() {
                 <div className="card-body p-md">
                   <div className="profile-status-header">
                     <div>
-                      <h4 className="mb-xs">Profil Durumu</h4>
-                      <p className="text-xs text-tertiary m-0">{completedProfileChecks}/{profileChecks.length} alan tamamlandı</p>
+                      <h4 className="mb-xs">{t('dashboard.psychologist.profileStatus')}</h4>
+                      <p className="text-xs text-tertiary m-0">{t('dashboard.psychologist.completedFields', { done: completedProfileChecks, total: profileChecks.length })}</p>
                     </div>
                     <span className="profile-status-score">{profileCompleteness}%</span>
                   </div>
@@ -434,7 +456,7 @@ export default function PsychDashboard() {
                       </span>
                     ))}
                   </div>
-                  <Link to={profileEditUrl} className="btn btn-outline btn-block btn-sm mt-md">Profil Bilgilerini Tamamla</Link>
+                  <Link to={profileEditUrl} className="btn btn-outline btn-block btn-sm mt-md">{t('dashboard.psychologist.completeProfile')}</Link>
                 </div>
               </section>
 
@@ -442,28 +464,28 @@ export default function PsychDashboard() {
                 <div className="dash-stat-card">
                   <div className="dash-stat-icon">📊</div>
                   <div className="dash-stat-value">{allAppointments.length}</div>
-                  <div className="dash-stat-label">Toplam Randevu</div>
+                  <div className="dash-stat-label">{t('dashboard.psychologist.totalAppointments')}</div>
                 </div>
                 <div className="dash-stat-card">
                   <div className="dash-stat-icon">✅</div>
                   <div className="dash-stat-value">{completedAppointments.length}</div>
-                  <div className="dash-stat-label">Tamamlanan</div>
+                  <div className="dash-stat-label">{t('dashboard.psychologist.completedAppointments')}</div>
                 </div>
                 <div className="dash-stat-card">
                   <div className="dash-stat-icon">💳</div>
                   <div className="dash-stat-value">{unpaidAppointments.length}</div>
-                    <div className="dash-stat-label">Ödeme Bekleyen</div>
+                    <div className="dash-stat-label">{t('dashboard.psychologist.unpaidAppointments')}</div>
                 </div>
                 <div className="dash-stat-card">
                   <div className="dash-stat-icon">⛔</div>
                   <div className="dash-stat-value">{cancelledAppointments.length}</div>
-                  <div className="dash-stat-label">İptal</div>
+                  <div className="dash-stat-label">{t('dashboard.psychologist.cancelledAppointments')}</div>
                 </div>
               </div>
 
               <section className="card card-elevated animate-on-scroll">
                 <div className="card-body p-md">
-                  <h4 className="mb-sm text-center">Haftalık Takvim</h4>
+                  <h4 className="mb-sm text-center">{t('dashboard.psychologist.weeklyCalendar')}</h4>
                   <div className="mini-calendar">
                     {weekDays.map(day => (
                       <div key={day.iso} className={`cal-day ${day.isToday ? 'today' : ''} ${day.count === 0 ? 'off' : ''}`}>

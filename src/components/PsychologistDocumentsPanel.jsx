@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useToast } from '../context/ToastContext';
+import { useLanguage } from '../context/LanguageContext';
 import {
   createVerificationDocumentUrl,
-  DOCUMENT_STATUS_LABELS,
   DOCUMENT_TYPE_LABELS,
   fetchMyVerificationDocuments,
   removeVerificationDocument,
@@ -10,7 +10,7 @@ import {
   validateVerificationFile,
 } from '../lib/verification-documents';
 
-const formatDate = (value) => new Intl.DateTimeFormat('tr-TR', {
+const formatDate = (value, locale) => new Intl.DateTimeFormat(locale, {
   dateStyle: 'medium',
 }).format(new Date(value));
 
@@ -18,6 +18,8 @@ const formatFileSize = (size) => `${(size / 1024 / 1024).toFixed(2)} MB`;
 
 export default function PsychologistDocumentsPanel({ user }) {
   const { success, error: showError } = useToast();
+  const { language, t } = useLanguage();
+  const locale = language === 'en' ? 'en-US' : 'tr-TR';
   const fileInputRef = useRef(null);
   const [documents, setDocuments] = useState([]);
   const [documentType, setDocumentType] = useState('diploma');
@@ -129,31 +131,31 @@ export default function PsychologistDocumentsPanel({ user }) {
   return (
     <section className="verification-panel">
       <div className={`verification-summary ${approvedCount > 0 ? 'is-complete' : ''}`}>
-        <strong>{approvedCount > 0 ? 'Belge doğrulaması tamamlandı' : 'Belge doğrulaması bekleniyor'}</strong>
+        <strong>{approvedCount > 0 ? t('documentsPanel.complete') : t('documentsPanel.pending')}</strong>
         <p>
           {approvedCount > 0
-            ? `${approvedCount} mesleki belgeniz onaylandı.`
-            : 'Profilinizin etkinleştirilebilmesi için en az bir mesleki belgenizin onaylanması gerekir.'}
+            ? t('documentsPanel.approvedCount', { count: approvedCount })
+            : t('documentsPanel.requirement')}
         </p>
-        {approvalStatus === 'approved' && <span className="badge badge-success">Profil aktif</span>}
+        {approvalStatus === 'approved' && <span className="badge badge-success">{t('documentsPanel.profileActive')}</span>}
       </div>
 
       <div className="verification-upload-form">
         <div className="input-group">
-          <label htmlFor="verification-document-type">Belge Türü</label>
+          <label htmlFor="verification-document-type">{t('documentsPanel.type')}</label>
           <select
             id="verification-document-type"
             value={documentType}
             onChange={(event) => setDocumentType(event.target.value)}
           >
-            {Object.entries(DOCUMENT_TYPE_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>{label}</option>
+            {Object.keys(DOCUMENT_TYPE_LABELS).map(value => (
+              <option key={value} value={value}>{t(`admin.documentTypes.${value}`)}</option>
             ))}
           </select>
         </div>
 
         <div className="input-group verification-file-field">
-          <label htmlFor="verification-document-file">Dosya</label>
+          <label htmlFor="verification-document-file">{t('documentsPanel.file')}</label>
           <input
             ref={fileInputRef}
             id="verification-document-file"
@@ -161,7 +163,7 @@ export default function PsychologistDocumentsPanel({ user }) {
             accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
             onChange={handleFileChange}
           />
-          <span className="input-hint">PDF, JPG veya PNG; en fazla 8 MB.</span>
+          <span className="input-hint">{t('documentsPanel.fileHint')}</span>
         </div>
 
         <button
@@ -170,33 +172,33 @@ export default function PsychologistDocumentsPanel({ user }) {
           disabled={!selectedFile || processingId === 'upload'}
           onClick={handleUpload}
         >
-          {processingId === 'upload' ? 'Yükleniyor...' : 'Belgeyi Yükle'}
+          {processingId === 'upload' ? t('documentsPanel.uploading') : t('documentsPanel.upload')}
         </button>
       </div>
 
       <div className="verification-privacy-note">
-        Belgeleriniz herkese açık profilde gösterilmez. Yalnızca siz ve yetkili yöneticiler erişebilir.
+        {t('documentsPanel.privacy')}
       </div>
 
       <div className="verification-document-list" aria-live="polite">
-        <h4>Yüklenen Belgeler</h4>
+        <h4>{t('documentsPanel.uploaded')}</h4>
         {isLoading ? (
-          <p className="text-secondary">Belgeler yükleniyor...</p>
+          <p className="text-secondary">{t('documentsPanel.loading')}</p>
         ) : documents.length === 0 ? (
-          <p className="verification-empty">Henüz belge yüklenmedi.</p>
+          <p className="verification-empty">{t('documentsPanel.empty')}</p>
         ) : documents.map(document => (
           <div className="verification-document-row" key={document.id}>
             <div className="verification-document-info">
-              <strong>{DOCUMENT_TYPE_LABELS[document.document_type] || 'Mesleki belge'}</strong>
+              <strong>{t(`admin.documentTypes.${document.document_type}`)}</strong>
               <span>{document.original_name}</span>
-              <small>{formatFileSize(document.size_bytes)} · {formatDate(document.created_at)}</small>
+              <small>{formatFileSize(document.size_bytes)} · {formatDate(document.created_at, locale)}</small>
               {document.review_reason && (
-                <p className="verification-review-reason">Açıklama: {document.review_reason}</p>
+                <p className="verification-review-reason">{t('documentsPanel.explanation', { reason: document.review_reason })}</p>
               )}
             </div>
             <div className="verification-document-actions">
               <span className={`badge verification-status is-${document.status}`}>
-                {DOCUMENT_STATUS_LABELS[document.status] || document.status}
+                {t(`admin.documentStatuses.${document.status}`)}
               </span>
               <button
                 type="button"
@@ -204,7 +206,7 @@ export default function PsychologistDocumentsPanel({ user }) {
                 disabled={processingId === `view-${document.id}`}
                 onClick={() => handleView(document)}
               >
-                Görüntüle
+                {t('documentsPanel.view')}
               </button>
               {document.status !== 'approved' && (
                 <button
@@ -213,7 +215,7 @@ export default function PsychologistDocumentsPanel({ user }) {
                   disabled={processingId === `delete-${document.id}`}
                   onClick={() => handleDelete(document)}
                 >
-                  Sil
+                  {t('documentsPanel.delete')}
                 </button>
               )}
             </div>

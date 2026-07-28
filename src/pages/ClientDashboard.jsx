@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSession } from '../context/SessionContext';
 import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
+import { useLanguage } from '../context/LanguageContext';
 import { COMMUNICATION_CHANNELS, SPECIALIZATIONS } from '../data/constants';
 import { fetchApprovedPsychologists, getDemoPsychologists } from '../lib/psychologists';
 import {
@@ -21,22 +22,25 @@ import RatingStars from '../components/RatingStars';
 import '../styles/pages/Dashboard.css';
 
 const statusDetails = {
-  upcoming: { label: 'Planlandı', className: 'is-upcoming' },
-  completed: { label: 'Tamamlandı', className: 'is-completed' },
-  cancelled: { label: 'İptal edildi', className: 'is-cancelled' },
+  upcoming: { className: 'is-upcoming' },
+  completed: { className: 'is-completed' },
+  cancelled: { className: 'is-cancelled' },
 };
 
 const paymentDetails = {
-  pending: { label: 'Ödeme entegrasyonu bekleniyor', className: 'is-pending' },
-  paid: { label: 'Ödeme alındı', className: 'is-paid' },
-  failed: { label: 'Ödeme başarısız', className: 'is-failed' },
-  refunded: { label: 'İade sürecinde', className: 'is-refunded' },
+  pending: { className: 'is-pending' },
+  paid: { className: 'is-paid' },
+  failed: { className: 'is-failed' },
+  refunded: { className: 'is-refunded' },
 };
 
-const getPaymentDetails = (session) => (
+const getPaymentDetails = (session, t) => (
   session.paymentRequired
-    ? (paymentDetails[session.paymentStatus] || paymentDetails.pending)
-    : { label: 'Tahsilat bu aşamada kapalı', className: 'is-deferred' }
+    ? {
+        ...(paymentDetails[session.paymentStatus] || paymentDetails.pending),
+        label: t(`dashboard.payments.${session.paymentStatus || 'pending'}`),
+      }
+    : { label: t('dashboard.payments.deferred'), className: 'is-deferred' }
 );
 
 export default function ClientDashboard() {
@@ -44,6 +48,7 @@ export default function ClientDashboard() {
   const { updateSession, sessions } = useSession();
   const { addMoodEntry } = useProfile();
   const { success } = useToast();
+  const { language, t } = useLanguage();
   const [sessionToCancel, setSessionToCancel] = useState(null);
   const [cancelReason, setCancelReason] = useState('');
   const [updatingSessionId, setUpdatingSessionId] = useState(null);
@@ -90,8 +95,9 @@ export default function ClientDashboard() {
 
   const getPsychologist = (id) => psychologists.find(p => String(p.id) === String(id));
   const getChannel = (channelId) => COMMUNICATION_CHANNELS.find(channel => channel.id === channelId);
-  const formatSessionDate = (date) => new Date(`${date}T12:00:00`).toLocaleDateString('tr-TR');
-  const formatSessionDateLong = (date) => new Date(`${date}T12:00:00`).toLocaleDateString('tr-TR', {
+  const locale = language === 'en' ? 'en-US' : 'tr-TR';
+  const formatSessionDate = (date) => new Date(`${date}T12:00:00`).toLocaleDateString(locale);
+  const formatSessionDateLong = (date) => new Date(`${date}T12:00:00`).toLocaleDateString(locale, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -122,7 +128,18 @@ export default function ClientDashboard() {
     }))
     .sort((a, b) => b.matchScore - a.matchScore || b.rating - a.rating)
     .slice(0, 3);
-  const getTopicLabel = (topicId) => SPECIALIZATIONS.find(spec => spec.id === topicId)?.label || topicId;
+  const getTopicLabel = (topicId) => t(`specializations.${topicId}`) || SPECIALIZATIONS.find(spec => spec.id === topicId)?.label || topicId;
+  const getLocalizedName = (name) => language === 'en'
+    ? name
+        ?.replace('Klinik Psikolog Demo Uzmanı', 'Clinical Psychologist Demo Expert')
+        .replace('Klinik Psikolog Demo', 'Clinical Psychologist Demo')
+        .replace('Aday Profil Demo', 'Candidate Profile Demo')
+    : name;
+  const getLocalizedJoinState = (session) => {
+    const state = getSessionJoinState(session);
+    const [label, helper] = t(`dashboard.join.${state.code}`);
+    return { ...state, label, helper };
+  };
 
   const handleCancelSession = async (session) => {
     setUpdatingSessionId(session.id);
@@ -135,7 +152,12 @@ export default function ClientDashboard() {
     if (result.success) {
       setSessionToCancel(null);
       setCancelReason('');
-      success('Randevu İptal Edildi', session.paymentStatus === 'paid' ? 'Randevu arşive taşındı. İade değerlendirmesi için destek ekibiyle iletişime geçin.' : 'Randevu arşive taşındı.');
+      success(
+        t('dashboard.client.cancelToastTitle'),
+        session.paymentStatus === 'paid'
+          ? t('dashboard.client.cancelRefundToast')
+          : t('dashboard.client.cancelToast'),
+      );
     }
   };
 
@@ -150,7 +172,7 @@ export default function ClientDashboard() {
     setUpdatingSessionId(null);
 
     if (result.success) {
-      success('Test Ödemesi Geçildi', 'Bu işlem yalnızca yerel test randevusunu seansa açar.');
+      success(t('dashboard.client.testToastTitle'), t('dashboard.client.testToast'));
     }
   };
 
@@ -158,8 +180,8 @@ export default function ClientDashboard() {
     <div className="session-info">
       <div className="avatar avatar-md">{psych?.initials || session.psychologistInitials || 'P'}</div>
       <div>
-        <span className="appointment-eyebrow">Randevu</span>
-        <h4>{psych?.name || session.psychologistName || 'Psikolog'}</h4>
+        <span className="appointment-eyebrow">{t('dashboard.client.appointment')}</span>
+        <h4>{getLocalizedName(psych?.name || session.psychologistName) || t('dashboard.client.psychologist')}</h4>
       </div>
     </div>
   );
@@ -171,12 +193,12 @@ export default function ClientDashboard() {
         <div className="container mt-xl mb-3xl">
           <div className="dash-header mb-2xl">
             <div>
-              <h1 className="dash-title">Merhaba, {user.alias}</h1>
-              <p className="dash-subtitle">{upcomingSessions.length} yaklaşan randevunuz var. Tahsilat bu aşamada kapalı; randevular saatinde görüşmeye açılır.</p>
+              <h1 className="dash-title">{t('dashboard.client.greeting', { name: user.alias })}</h1>
+              <p className="dash-subtitle">{t('dashboard.client.summary', { count: upcomingSessions.length })}</p>
             </div>
             <div className="dash-actions">
-              <Link to="/psikologlar" className="btn btn-primary">Yeni Randevu Al</Link>
-              <Link to="/ayarlar" className="btn btn-outline">Gizlilik Ayarları</Link>
+              <Link to="/psikologlar" className="btn btn-primary">{t('dashboard.client.newAppointment')}</Link>
+              <Link to="/ayarlar" className="btn btn-outline">{t('dashboard.client.privacySettings')}</Link>
             </div>
           </div>
 
@@ -185,8 +207,8 @@ export default function ClientDashboard() {
               <section className="card card-elevated mb-lg animate-on-scroll">
                 <div className="card-body">
                   <div className="flex justify-between items-center mb-md">
-                    <h3 className="m-0">Bugün kendinizi nasıl hissediyorsunuz?</h3>
-                    {todayMood && <span className="badge badge-success">Kaydedildi</span>}
+                    <h3 className="m-0">{t('dashboard.client.moodQuestion')}</h3>
+                    {todayMood && <span className="badge badge-success">{t('dashboard.client.saved')}</span>}
                   </div>
                   <MoodTracker
                     value={todayMood}
@@ -200,11 +222,11 @@ export default function ClientDashboard() {
                 <div className="card-body">
                   <div className="appointment-schedule-header flex justify-between items-center mb-md">
                     <div>
-                      <h3 className="m-0">Yaklaşan Randevularınız</h3>
+                      <h3 className="m-0">{t('dashboard.client.upcomingTitle')}</h3>
                       <p className="appointment-section-subtitle">
                         {IS_DEMO_MODE
-                          ? `${upcomingSessions.length} kurgusal randevu • gerçek tahsilat yok`
-                          : `${upcomingSessions.length} aktif randevu • ${pendingPayments.length} ödeme bekleyen`}
+                          ? t('dashboard.client.demoUpcoming', { count: upcomingSessions.length })
+                          : t('dashboard.client.liveUpcoming', { count: upcomingSessions.length, payments: pendingPayments.length })}
                       </p>
                     </div>
                   </div>
@@ -214,11 +236,14 @@ export default function ClientDashboard() {
                       {upcomingSessions.map(session => {
                         const psych = getPsychologist(session.psychologistId);
                         const channel = getChannel(session.channel);
-                        const status = statusDetails[session.status] || statusDetails.upcoming;
-                        const payment = getPaymentDetails(session);
+                        const status = {
+                          ...(statusDetails[session.status] || statusDetails.upcoming),
+                          label: t(`dashboard.statuses.${session.status || 'upcoming'}`),
+                        };
+                        const payment = getPaymentDetails(session, t);
                         const isCancelling = String(sessionToCancel?.id) === String(session.id);
                         const isUpdating = String(updatingSessionId) === String(session.id);
-                        const joinState = getSessionJoinState(session);
+                        const joinState = getLocalizedJoinState(session);
                         const fee = getSessionFee(psych, session);
                         const hasPendingPayment = session.paymentStatus !== 'paid';
                         const requiresPayment = session.paymentRequired && hasPendingPayment;
@@ -240,19 +265,19 @@ export default function ClientDashboard() {
 
                             <div className="appointment-detail-grid">
                               <div className="appointment-detail">
-                                <span className="appointment-label">Tarih</span>
+                                <span className="appointment-label">{t('dashboard.client.date')}</span>
                                 <strong>{formatSessionDateLong(session.date)}</strong>
                               </div>
                               <div className="appointment-detail">
-                                <span className="appointment-label">Saat</span>
+                                <span className="appointment-label">{t('dashboard.client.time')}</span>
                                 <strong>{session.time}</strong>
                               </div>
                               <div className="appointment-detail">
-                                <span className="appointment-label">Görüşme Tipi</span>
-                                <strong>{channel?.icon} {channel?.label || session.channel}</strong>
+                                <span className="appointment-label">{t('dashboard.client.channel')}</span>
+                                <strong>{channel?.icon} {channel ? t(`channels.${channel.id}`)[0] : session.channel}</strong>
                               </div>
                               <div className="appointment-detail">
-                                <span className="appointment-label">Randevu Kodu</span>
+                                <span className="appointment-label">{t('dashboard.client.reference')}</span>
                                 <strong>{getSessionReference(session.id)}</strong>
                               </div>
                             </div>
@@ -260,16 +285,16 @@ export default function ClientDashboard() {
                             {hasPendingPayment && (
                               <div className="session-payment-box">
                                 <div>
-                                  <span className="appointment-eyebrow">Planlanan Ücret</span>
-                                  <strong>{IS_DEMO_MODE ? 'Demo, ücret yok' : formatCurrency(fee)}</strong>
+                                  <span className="appointment-eyebrow">{t('dashboard.client.plannedFee')}</span>
+                                  <strong>{IS_DEMO_MODE ? t('dashboard.client.demoNoFee') : formatCurrency(fee)}</strong>
                                   <p>
                                     {session.paymentRequired
-                                      ? 'Ödeme tamamlandığında seans odası açılacaktır.'
-                                      : 'Ödeme altyapısı sonraki aşamaya bırakıldı; bu randevu için şimdi tahsilat yapılmayacaktır.'}
+                                      ? t('dashboard.client.paidRoom')
+                                      : t('dashboard.client.deferredPayment')}
                                   </p>
                                 </div>
                                 <span className="appointment-muted-action">
-                                  {session.paymentRequired ? 'Ödeme bekleniyor' : 'Tahsilat kapalı'}
+                                  {session.paymentRequired ? t('dashboard.client.paymentWaiting') : t('dashboard.client.collectionClosed')}
                                 </span>
                                 {canUseDevPaymentBypass && (
                                   <button
@@ -278,7 +303,7 @@ export default function ClientDashboard() {
                                     disabled={isUpdating}
                                     onClick={() => handleDevPaymentBypass(session)}
                                   >
-                                    Test İçin Geç
+                                    {t('dashboard.client.skipForTest')}
                                   </button>
                                 )}
                               </div>
@@ -287,21 +312,21 @@ export default function ClientDashboard() {
                             {isCancelling && (
                               <div className="session-cancel-box">
                                 <div className="input-group">
-                                  <label htmlFor={`cancel-reason-${session.id}`}>İptal Nedeni</label>
+                                  <label htmlFor={`cancel-reason-${session.id}`}>{t('dashboard.client.cancellationReason')}</label>
                                   <textarea
                                     id={`cancel-reason-${session.id}`}
                                     rows="3"
                                     value={cancelReason}
                                     onChange={(event) => setCancelReason(event.target.value)}
-                                    placeholder="Kısa bir not ekleyin"
+                                    placeholder={t('dashboard.client.cancellationPlaceholder')}
                                   />
                                 </div>
                                 <div className="session-cancel-actions">
                                   <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setSessionToCancel(null); setCancelReason(''); }}>
-                                    Vazgeç
+                                    {t('dashboard.client.dismiss')}
                                   </button>
                                   <button type="button" className="btn btn-danger btn-sm" disabled={isUpdating} onClick={() => handleCancelSession(session)}>
-                                    İptali Onayla
+                                    {t('dashboard.client.confirmCancellation')}
                                   </button>
                                 </div>
                               </div>
@@ -318,21 +343,21 @@ export default function ClientDashboard() {
                                   disabled={isUpdating}
                                   onClick={() => setSessionToCancel(session)}
                                 >
-                                  İptal Et
+                                  {t('dashboard.client.cancel')}
                                 </button>
                                 {requiresPayment ? (
                                   <>
                                     <button type="button" className="btn btn-primary btn-sm" disabled>
-                                      Ödeme Bekleniyor
+                                      {t('dashboard.client.paymentWaiting')}
                                     </button>
                                     {canUseDevPaymentBypass && (
                                       <button type="button" className="btn btn-outline btn-sm" disabled={isUpdating} onClick={() => handleDevPaymentBypass(session)}>
-                                        Test İçin Geç
+                                        {t('dashboard.client.skipForTest')}
                                       </button>
                                     )}
                                   </>
                                 ) : joinState.canJoin ? (
-                                  <Link to={`/seans/${session.id}`} className="btn btn-primary btn-sm">Seansa Katıl</Link>
+                                  <Link to={`/seans/${session.id}`} className="btn btn-primary btn-sm">{t('dashboard.client.join')}</Link>
                                 ) : (
                                   <button type="button" className="btn btn-outline btn-sm" disabled>{joinState.label}</button>
                                 )}
@@ -345,8 +370,8 @@ export default function ClientDashboard() {
                   ) : (
                     <div className="dash-empty-state">
                       <span className="dash-empty-icon">📅</span>
-                      <p>Henüz planlanmış randevunuz yok.</p>
-                      <Link to="/psikologlar" className="btn btn-outline btn-sm mt-sm">Psikolog Bul</Link>
+                      <p>{t('dashboard.client.noUpcoming')}</p>
+                      <Link to="/psikologlar" className="btn btn-outline btn-sm mt-sm">{t('dashboard.client.findPsychologist')}</Link>
                     </div>
                   )}
                 </div>
@@ -354,14 +379,17 @@ export default function ClientDashboard() {
 
               <section className="card card-elevated animate-on-scroll">
                 <div className="card-body">
-                  <h3 className="mb-md">Geçmiş Randevular</h3>
+                  <h3 className="mb-md">{t('dashboard.client.pastTitle')}</h3>
                   {pastSessions.length > 0 ? (
                     <div className="session-list">
                       {pastSessions.map(session => {
                         const psych = getPsychologist(session.psychologistId);
                         const channel = getChannel(session.channel);
-                        const status = statusDetails[session.status] || statusDetails.completed;
-                        const payment = getPaymentDetails(session);
+                        const status = {
+                          ...(statusDetails[session.status] || statusDetails.completed),
+                          label: t(`dashboard.statuses.${session.status || 'completed'}`),
+                        };
+                        const payment = getPaymentDetails(session, t);
 
                         return (
                           <article key={session.id} className={`appointment-card client-session-card appointment-${session.status}`}>
@@ -375,34 +403,38 @@ export default function ClientDashboard() {
 
                             <div className="appointment-detail-grid">
                               <div className="appointment-detail">
-                                <span className="appointment-label">Tarih</span>
+                                <span className="appointment-label">{t('dashboard.client.date')}</span>
                                 <strong>{formatSessionDate(session.date)}</strong>
                               </div>
                               <div className="appointment-detail">
-                                <span className="appointment-label">Saat</span>
+                                <span className="appointment-label">{t('dashboard.client.time')}</span>
                                 <strong>{session.time}</strong>
                               </div>
                               <div className="appointment-detail">
-                                <span className="appointment-label">Görüşme Tipi</span>
-                                <strong>{channel?.icon} {channel?.label || session.channel}</strong>
+                                <span className="appointment-label">{t('dashboard.client.channel')}</span>
+                                <strong>{channel?.icon} {channel ? t(`channels.${channel.id}`)[0] : session.channel}</strong>
                               </div>
                               <div className="appointment-detail">
-                                <span className="appointment-label">Randevu Kodu</span>
+                                <span className="appointment-label">{t('dashboard.client.reference')}</span>
                                 <strong>{getSessionReference(session.id)}</strong>
                               </div>
                             </div>
 
                             <div className="appointment-card-footer">
                               <span className="appointment-code">
-                                {session.status === 'cancelled' ? 'Randevu iptal edildi.' : session.reviewed ? 'Değerlendirmeniz alındı.' : 'Seans tamamlandı, değerlendirme bekliyor.'}
+                                {session.status === 'cancelled'
+                                  ? t('dashboard.client.cancelledNote')
+                                  : session.reviewed
+                                    ? t('dashboard.client.reviewedNote')
+                                    : t('dashboard.client.reviewWaitingNote')}
                               </span>
                               <div className="appointment-action-group">
                                 {session.status === 'cancelled' ? (
-                                  <span className="badge badge-danger">İptal edildi</span>
+                                  <span className="badge badge-danger">{t('dashboard.statuses.cancelled')}</span>
                                 ) : session.reviewed ? (
-                                  <span className="badge badge-success">Değerlendirildi</span>
+                                  <span className="badge badge-success">{t('dashboard.client.reviewed')}</span>
                                 ) : (
-                                  <Link to={`/degerlendirme?session=${session.id}`} className="btn btn-warning btn-sm">Değerlendir</Link>
+                                  <Link to={`/degerlendirme?session=${session.id}`} className="btn btn-warning btn-sm">{t('dashboard.client.review')}</Link>
                                 )}
                               </div>
                             </div>
@@ -411,7 +443,7 @@ export default function ClientDashboard() {
                       })}
                     </div>
                   ) : (
-                    <p className="text-tertiary">Geçmiş randevunuz bulunmuyor.</p>
+                    <p className="text-tertiary">{t('dashboard.client.noPast')}</p>
                   )}
                 </div>
               </section>
@@ -422,29 +454,29 @@ export default function ClientDashboard() {
                 <div className="dash-stat-card">
                   <div className="dash-stat-icon">📊</div>
                   <div className="dash-stat-value">{sessions?.length || 0}</div>
-                  <div className="dash-stat-label">Toplam Randevu</div>
+                  <div className="dash-stat-label">{t('dashboard.client.totalAppointments')}</div>
                 </div>
                 <div className="dash-stat-card">
                   <div className="dash-stat-icon">{avgMood > 0 ? ['😢', '😞', '😐', '🙂', '😄'][avgMood - 1] : '–'}</div>
                   <div className="dash-stat-value">{avgMood > 0 ? `${avgMood}/5` : '-'}</div>
-                  <div className="dash-stat-label">Ruh Hali</div>
+                  <div className="dash-stat-label">{t('dashboard.client.mood')}</div>
                 </div>
                 <div className="dash-stat-card">
                   <div className="dash-stat-icon">🔒</div>
                   <div className="dash-stat-value">{user.privacyLevel}/5</div>
-                  <div className="dash-stat-label">Gizlilik Seviyesi</div>
+                  <div className="dash-stat-label">{t('dashboard.client.privacyLevel')}</div>
                 </div>
                 <div className="dash-stat-card">
                   <div className="dash-stat-icon">⭐</div>
                   <div className="dash-stat-value">{reviewedSessions.length}/{completedSessions.length}</div>
-                  <div className="dash-stat-label">Değerlendirme</div>
+                  <div className="dash-stat-label">{t('dashboard.client.reviews')}</div>
                 </div>
               </div>
 
               {clientTopics.length > 0 && (
                 <section className="card card-elevated mb-lg animate-on-scroll">
                   <div className="card-body p-md">
-                    <h4 className="mb-sm">Destek Başlıklarınız</h4>
+                    <h4 className="mb-sm">{t('dashboard.client.topics')}</h4>
                     <div className="profile-check-list">
                       {clientTopics.map(topic => (
                         <span key={topic} className="profile-check-item done">{getTopicLabel(topic)}</span>
@@ -456,20 +488,20 @@ export default function ClientDashboard() {
 
               <section className="card card-elevated animate-on-scroll">
                 <div className="card-body">
-                  <h3 className="mb-md" style={{ fontSize: 'var(--text-md)' }}>Size Önerilen Uzmanlar</h3>
+                  <h3 className="mb-md" style={{ fontSize: 'var(--text-md)' }}>{t('dashboard.client.recommended')}</h3>
                   <div className="recommended-list">
                     {recommendedPsychologists.map(psych => (
                       <Link to={`/psikolog/${psych.id}`} key={psych.id} className="recommended-item">
                         <div className="avatar avatar-sm">{psych.initials}</div>
                         <div className="recommended-info">
-                          <span className="recommended-name">{psych.name}</span>
+                          <span className="recommended-name">{getLocalizedName(psych.name)}</span>
                           <RatingStars rating={psych.rating} size="sm" showValue={false} />
-                          {psych.matchScore > 0 && <span className="text-xs text-tertiary">{psych.matchScore} eşleşen başlık</span>}
+                          {psych.matchScore > 0 && <span className="text-xs text-tertiary">{t('dashboard.client.matchingTopics', { count: psych.matchScore })}</span>}
                         </div>
                       </Link>
                     ))}
                   </div>
-                  <Link to="/psikologlar" className="btn btn-ghost btn-sm btn-block mt-md">Tümünü Gör</Link>
+                  <Link to="/psikologlar" className="btn btn-ghost btn-sm btn-block mt-md">{t('dashboard.client.viewAll')}</Link>
                 </div>
               </section>
             </div>

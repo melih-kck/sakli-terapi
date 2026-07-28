@@ -4,7 +4,6 @@ import {
   SPECIALIZATIONS,
   APPROACHES,
   COMMUNICATION_CHANNELS,
-  DAYS_SHORT_TR,
   DAYS_TR,
 } from '../data/constants';
 import { fetchApprovedPsychologistById, getDemoPsychologists } from '../lib/psychologists';
@@ -23,6 +22,7 @@ import { useAuth } from '../context/AuthContext';
 import { useReview } from '../context/ReviewContext';
 import { useSession } from '../context/SessionContext';
 import { useToast } from '../context/ToastContext';
+import { useLanguage } from '../context/LanguageContext';
 import { FEATURES, IS_DEMO_MODE } from '../config/runtime';
 import '../styles/pages/Psychologists.css';
 
@@ -35,6 +35,7 @@ export default function PsychologistProfile() {
   const { bookSession, fetchBookedSlots } = useSession();
   const { fetchReviewsForPsychologist } = useReview();
   const { success, warning } = useToast();
+  const { language, t } = useLanguage();
 
   const [psych, setPsych] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,7 +66,7 @@ export default function PsychologistProfile() {
           : demoPsychologist;
 
         if (!loadedPsychologist) {
-          throw new Error('Psikolog profili bulunamadı.');
+          throw new Error(t('profile.loadError'));
         }
 
         if (!isMounted) return;
@@ -75,7 +76,7 @@ export default function PsychologistProfile() {
         console.warn('Psikolog profili Supabase üzerinden çekilemedi:', error);
         if (isMounted) {
           setPsych(null);
-          setLoadError('Bu psikolog profili bulunamadı veya şu anda görüntülenemiyor.');
+          setLoadError(t('profile.loadError'));
         }
       } finally {
         if (isMounted) setIsLoading(false);
@@ -87,7 +88,7 @@ export default function PsychologistProfile() {
     return () => {
       isMounted = false;
     };
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     let isMounted = true;
@@ -130,9 +131,32 @@ export default function PsychologistProfile() {
     };
   }, [psych?.id, user?.role, fetchBookedSlots]);
 
-  const getSpec = (sId) => SPECIALIZATIONS.find(s => s.id === sId);
-  const getApproach = (aId) => APPROACHES.find(a => a.id === aId);
-  const getChannel = (cId) => COMMUNICATION_CHANNELS.find(c => c.id === cId);
+  const getSpec = (sId) => {
+    const spec = SPECIALIZATIONS.find(s => s.id === sId);
+    if (!spec) return null;
+    return {
+      ...spec,
+      label: t(`specializations.${sId}`),
+      description: t(`specializationDescriptions.${sId}`),
+    };
+  };
+  const getApproach = (aId) => {
+    const approach = APPROACHES.find(a => a.id === aId);
+    if (!approach) return null;
+    const [label, description] = t(`approaches.${aId}`);
+    return { ...approach, label, description };
+  };
+  const getChannel = (cId) => {
+    const channel = COMMUNICATION_CHANNELS.find(c => c.id === cId);
+    if (!channel) return null;
+    const [label, description] = t(`channels.${cId}`);
+    return { ...channel, label, description };
+  };
+  const localizedPsychologistName = language === 'en'
+    ? psych?.name
+      ?.replace('Klinik Psikolog Demo', 'Clinical Psychologist Demo')
+      .replace('Aday Profil Demo', 'Candidate Profile Demo')
+    : psych?.name;
 
   const profileRating = reviews.length
     ? Number((reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / reviews.length).toFixed(1))
@@ -147,9 +171,9 @@ export default function PsychologistProfile() {
     return {
       dateObj: d,
       dayName,
-      dayShort: DAYS_SHORT_TR[dayIndex],
+      dayShort: d.toLocaleDateString(language === 'en' ? 'en-US' : 'tr-TR', { weekday: 'short' }),
       dateStr: formatLocalDateIso(d),
-      display: `${d.getDate()} ${['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'][d.getMonth()]}`,
+      display: new Intl.DateTimeFormat(language === 'en' ? 'en-US' : 'tr-TR', { day: 'numeric', month: 'short' }).format(d),
       slots: psych?.availability?.[dayName] || []
     };
   });
@@ -166,12 +190,12 @@ export default function PsychologistProfile() {
     if (!psych) return;
 
     if (!canCreateAppointment) {
-      warning('Randevu Alımı Kapalı', 'Gerçek randevular kontrollü pilot başlayana kadar kullanıma açılmayacaktır.');
+      warning(t('profile.closedToastTitle'), t('profile.closedToastBody'));
       return;
     }
 
     if (!user) {
-      warning('Giriş Gerekli', 'Randevu alabilmek için lütfen önce giriş yapın.');
+      warning(t('profile.loginRequiredTitle'), t('profile.loginRequiredBody'));
       navigate('/giris');
       return;
     }
@@ -182,9 +206,9 @@ export default function PsychologistProfile() {
     try {
       result = await bookSession({
         psychologistId: psych.id,
-        psychologistName: psych.name,
+        psychologistName: localizedPsychologistName,
         psychologistInitials: psych.initials,
-        clientAlias: user.alias || 'Anonim Danışan',
+        clientAlias: user.alias || t('profile.anonymousClient'),
         date: selectedDate,
         time: selectedTime,
         channel: selectedChannel,
@@ -207,7 +231,7 @@ export default function PsychologistProfile() {
       return;
     }
 
-    success('Randevu Onaylandı', 'Randevunuz başarıyla oluşturuldu. Detayları panelinizden takip edebilirsiniz.');
+    success(t('profile.confirmedTitle'), t('profile.confirmedBody'));
     navigate('/panel');
   };
 
@@ -219,7 +243,7 @@ export default function PsychologistProfile() {
           <div className="container mt-2xl mb-3xl">
             <div className="card card-elevated">
               <div className="card-body text-center">
-                <p className="text-tertiary">Psikolog profili yükleniyor...</p>
+                <p className="text-tertiary">{t('profile.loading')}</p>
               </div>
             </div>
           </div>
@@ -237,10 +261,10 @@ export default function PsychologistProfile() {
           <div className="container mt-2xl mb-3xl">
             <div className="card card-elevated">
               <div className="card-body text-center">
-                <h2>Profil görüntülenemiyor</h2>
+                <h2>{t('profile.unavailable')}</h2>
                 <p className="text-tertiary">{loadError}</p>
                 <button className="btn btn-primary" type="button" onClick={() => navigate('/psikologlar')}>
-                  Psikologlara Dön
+                  {t('profile.back')}
                 </button>
               </div>
             </div>
@@ -261,27 +285,27 @@ export default function PsychologistProfile() {
             <div className="psy-profile-header-inner">
               <div className="avatar avatar-2xl psy-profile-avatar">{psych.initials}</div>
               <div className="psy-profile-title-area">
-                <h1>{psych.name}</h1>
-                <p className="psy-profile-title">{psych.title}</p>
-                {psych.isDemo && <span className="badge badge-success">Tamamen kurgusal demo profili</span>}
+                <h1>{localizedPsychologistName}</h1>
+                <p className="psy-profile-title">{psych.isCandidate ? t('common.candidatePsychologist') : t('common.clinicalPsychologist')}</p>
+                {psych.isDemo && <span className="badge badge-success">{t('profile.fictionalBadge')}</span>}
                 {psych.isCandidate && (
                   <div className="psy-candidate-info">
-                    <span className="badge badge-accent">Aday Psikolog</span>
-                    <span className="psy-supervisor">Aday psikolog • {psych.university || 'Eğitim bilgisi inceleniyor'}</span>
+                    <span className="badge badge-accent">{t('common.candidatePsychologist')}</span>
+                    <span className="psy-supervisor">{t('profile.candidateEducation', { university: psych.university || t('profile.educationPending') })}</span>
                   </div>
                 )}
                 <div className="psy-profile-stats">
                   <div className="psy-stat-item">
                     <RatingStars rating={profileRating} size="md" />
-                    <span>({profileReviewCount} Değerlendirme)</span>
+                    <span>({t('profile.reviews', { count: profileReviewCount })})</span>
                   </div>
                   <div className="psy-stat-divider"></div>
                   <div className="psy-stat-item">
-                    <span><strong>{psych.sessionCount}+</strong> Seans</span>
+                    <span><strong>{psych.sessionCount}+</strong> {t('profile.sessions')}</span>
                   </div>
                   <div className="psy-stat-divider"></div>
                   <div className="psy-stat-item">
-                    <span><strong>{psych.experience}</strong> Yıl Deneyim</span>
+                    <span><strong>{psych.experience}</strong> {t('profile.yearsExperience')}</span>
                   </div>
                 </div>
                 <div className="psy-profile-badges">
@@ -300,20 +324,22 @@ export default function PsychologistProfile() {
             {/* Main Content */}
             <div className="psy-profile-main">
               <section className="psy-section">
-                <h2>Hakkında</h2>
-                <p className="psy-bio-text">{psych.bio}</p>
+                <h2>{t('profile.about')}</h2>
+                <p className="psy-bio-text">{psych.isDemo ? t('profile.demoBio') : psych.bio}</p>
                 {psych.languages && (
                   <div className="mt-md">
-                    <strong>Konuştuğu Diller: </strong>
+                    <strong>{t('profile.languages')} </strong>
                     {psych.languages.map(lang => (
-                      <span key={lang} className="badge badge-outline" style={{ marginLeft: 'var(--space-xs)' }}>{lang}</span>
+                      <span key={lang} className="badge badge-outline" style={{ marginLeft: 'var(--space-xs)' }}>
+                        {language === 'en' ? lang.replace('Türkçe', 'Turkish').replace('İngilizce', 'English') : lang}
+                      </span>
                     ))}
                   </div>
                 )}
               </section>
 
               <section className="psy-section">
-                <h2>Uzmanlık Alanları</h2>
+                <h2>{t('profile.specialties')}</h2>
                 <div className="grid grid-2 gap-md mt-md">
                   {psych.specializations.map(s => {
                     const spec = getSpec(s);
@@ -332,7 +358,7 @@ export default function PsychologistProfile() {
               </section>
 
               <section className="psy-section">
-                <h2>Terapi Yaklaşımı</h2>
+                <h2>{t('profile.approach')}</h2>
                 <div className="psy-approaches mt-md">
                   {psych.approaches.map(a => {
                     const approach = getApproach(a);
@@ -348,23 +374,23 @@ export default function PsychologistProfile() {
               </section>
 
               <section className="psy-section">
-                <h2>Danışan Değerlendirmeleri</h2>
+                <h2>{t('profile.clientReviews')}</h2>
                 {IS_DEMO_MODE && (
                   <p className="demo-booking-note">
-                    Aşağıdaki puanlar ve metinler arayüz demonstrasyonu için üretilmiş kurgusal içeriklerdir.
+                    {t('profile.fictionalReviews')}
                   </p>
                 )}
                 <div className="reviews-summary card card-glass p-lg mb-xl">
                   <div className="reviews-overall">
                     <div className="reviews-big-rating">{profileRating}</div>
                     <RatingStars rating={profileRating} size="lg" showValue={false} />
-                    <p className="text-sm text-tertiary mt-xs">{profileReviewCount} değerlendirme</p>
+                    <p className="text-sm text-tertiary mt-xs">{t('profile.reviewCount', { count: profileReviewCount })}</p>
                   </div>
                   <div className="reviews-categories">
                     {[
-                      { key: 'listening', label: 'Dinleme & Empati' },
-                      { key: 'professionalism', label: 'Profesyonellik' },
-                      { key: 'communication', label: 'İletişim' }
+                      { key: 'listening', label: t('profile.listening') },
+                      { key: 'professionalism', label: t('profile.professionalism') },
+                      { key: 'communication', label: t('profile.communication') }
                     ].map(cat => {
                       const score = avgCategory(cat.key);
                       return (
@@ -381,22 +407,22 @@ export default function PsychologistProfile() {
                 </div>
 
                 <div className="reviews-list">
-                  {displayReviews.map(review => (
+                  {displayReviews.map((review, reviewIndex) => (
                     <div key={review.id} className="review-item">
                       <div className="review-header">
                         <div className="review-author">
                           <div className="avatar avatar-sm">{review.clientAlias.charAt(0)}</div>
                           <div>
                             <span className="review-alias">{review.clientAlias}</span>
-                            <span className="review-date">{new Date(review.date).toLocaleDateString('tr-TR')}</span>
+                            <span className="review-date">{new Date(review.date).toLocaleDateString(language === 'en' ? 'en-US' : 'tr-TR')}</span>
                           </div>
                         </div>
                         <RatingStars rating={review.rating} size="sm" showValue={false} />
                       </div>
-                      <p className="review-comment">{review.comment}</p>
+                      <p className="review-comment">{language === 'en' && IS_DEMO_MODE ? t('profile.reviewSamples')[reviewIndex % 3] : review.comment}</p>
                       <div className="review-meta">
                         {review.channel && <span className="review-channel">{getChannel(review.channel)?.icon} {getChannel(review.channel)?.label}</span>}
-                        {review.sessionNumber && <span className="review-session-count">{review.sessionNumber}. Seans</span>}
+                        {review.sessionNumber && <span className="review-session-count">{t('profile.sessionNumber', { count: review.sessionNumber })}</span>}
                       </div>
                     </div>
                   ))}
@@ -407,7 +433,7 @@ export default function PsychologistProfile() {
                     className="btn btn-outline btn-block mt-lg"
                     onClick={() => setShowAllReviews(!showAllReviews)}
                   >
-                    {showAllReviews ? 'Daha Az Göster' : `Tüm ${reviews.length} Değerlendirmeyi Gör`}
+                    {showAllReviews ? t('profile.showLess') : t('profile.showAll', { count: reviews.length })}
                   </button>
                 )}
               </section>
@@ -417,15 +443,15 @@ export default function PsychologistProfile() {
             <aside className="psy-profile-sidebar">
               <div className="card card-elevated sticky-sidebar">
                 <div className="card-body">
-                  <h3 className="mb-lg">Randevu Al</h3>
+                  <h3 className="mb-lg">{t('profile.book')}</h3>
                   {IS_DEMO_MODE && (
                     <p className="demo-booking-note">
-                      Bu akış yalnızca ürün demonstrasyonudur. Gerçek randevu veya sağlık hizmeti oluşturmaz.
+                      {t('profile.bookingDemoNotice')}
                     </p>
                   )}
                   
                   <div className="booking-section">
-                    <h4 className="booking-label">1. Tarih Seçin</h4>
+                    <h4 className="booking-label">{t('profile.selectDate')}</h4>
                     <div className="date-picker-scroll">
                       {next7Days.map(day => {
                         const isSelected = selectedDate === day.dateStr;
@@ -455,7 +481,7 @@ export default function PsychologistProfile() {
 
                   {selectedDate && (
                     <div className="booking-section slide-up">
-                      <h4 className="booking-label">2. Saat Seçin</h4>
+                      <h4 className="booking-label">{t('profile.selectTime')}</h4>
                       <div className="time-slots-grid">
                         {next7Days.find(d => d.dateStr === selectedDate)?.slots.map(time => {
                           const slotKey = getSessionSlotKey(selectedDate, time);
@@ -473,7 +499,7 @@ export default function PsychologistProfile() {
                             >
                               <span>{time}</span>
                               {(isBooked || isPast) && (
-                                <small>{isBooked ? 'Dolu' : 'Geçti'}</small>
+                                <small>{isBooked ? t('profile.booked') : t('profile.passed')}</small>
                               )}
                             </button>
                           );
@@ -484,7 +510,7 @@ export default function PsychologistProfile() {
 
                   {selectedTime && (
                     <div className="booking-section slide-up">
-                      <h4 className="booking-label">3. İletişim Tercihi</h4>
+                      <h4 className="booking-label">{t('profile.selectChannel')}</h4>
                       <div className="channel-select-grid">
                         {psych.channels.map(c => {
                           const channel = getChannel(c);
@@ -510,25 +536,25 @@ export default function PsychologistProfile() {
                       <span className="donation-icon-small">🔒</span>
                       <p className="text-xs m-0">
                         {IS_DEMO_MODE
-                          ? 'Demo sürümünde ücret ve ödeme yoktur.'
+                          ? t('profile.noDemoFee')
                           : canCreateAppointment
-                            ? 'Ödeme entegrasyonu henüz etkin değildir.'
-                            : 'Gerçek randevu alımı kontrollü pilot başlayana kadar kapalıdır.'}
+                            ? t('profile.paymentDisabled')
+                            : t('profile.bookingClosed')}
                       </p>
                     </div>
                     {selectedDate && selectedTime && (
                       <div className="booking-confirm-box mb-md">
                         <div className="content-metric">
-                          <span>Seçilen Randevu</span>
+                          <span>{t('profile.selectedAppointment')}</span>
                           <strong>{selectedTime}</strong>
                         </div>
                         <div className="content-metric">
-                          <span>Seans Ücreti</span>
-                          <strong>{IS_DEMO_MODE ? 'Demo, ücret yok' : formatCurrency(getSessionFee(psych))}</strong>
+                          <span>{t('profile.sessionFee')}</span>
+                          <strong>{IS_DEMO_MODE ? t('profile.noFee') : formatCurrency(getSessionFee(psych))}</strong>
                         </div>
                         <div className="content-metric">
-                          <span>Ödeme Durumu</span>
-                          <strong>{IS_DEMO_MODE ? 'Uygulanmaz' : 'Entegrasyon bekleniyor'}</strong>
+                          <span>{t('profile.paymentStatus')}</span>
+                          <strong>{IS_DEMO_MODE ? t('profile.notApplicable') : t('profile.integrationPending')}</strong>
                         </div>
                         <label className="checkbox-group content-checkbox">
                           <input
@@ -538,8 +564,8 @@ export default function PsychologistProfile() {
                           />
                           <span>
                             {IS_DEMO_MODE
-                              ? 'Bunun kurgusal bir ürün demonstrasyonu olduğunu anlıyorum.'
-                              : 'Randevu oluşturma ve iptal koşullarını onaylıyorum.'}
+                              ? t('profile.demoConsent')
+                              : t('profile.bookingConsent')}
                           </span>
                         </label>
                       </div>
@@ -551,12 +577,12 @@ export default function PsychologistProfile() {
                       onClick={handleBooking}
                     >
                       {isBooking
-                        ? 'Randevu Oluşturuluyor...'
+                        ? t('profile.creating')
                         : !canCreateAppointment
-                          ? 'Randevu Alımı Kapalı'
+                          ? t('profile.closedToastTitle')
                           : selectedDate && selectedTime
-                          ? IS_DEMO_MODE ? 'Demo Randevusu Oluştur' : 'Randevuyu Oluştur'
-                          : 'Tarih ve Saat Seçin'}
+                          ? IS_DEMO_MODE ? t('profile.createDemo') : t('profile.create')
+                          : t('profile.selectDateTime')}
                     </button>
                   </div>
                 </div>

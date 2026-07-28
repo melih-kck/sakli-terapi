@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
+import { useLanguage } from '../context/LanguageContext';
 import { BRAND } from '../config/brand';
 import { IS_DEMO_MODE } from '../config/runtime';
 import './Navbar.css';
@@ -9,6 +10,7 @@ import './Navbar.css';
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const { unreadCount } = useNotifications();
+  const { language, setLanguage, t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -37,16 +39,33 @@ export default function Navbar() {
       ? '/psikolog-panel'
       : '/panel';
   const dashboardLabel = user?.role === 'admin'
-    ? 'Admin Paneli'
+    ? t('common.adminPanel')
     : user?.role === 'psychologist'
-      ? 'Psikolog Paneli'
-      : 'Panelim';
+      ? t('common.psychologistPanel')
+      : t('common.myPanel');
+
+  const renderLanguageSelect = (id, className = '') => (
+    <label className={`navbar-language ${className}`} htmlFor={id}>
+      <span className="sr-only">{t('common.language')}</span>
+      <select
+        id={id}
+        className="navbar-language-select"
+        value={language}
+        onChange={(event) => setLanguage(event.target.value)}
+        aria-label={t('common.language')}
+        title={t('common.language')}
+      >
+        <option value="tr">TR</option>
+        <option value="en">EN</option>
+      </select>
+    </label>
+  );
 
   return (
     <nav className={`navbar ${isScrolled ? 'navbar-scrolled' : ''}`} id="main-navbar">
       <div className="container navbar-inner">
         {/* Logo */}
-        <Link to="/" className="navbar-logo" id="navbar-logo" aria-label={`${BRAND.name} ana sayfa`}>
+        <Link to="/" className="navbar-logo" id="navbar-logo" aria-label={`${BRAND.name} ${t('common.home')}`}>
           <div className="logo-icon">
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
               <circle cx="16" cy="16" r="14" fill="url(#logoGrad)" />
@@ -63,19 +82,19 @@ export default function Navbar() {
           <span className="logo-text">
             {BRAND.namePrimary} <span className="logo-highlight">{BRAND.nameAccent}</span>
           </span>
-          {IS_DEMO_MODE && <span className="navbar-demo-badge">Demo</span>}
+          {IS_DEMO_MODE && <span className="navbar-demo-badge">{t('common.demo')}</span>}
         </Link>
 
         {/* Desktop Nav Links */}
         <div className={`navbar-links ${isMobileOpen ? 'open' : ''}`} id="navbar-menu">
           <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`} id="nav-home">
-            Ana Sayfa
+            {t('common.home')}
           </Link>
           <Link to="/psikologlar" className={`nav-link ${isActive('/psikologlar') ? 'active' : ''}`} id="nav-psychologists">
-            Psikologlar
+            {t('common.psychologists')}
           </Link>
           <Link to="/hakkinda" className={`nav-link ${isActive('/hakkinda') ? 'active' : ''}`} id="nav-about">
-            Hakkında
+            {t('common.about')}
           </Link>
 
           {isAuthenticated && (
@@ -86,24 +105,25 @@ export default function Navbar() {
 
           {/* Mobile Auth Buttons */}
           <div className="navbar-auth-mobile">
+            {renderLanguageSelect('nav-language-mobile', 'navbar-language-mobile')}
             {isAuthenticated ? (
               <>
                 <Link to={dashboardPath} className="nav-link" onClick={() => setIsMobileOpen(false)}>
                   {dashboardLabel}
                 </Link>
-                <Link to="/ayarlar" className="nav-link" onClick={() => setIsMobileOpen(false)}>Ayarlar</Link>
+                <Link to="/ayarlar" className="nav-link" onClick={() => setIsMobileOpen(false)}>{t('common.settings')}</Link>
                 <Link to="/bildirimler" className="nav-link nav-notifications-mobile" onClick={() => setIsMobileOpen(false)}>
-                  Bildirimler
+                  {t('common.notifications')}
                   {unreadCount > 0 && <span className="notification-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>}
                 </Link>
-                <button type="button" onClick={() => { handleLogout(); setIsMobileOpen(false); }} className="btn btn-outline" style={{ width: '100%' }}>Çıkış Yap</button>
+                <button type="button" onClick={() => { handleLogout(); setIsMobileOpen(false); }} className="btn btn-outline" style={{ width: '100%' }}>{t('common.logout')}</button>
               </>
             ) : (
               <>
                 <Link to="/giris" className="btn btn-primary btn-sm" id="nav-mobile-login">
-                  {IS_DEMO_MODE ? 'Demoyu Aç' : 'Giriş Yap'}
+                  {IS_DEMO_MODE ? t('common.openDemo') : t('common.login')}
                 </Link>
-                {!IS_DEMO_MODE && <Link to="/kayit" className="btn btn-primary btn-sm" id="nav-mobile-register">Ücretsiz Başla</Link>}
+                {!IS_DEMO_MODE && <Link to="/kayit" className="btn btn-primary btn-sm" id="nav-mobile-register">{t('common.freeStart')}</Link>}
               </>
             )}
           </div>
@@ -111,9 +131,10 @@ export default function Navbar() {
 
         {/* Desktop Auth */}
         <div className="navbar-auth">
+          {renderLanguageSelect('nav-language-desktop', 'navbar-language-desktop')}
           {isAuthenticated ? (
             <div className="navbar-user flex items-center gap-md">
-              <Link to="/bildirimler" className="notification-button" aria-label={`Bildirimler${unreadCount ? `, ${unreadCount} okunmamış` : ''}`}>
+              <Link to="/bildirimler" className="notification-button" aria-label={`${t('common.notifications')}${unreadCount ? `, ${unreadCount}` : ''}`}>
                 <span aria-hidden="true">🔔</span>
                 {unreadCount > 0 && <span className="notification-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>}
               </Link>
@@ -121,15 +142,15 @@ export default function Navbar() {
                 {dashboardLabel}
               </Link>
               <button type="button" onClick={handleLogout} className="btn btn-text btn-sm text-secondary">
-                Çıkış Yap
+                {t('common.logout')}
               </button>
             </div>
           ) : (
             <>
               <Link to="/giris" className={IS_DEMO_MODE ? 'btn btn-primary' : 'btn btn-ghost'} id="nav-login">
-                {IS_DEMO_MODE ? 'Demoyu Aç' : 'Giriş Yap'}
+                {IS_DEMO_MODE ? t('common.openDemo') : t('common.login')}
               </Link>
-              {!IS_DEMO_MODE && <Link to="/kayit" className="btn btn-primary" id="nav-register">Ücretsiz Başla</Link>}
+              {!IS_DEMO_MODE && <Link to="/kayit" className="btn btn-primary" id="nav-register">{t('common.freeStart')}</Link>}
             </>
           )}
         </div>
@@ -140,7 +161,7 @@ export default function Navbar() {
           type="button"
           onClick={() => setIsMobileOpen(!isMobileOpen)}
           id="nav-hamburger"
-          aria-label={isMobileOpen ? 'Menüyü kapat' : 'Menüyü aç'}
+          aria-label={isMobileOpen ? t('common.closeMenu') : t('common.openMenu')}
           aria-controls="navbar-menu"
           aria-expanded={isMobileOpen}
         >

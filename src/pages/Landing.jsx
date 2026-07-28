@@ -6,12 +6,14 @@ import RatingStars from '../components/RatingStars';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { BRAND } from '../config/brand';
-import { DEMO_DISCLOSURE, IS_DEMO_MODE } from '../config/runtime';
+import { IS_DEMO_MODE } from '../config/runtime';
 import '../styles/pages/Landing.css';
 
 export default function Landing() {
   const { user } = useAuth();
+  const { language, t } = useLanguage();
   const [openFaq, setOpenFaq] = useState(null);
   const [topPsychologists, setTopPsychologists] = useState([]);
 
@@ -64,16 +66,17 @@ export default function Landing() {
     return () => observer.disconnect();
   }, []);
 
-  const faqs = [
-    { q: `${BRAND.name} nasıl çalışır?`, a: 'Prototip; rumuz temelli danışan profili, uzman keşfi, randevu, yönetici doğrulaması ve kontrollü görüntü seçeneklerini üç ayrı kullanıcı rolünde gösterir.' },
-    { q: 'Hangi bilgilerim gizli kalır?', a: 'Psikolog ekranlarında danışanlar rumuzlarıyla görünür. Hesap e-postası ve isteğe bağlı acil durum kişisi psikolog profillerine veya herkese açık sayfalara açılmaz. Görüşmede paylaşacağınız kişisel bilgiler sizin kontrolünüzdedir.' },
-    { q: 'Psikologlar nasıl yayımlanıyor?', a: 'Demo yönetici paneli, mesleki belge inceleme ve başvuru kararının ürün akışını gösterir. Portföy sürümündeki bütün profiller kurgusaldır.' },
-    { q: 'Acil durumda ne olur?', a: `${BRAND.name} portföy sürümü sağlık veya acil müdahale hizmeti değildir. Hayati risk veya acil durumda 112 Acil Çağrı Merkezi aranmalıdır.` },
-    { q: 'Seans ücreti ne kadardır?', a: 'Portföy sürümünde gerçek ücret veya ödeme bulunmaz. Ödeme entegrasyonu, hukuki ve operasyonel onaylardan sonra ele alınacak üretim özelliğidir.' },
-    { q: 'Gerçek hesap açabilir miyim?', a: 'Hayır. Bu sürüm yalnızca ürün ve mühendislik portföyü içindir. Hazır demo rolleri gerçek kişisel veri girmeden kullanılabilir.' },
-  ];
+  const faqs = t('landing.faqs', { brand: BRAND.name }).map(([q, a]) => ({ q, a }));
+  const steps = t('landing.steps');
+  const features = t('landing.features');
 
-  const getSpecLabel = (id) => SPECIALIZATIONS.find(s => s.id === id)?.label || id;
+  const getSpecLabel = (id) => t(`specializations.${id}`) || SPECIALIZATIONS.find(s => s.id === id)?.label || id;
+  const getPsychologistName = (name) => {
+    if (language !== 'en') return name;
+    return name
+      .replace('Klinik Psikolog Demo', 'Clinical Psychologist Demo')
+      .replace('Aday Profil Demo', 'Candidate Profile Demo');
+  };
 
   return (
     <div className="page">
@@ -82,43 +85,43 @@ export default function Landing() {
         {/* Hero Section */}
         <section className="hero" id="hero-section">
           <div className="container hero-content">
-            {IS_DEMO_MODE && <span className="hero-eyebrow">{DEMO_DISCLOSURE.title}</span>}
+            {IS_DEMO_MODE && <span className="hero-eyebrow">{t('demo.title')}</span>}
             <h1 className="hero-title fade-in">
               {BRAND.name}
             </h1>
             <p className="hero-subtitle fade-in delay-1">
               {IS_DEMO_MODE
-                ? 'Mahremiyet odaklı bir psikolojik destek platformunun danışan, uzman ve yönetici deneyimlerini güvenli demo verileriyle keşfedin.'
-                : `${BRAND.tagline} Rumuz temelli profil ve kontrollü görüntü seçenekleriyle doğrulanmış psikolog profillerinden çevrim içi destek alın.`}
+                ? t('landing.subtitleDemo')
+                : t('landing.subtitleLive', { tagline: BRAND.tagline })}
             </p>
             <div className="hero-actions fade-in delay-2">
               {user ? (
                 <Link to={user.role === 'admin' ? '/admin' : user.role === 'psychologist' ? '/psikolog-panel' : '/panel'} className="btn btn-primary btn-xl" id="hero-cta-start">
-                  Panele Git
+                  {t('landing.goToPanel')}
                 </Link>
               ) : (
                 <Link to={IS_DEMO_MODE ? '/giris' : '/kayit'} className="btn btn-primary btn-xl" id="hero-cta-start">
-                  {IS_DEMO_MODE ? 'Etkileşimli Demoyu Aç' : 'Hemen Başla'}
+                  {IS_DEMO_MODE ? t('landing.openInteractiveDemo') : t('landing.startNow')}
                 </Link>
               )}
               <Link to="/psikologlar" className="btn btn-outline btn-xl" id="hero-cta-browse">
-                Psikologları İncele
+                {t('landing.browsePsychologists')}
               </Link>
             </div>
             <div className="hero-stats fade-in delay-3">
               <div className="hero-stat">
-                <span className="hero-stat-value">3 Rol</span>
-                <span className="hero-stat-label">Uçtan Uca Deneyim</span>
+                <span className="hero-stat-value">{t('landing.rolesValue')}</span>
+                <span className="hero-stat-label">{t('landing.rolesLabel')}</span>
               </div>
               <div className="hero-stat-divider"></div>
               <div className="hero-stat">
-                <span className="hero-stat-value">0</span>
-                <span className="hero-stat-label">Gerçek Kullanıcı Verisi</span>
+                <span className="hero-stat-value">{t('landing.dataValue')}</span>
+                <span className="hero-stat-label">{t('landing.dataLabel')}</span>
               </div>
               <div className="hero-stat-divider"></div>
               <div className="hero-stat">
-                <span className="hero-stat-value">CI</span>
-                <span className="hero-stat-label">Otomatik Kalite Hattı</span>
+                <span className="hero-stat-value">{t('landing.qualityValue')}</span>
+                <span className="hero-stat-label">{t('landing.qualityLabel')}</span>
               </div>
             </div>
           </div>
@@ -128,24 +131,19 @@ export default function Landing() {
         <section className="section" id="how-it-works">
           <div className="container">
             <div className="text-center mb-2xl animate-on-scroll">
-              <h2>Nasıl Çalışır?</h2>
-              <p className="section-subtitle">Dört adımda ürün prototipini inceleyin</p>
+              <h2>{t('landing.howTitle')}</h2>
+              <p className="section-subtitle">{t('landing.howSubtitle')}</p>
             </div>
             <div className="steps-grid">
-              {[
-                { icon: '01', title: 'Rol Seçin', desc: 'Danışan, uzman veya yönetici deneyimini tek tıkla açın' },
-                { icon: '02', title: 'Akışı İnceleyin', desc: 'Kurgusal profiller, paneller ve randevular arasında ilerleyin' },
-                { icon: '03', title: 'Seans Odasını Deneyin', desc: 'Gizlilik seviyeleri, ses ve metin kontrollerini keşfedin' },
-                { icon: '04', title: 'Mimariyi Görün', desc: 'Güvenlik sınırlarını ve üretim öncesi kapıları inceleyin' },
-              ].map((step, i) => (
+              {steps.map(([title, desc], i) => (
                 <div key={i} className="step-card animate-on-scroll" style={{ animationDelay: `${i * 0.15}s` }}>
                   {i > 0 && <div className="step-connector-line"></div>}
                   <div className="step-icon-circle">
-                    <span>{step.icon}</span>
+                    <span>{String(i + 1).padStart(2, '0')}</span>
                     <div className="step-num">{i + 1}</div>
                   </div>
-                  <h4>{step.title}</h4>
-                  <p>{step.desc}</p>
+                  <h4>{title}</h4>
+                  <p>{desc}</p>
                 </div>
               ))}
             </div>
@@ -156,21 +154,16 @@ export default function Landing() {
         <section className="section why-section" id="why-us">
           <div className="container">
             <div className="text-center mb-2xl animate-on-scroll">
-              <h2>Neden <span className="text-gradient">{BRAND.name}</span>?</h2>
-              <p className="section-subtitle">Güvenliğiniz ve konforunuz için tasarlandı</p>
+              <h2>{t('landing.whyTitle', { brand: BRAND.name })}</h2>
+              <p className="section-subtitle">{t('landing.whySubtitle')}</p>
             </div>
             <div className="grid grid-2 gap-xl">
-              {[
-                { icon: '🛡️', title: 'Rumuz Temelli İletişim', desc: 'Danışan profilleri psikolog ekranlarında seçilen rumuzla görünür.' },
-                { icon: '👨‍⚕️', title: 'Onaylı Profiller', desc: 'Yalnızca yönetici incelemesinden geçen psikolog profilleri katalogda yayımlanır.' },
-                { icon: '🎚️', title: 'Kademeli Açılma', desc: 'Hazır hissettiğinizde blur efektini kademeli olarak kaldırın.' },
-                { icon: '🔒', title: 'Sınırlandırılmış Erişim', desc: 'Özel veriler, kullanıcı rolüne ve işlem ihtiyacına göre ayrıştırılır.' },
-              ].map((feat, i) => (
+              {features.map(([title, desc], i) => (
                 <div key={i} className="card feature-card animate-on-scroll">
                   <div className="card-body">
-                    <span className="feature-icon">{feat.icon}</span>
-                    <h3>{feat.title}</h3>
-                    <p>{feat.desc}</p>
+                    <span className="feature-icon">{['🛡️', '👨‍⚕️', '🎚️', '🔒'][i]}</span>
+                    <h3>{title}</h3>
+                    <p>{desc}</p>
                   </div>
                 </div>
               ))}
@@ -182,8 +175,8 @@ export default function Landing() {
         <section className="section" id="featured-psychologists">
           <div className="container">
             <div className="text-center mb-2xl animate-on-scroll">
-              <h2>Kurgusal Uzman Profilleri</h2>
-              <p className="section-subtitle">Arama ve profil deneyimini göstermek için hazırlanmış demo verileri</p>
+              <h2>{t('landing.featuredTitle')}</h2>
+              <p className="section-subtitle">{t('landing.featuredSubtitle')}</p>
             </div>
             <div className="grid grid-4 gap-lg">
               {topPsychologists.map((psych) => (
@@ -192,9 +185,9 @@ export default function Landing() {
                     <div className="avatar avatar-xl" style={{ margin: '0 auto var(--space-md)' }}>
                       {psych.initials}
                     </div>
-                    <h4 className="text-center">{psych.name}</h4>
-                    <p className="text-center"><span className="badge badge-success">Kurgusal demo profili</span></p>
-                    <p className="text-center" style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginBottom: 'var(--space-sm)' }}>{psych.title}</p>
+                    <h4 className="text-center">{getPsychologistName(psych.name)}</h4>
+                    <p className="text-center"><span className="badge badge-success">{t('landing.fictionalProfile')}</span></p>
+                    <p className="text-center" style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginBottom: 'var(--space-sm)' }}>{psych.isCandidate ? t('common.candidatePsychologist') : t('common.clinicalPsychologist')}</p>
                     <div className="flex-center mb-sm">
                       <RatingStars rating={psych.rating} size="sm" count={psych.reviewCount} />
                     </div>
@@ -203,14 +196,14 @@ export default function Landing() {
                         <span key={s} className="badge badge-primary">{getSpecLabel(s)}</span>
                       ))}
                     </div>
-                    <p className="psych-bio">{psych.shortBio}</p>
+                    <p className="psych-bio">{psych.isDemo ? t('catalogue.demoBio') : psych.shortBio}</p>
                   </div>
                 </Link>
               ))}
             </div>
             <div className="text-center mt-xl">
               <Link to="/psikologlar" className="btn btn-outline" id="see-all-psychologists">
-                Tüm Psikologları Gör →
+                {t('landing.seeAll')}
               </Link>
             </div>
           </div>
@@ -221,15 +214,14 @@ export default function Landing() {
           <div className="container">
             <div className="card text-center p-xl w-full">
               <div className="donation-icon mb-md">🔒</div>
-              <h3 className="mb-sm">Mahremiyet Odaklı Tasarım</h3>
+              <h3 className="mb-sm">{t('landing.privacyDesign')}</h3>
               <p className="donation-desc" style={{ maxWidth: '800px' }}>
-                Profil, seans ve değerlendirme verileri rol bazlı erişim kurallarıyla ayrılır.
-                Ödeme özelliği güvenli sunucu doğrulaması tamamlanana kadar kapalı tutulur.
+                {t('landing.privacyDescription')}
               </p>
-              <div className="donation-amount">Rol Bazlı</div>
-              <p style={{ color: 'var(--primary)', fontWeight: 600 }}>Erişim Kontrolü</p>
+              <div className="donation-amount">{t('landing.roleBased')}</div>
+              <p style={{ color: 'var(--primary)', fontWeight: 600 }}>{t('landing.accessControl')}</p>
               <Link to="/hakkinda" className="btn btn-primary mt-lg" id="donation-details">
-                Altyapımızı İnceleyin
+                {t('landing.inspectInfrastructure')}
               </Link>
             </div>
           </div>
@@ -239,8 +231,8 @@ export default function Landing() {
         <section className="section" id="faq-section">
           <div className="container container-md">
             <div className="text-center mb-2xl animate-on-scroll">
-              <h2>Sık Sorulan Sorular</h2>
-              <p className="section-subtitle">Merak ettikleriniz</p>
+              <h2>{t('landing.faqTitle')}</h2>
+              <p className="section-subtitle">{t('landing.faqSubtitle')}</p>
             </div>
             <div className="faq-list">
               {faqs.map((faq, i) => (

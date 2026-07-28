@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { useSession } from '../context/SessionContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Peer } from 'peerjs';
 import { getSessionJoinState } from '../lib/session-flow';
 import {
@@ -57,6 +58,7 @@ const createSilentAudioStream = () => {
 
 export default function SessionRoom() {
   const { user, isClient } = useAuth();
+  const { language, t } = useLanguage();
   const {
     updateSession,
     sessions,
@@ -72,6 +74,12 @@ export default function SessionRoom() {
   const currentSession = sessions?.find(s => String(s.id) === String(sessionId));
   const sessionChannel = currentSession?.channel || location.state?.channel || 'video-blur';
   const sessionAccess = getSessionJoinState(currentSession);
+  const localizedSessionAccess = {
+    ...sessionAccess,
+    label: t(`dashboard.join.${sessionAccess.code}`)[0],
+    helper: t(`dashboard.join.${sessionAccess.code}`)[1],
+  };
+  const locale = language === 'en' ? 'en-US' : 'tr-TR';
   const panelPath = user?.role === 'admin' ? '/admin' : isClient ? '/panel' : '/psikolog-panel';
   const isMockUser = ALLOW_LOCAL_SIMULATION && user?.id?.startsWith('mock-');
   const [roomAccess, setRoomAccess] = useState(null);
@@ -97,10 +105,10 @@ export default function SessionRoom() {
     && (!currentSession || !sessionAccess.canJoin || isRoomIdentityMissing);
   const shouldUseBlurStream = isClient && sessionChannel === 'video-blur';
   const connectingStatusLabel = sessionChannel === 'text'
-    ? 'Sohbet Bağlanıyor...'
+    ? t('sessionRoom.connecting.text')
     : sessionChannel === 'voice'
-      ? 'Mikrofon Bağlanıyor...'
-      : 'Kamera Bağlanıyor...';
+      ? t('sessionRoom.connecting.voice')
+      : t('sessionRoom.connecting.video');
 
   const initialBlurLevel = getSessionBlurPreset(
     user?.privacyLevel || DEFAULT_SESSION_BLUR_LEVEL,
@@ -149,7 +157,7 @@ export default function SessionRoom() {
   
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { id: 1, text: 'Odaya bağlanılıyor...', sender: 'system', time: new Date().toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'}) }
+    { id: 1, text: t('sessionRoom.initialMessage'), sender: 'system', time: new Date().toLocaleTimeString(locale, {hour: '2-digit', minute:'2-digit'}) }
   ]);
   const [chatInput, setChatInput] = useState('');
   
@@ -910,22 +918,22 @@ export default function SessionRoom() {
       setRemoteVideoMissing(false);
       setRemoteVideoReady(true);
       setSessionStatus('active');
-      addSystemMessage("Simülasyon modu başlatıldı. Büyük ekranda karşı tarafa gidecek güvenli seans akışı gösteriliyor.");
+      addSystemMessage(t('sessionRoom.demoStarted'));
     } else {
-      addSystemMessage("Demo başlatılamadı: Kamera kapalı.");
+      addSystemMessage(t('sessionRoom.demoCameraOff'));
     }
   };
 
   const showRemoteVideoOverlay = sessionChannel === 'video-blur'
     && (sessionStatus !== 'active' || remoteVideoMissing || !remoteVideoReady);
   const remoteVideoOverlayText = sessionStatus === 'active'
-    ? (remoteVideoMissing ? 'Karşı tarafın kamera görüntüsü bekleniyor...' : 'Görüntü hazırlanıyor...')
-    : (sessionStatus === 'ready' ? 'Karşı tarafın bağlanması bekleniyor...' : 'Bağlanılıyor...');
+    ? (remoteVideoMissing ? t('sessionRoom.remoteMissing') : t('sessionRoom.videoPreparing'))
+    : (sessionStatus === 'ready' ? t('sessionRoom.waitingRemote') : t('sessionRoom.connectingShort'));
   const remoteVideoOverlayDetail = cameraAvailable === false && microphoneAvailable
-    ? 'Kamera kullanılamıyor; sesiniz karşı tarafa iletilmeye devam ediyor.'
+    ? t('sessionRoom.cameraFallback')
     : microphoneAvailable === false
-      ? 'Mikrofon kullanılamıyor; sesiniz karşı tarafa iletilmiyor.'
-      : 'Diğer taraf aynı randevuya girdiğinde görüntü burada açılacak.';
+      ? t('sessionRoom.microphoneFallback')
+      : t('sessionRoom.remoteHint');
 
   if (isWaitingForSession) {
     return (
@@ -933,9 +941,9 @@ export default function SessionRoom() {
         <Navbar />
         <main className="session-access-main">
           <section className="session-access-panel">
-            <span className="session-access-eyebrow">Seans Girişi</span>
-            <h1>Randevu hazırlanıyor</h1>
-            <p>Seans bilgileri yükleniyor. Birkaç saniye içinde oda açılacak.</p>
+            <span className="session-access-eyebrow">{t('sessionRoom.access')}</span>
+            <h1>{t('sessionRoom.preparingTitle')}</h1>
+            <p>{t('sessionRoom.preparingBody')}</p>
           </section>
         </main>
       </div>
@@ -948,42 +956,42 @@ export default function SessionRoom() {
         <Navbar />
         <main className="session-access-main">
           <section className="session-access-panel">
-            <span className="session-access-eyebrow">Seans Girişi</span>
-            <h1>{isRoomIdentityMissing ? 'Seans odası açılamadı' : sessionAccess.label}</h1>
+            <span className="session-access-eyebrow">{t('sessionRoom.access')}</span>
+            <h1>{isRoomIdentityMissing ? t('sessionRoom.unavailableTitle') : localizedSessionAccess.label}</h1>
             <p>
               {isRoomIdentityMissing
-                ? (roomAccessError || 'Bu randevu için güvenli oda erişimi doğrulanamadı. Lütfen tekrar deneyin.')
+                ? (roomAccessError || t('sessionRoom.unavailableBody'))
                 : currentSession
-                  ? sessionAccess.helper
-                  : 'Bu randevu kaydı bulunamadı veya artık erişilebilir değil.'}
+                  ? localizedSessionAccess.helper
+                  : t('sessionRoom.missingAppointment')}
             </p>
             {currentSession && (
               <div className="session-access-summary">
                 <div>
-                  <span>Tarih</span>
-                  <strong>{new Date(`${currentSession.date}T12:00:00`).toLocaleDateString('tr-TR')}</strong>
+                  <span>{t('sessionRoom.date')}</span>
+                  <strong>{new Date(`${currentSession.date}T12:00:00`).toLocaleDateString(locale)}</strong>
                 </div>
                 <div>
-                  <span>Saat</span>
+                  <span>{t('sessionRoom.time')}</span>
                   <strong>{currentSession.time}</strong>
                 </div>
                 <div>
-                  <span>Ödeme</span>
+                  <span>{t('sessionRoom.payment')}</span>
                   <strong>
                     {!currentSession.paymentRequired
-                      ? 'Bu aşamada alınmıyor'
-                      : currentSession.paymentStatus === 'paid' ? 'Alındı' : 'Bekliyor'}
+                      ? t('sessionRoom.paymentDisabled')
+                      : currentSession.paymentStatus === 'paid' ? t('sessionRoom.paymentPaid') : t('sessionRoom.paymentPending')}
                   </strong>
                 </div>
               </div>
             )}
             <div className="session-access-actions">
               <button type="button" className="btn btn-primary" onClick={() => navigate(panelPath)}>
-                Panele Dön
+                {t('sessionRoom.backToPanel')}
               </button>
               {isClient && currentSession?.status === 'completed' && !currentSession.reviewed && (
                 <button type="button" className="btn btn-outline" onClick={() => navigate(`/degerlendirme?session=${currentSession.id}`)}>
-                  Değerlendir
+                  {t('sessionRoom.review')}
                 </button>
               )}
             </div>
@@ -997,7 +1005,7 @@ export default function SessionRoom() {
     <div className="session-room">
       <Navbar />
       <h1 className="sr-only">
-        {isClient ? 'Psikolog ile seans odası' : 'Danışan ile seans odası'}
+        {isClient ? t('sessionRoom.clientRoomTitle') : t('sessionRoom.psychologistRoomTitle')}
       </h1>
       
       {/* Invisible video/canvas for Blur Processing */}
@@ -1012,12 +1020,12 @@ export default function SessionRoom() {
           <div className={`session-status ${sessionStatus === 'active' ? 'active' : ''}`}>
             <span className="status-dot"></span>
             {sessionStatus === 'connecting' ? connectingStatusLabel : 
-             sessionStatus === 'ready' ? 'Karşı Taraf Bekleniyor' : 'Bağlantı Aktif'}
+             sessionStatus === 'ready' ? t('sessionRoom.remoteWaiting') : t('sessionRoom.active')}
           </div>
           <div className="session-timer">{formatTime(sessionTime)}</div>
         </div>
         <div className="session-with">
-          {isClient ? 'Psikolog ile Görüşme' : 'Danışan ile Görüşme'}
+          {isClient ? t('sessionRoom.withPsychologist') : t('sessionRoom.withClient')}
         </div>
         <button
           type="button"
@@ -1026,7 +1034,7 @@ export default function SessionRoom() {
           aria-expanded={isChatOpen || sessionChannel === 'text'}
           onClick={() => setIsChatOpen(!isChatOpen)}
         >
-          💬 Sohbet {messages.length > 1 ? `(${messages.length-1})` : ''}
+          💬 {t('sessionRoom.chat')} {messages.length > 1 ? `(${messages.length-1})` : ''}
         </button>
       </header>
 
@@ -1039,9 +1047,9 @@ export default function SessionRoom() {
             <audio ref={remoteVideoRef} autoPlay playsInline />
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '6rem', margin: '0 auto', opacity: sessionStatus === 'active' ? 1 : 0.5, animation: sessionStatus === 'active' ? 'pulse 2s infinite' : 'none' }}>🎙️</div>
-              <h3 className="mt-md">Sadece Sesli Görüşme</h3>
-              <p className="text-tertiary">Kamera gizlilik nedeniyle kapalıdır.</p>
-              {sessionStatus !== 'active' && <p style={{ color: 'var(--primary)' }}>Bağlanılıyor...</p>}
+              <h3 className="mt-md">{t('sessionRoom.voiceOnly')}</h3>
+              <p className="text-tertiary">{t('sessionRoom.cameraPrivacy')}</p>
+              {sessionStatus !== 'active' && <p style={{ color: 'var(--primary)' }}>{t('sessionRoom.connectingShort')}</p>}
             </div>
           </div>
         ) : (
@@ -1069,14 +1077,14 @@ export default function SessionRoom() {
                   </div>
                   <div className="remote-video-state-actions">
                     {cameraAvailable === false && (
-                      <span className="media-fallback-badge">Kamera kullanılamıyor</span>
+                      <span className="media-fallback-badge">{t('sessionRoom.cameraUnavailable')}</span>
                     )}
                     {microphoneAvailable === false && (
-                      <span className="media-fallback-badge">Mikrofon kullanılamıyor</span>
+                      <span className="media-fallback-badge">{t('sessionRoom.microphoneUnavailable')}</span>
                     )}
                     {ALLOW_LOCAL_SIMULATION && (
                       <button type="button" className="btn btn-primary" onClick={startDemoMode}>
-                        {IS_DEMO_MODE ? 'Görüşme Simülasyonunu Başlat' : 'Simülasyon Modunu Başlat'}
+                        {IS_DEMO_MODE ? t('sessionRoom.startDemo') : t('sessionRoom.startSimulation')}
                       </button>
                     )}
                   </div>
@@ -1093,7 +1101,7 @@ export default function SessionRoom() {
                 muted 
                 style={{ objectFit: 'cover', width: '100%', height: '100%' }}
               />
-              <span className="pip-label">Siz</span>
+              <span className="pip-label">{t('sessionRoom.you')}</span>
             </div>
           </div>
         )}
@@ -1103,18 +1111,18 @@ export default function SessionRoom() {
           <div className="blur-control">
             <div className="blur-control-header">
               <div>
-                <span className="blur-eyebrow">Güvenli Kamera</span>
-                <strong>{activeBlurPreset.label}</strong>
+                <span className="blur-eyebrow">{t('sessionRoom.secureCamera')}</span>
+                <strong>{t('sessionRoom.blurPresets')[activeBlurPreset.level]}</strong>
               </div>
               <span className="blur-strength">{activeBlurPreset.pixels}px</span>
             </div>
 
             <label className="blur-label" htmlFor="session-blur-level">
-              Bulanıklık
+              {t('sessionRoom.blur')}
               <span>{blurSliderLevel}/5</span>
             </label>
             <div className="blur-slider-wrapper">
-              <span className="blur-min">Net</span>
+              <span className="blur-min">{t('sessionRoom.clear')}</span>
               <input
                 id="session-blur-level"
                 type="range"
@@ -1124,12 +1132,12 @@ export default function SessionRoom() {
                 step="1"
                 value={blurSliderLevel}
                 onChange={(e) => handleBlurChange(e.target.value)}
-                aria-label="Bulanıklık seviyesi"
+                aria-label={t('sessionRoom.blur')}
               />
-              <span className="blur-max">Gizli</span>
+              <span className="blur-max">{t('sessionRoom.private')}</span>
             </div>
 
-            <div className="blur-level-buttons" aria-label="Bulanıklık seviyesi seçenekleri">
+            <div className="blur-level-buttons" aria-label={t('sessionRoom.blurOptions')}>
               {SESSION_BLUR_PRESETS.map(preset => (
                 <button
                   key={preset.level}
@@ -1151,36 +1159,36 @@ export default function SessionRoom() {
                   onChange={handleClearVideoConsent}
                 />
                 <span>
-                  <strong>Blursuz görüntüyü paylaş</strong>
-                  <small>İşaretlendiğinde yüzünüz psikoloğa net iletilir.</small>
+                  <strong>{t('sessionRoom.shareClear')}</strong>
+                  <small>{t('sessionRoom.shareClearBody')}</small>
                 </span>
               </label>
             )}
           
             <div className="blur-preview-row">
-              <span>Önizleme</span>
+              <span>{t('sessionRoom.preview')}</span>
               <div className="blur-segmented">
                 <button
                   type="button"
                   className={pipMode === 'safe' ? 'active' : ''}
                   onClick={() => setPipMode('safe')}
                 >
-                  Güvenli
+                  {t('sessionRoom.safe')}
                 </button>
                 <button
                   type="button"
                   className={pipMode === 'raw' ? 'active' : ''}
                   onClick={() => setPipMode('raw')}
                 >
-                  Net
+                  {t('sessionRoom.clear')}
                 </button>
               </div>
             </div>
 
             <div className="blur-send-status">
-              <span>Giden görüntü</span>
+              <span>{t('sessionRoom.outgoing')}</span>
               <strong className={isSessionClearVideoLevel(blurLevel) ? 'clear' : ''}>
-                {isSessionClearVideoLevel(blurLevel) ? 'Blursuz' : 'Blurlu'}
+                {isSessionClearVideoLevel(blurLevel) ? t('sessionRoom.unblurred') : t('sessionRoom.blurred')}
               </strong>
             </div>
           </div>
@@ -1189,9 +1197,9 @@ export default function SessionRoom() {
         {/* Chat Panel */}
         <div id="session-chat-panel" className={`session-chat ${isChatOpen || sessionChannel === 'text' ? 'open' : ''}`} style={sessionChannel === 'text' ? { position: 'relative', width: '100%', height: '100%', borderLeft: 'none', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)' } : {}}>
           <div className="chat-header">
-            <h4>Seans Sohbeti</h4>
+            <h4>{t('sessionRoom.sessionChat')}</h4>
             {sessionChannel !== 'text' && (
-              <button type="button" className="btn-ghost" aria-label="Sohbeti kapat" onClick={() => setIsChatOpen(false)}>✕</button>
+              <button type="button" className="btn-ghost" aria-label={t('sessionRoom.closeChat')} onClick={() => setIsChatOpen(false)}>✕</button>
             )}
           </div>
           
@@ -1211,16 +1219,16 @@ export default function SessionRoom() {
           </div>
 
           <form className="chat-input" onSubmit={sendMessage}>
-            <label className="sr-only" htmlFor="session-chat-input">Mesajınız</label>
+            <label className="sr-only" htmlFor="session-chat-input">{t('sessionRoom.yourMessage')}</label>
             <input 
               id="session-chat-input"
               type="text" 
-              placeholder="Mesaj yazın..." 
+              placeholder={t('sessionRoom.messagePlaceholder')}
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               maxLength={MAX_SESSION_MESSAGE_LENGTH}
             />
-            <button type="submit" className="btn btn-primary">Gönder</button>
+            <button type="submit" className="btn btn-primary">{t('sessionRoom.send')}</button>
           </form>
         </div>
       </main>
@@ -1233,11 +1241,11 @@ export default function SessionRoom() {
               type="button"
               className="control-btn active"
               onClick={resumeRemotePlayback}
-              title="Karşı tarafın sesini aç"
-              aria-label="Karşı tarafın sesini aç"
+              title={t('sessionRoom.enableRemoteAudio')}
+              aria-label={t('sessionRoom.enableRemoteAudio')}
             >
               🔊
-              <span>Sesi Aç</span>
+              <span>{t('sessionRoom.enableAudio')}</span>
             </button>
           )}
         </div>
@@ -1248,15 +1256,15 @@ export default function SessionRoom() {
             className={`control-btn ${!micOn ? 'off' : ''}`}
             aria-pressed={micOn}
             onClick={toggleMic}
-            title={microphoneAvailable === false ? 'Mikrofon kullanılamıyor' : 'Mikrofon'}
+            title={microphoneAvailable === false ? t('sessionRoom.microphoneUnavailable') : t('sessionRoom.microphone')}
             disabled={sessionChannel === 'text' || microphoneAvailable === false}
           >
             {micOn ? '🎙️' : '🔇'}
             <span>{sessionChannel === 'text'
-              ? 'Kapalı'
+              ? t('sessionRoom.off')
               : microphoneAvailable === false
-                ? 'İzin Yok'
-                : micOn ? 'Açık' : 'Kapalı'}</span>
+                ? t('sessionRoom.denied')
+                : micOn ? t('sessionRoom.on') : t('sessionRoom.off')}</span>
           </button>
           
           <button
@@ -1264,20 +1272,20 @@ export default function SessionRoom() {
             className={`control-btn ${!camOn ? 'off' : ''}`}
             aria-pressed={camOn}
             onClick={toggleCam}
-            title={cameraAvailable === false ? 'Kamera kullanılamıyor' : 'Kamera'}
+            title={cameraAvailable === false ? t('sessionRoom.cameraUnavailable') : t('sessionRoom.camera')}
             disabled={sessionChannel !== 'video-blur' || cameraAvailable === false}
           >
             {camOn ? '📹' : '🚫'}
             <span>{sessionChannel !== 'video-blur'
-              ? 'Kapalı'
+              ? t('sessionRoom.off')
               : cameraAvailable === false
-                ? 'İzin Yok'
-                : camOn ? 'Açık' : 'Kapalı'}</span>
+                ? t('sessionRoom.denied')
+                : camOn ? t('sessionRoom.on') : t('sessionRoom.off')}</span>
           </button>
           
-          <button type="button" className="control-btn emergency" onClick={endCall} title="Aramayı Sonlandır">
+          <button type="button" className="control-btn emergency" onClick={endCall} title={t('sessionRoom.endCall')}>
             📞
-            <span>Kapat</span>
+            <span>{t('sessionRoom.close')}</span>
           </button>
         </div>
 
@@ -1290,7 +1298,7 @@ export default function SessionRoom() {
             onClick={() => setIsChatOpen(!isChatOpen)}
           >
             💬
-            <span>Sohbet</span>
+            <span>{t('sessionRoom.chat')}</span>
           </button>
         </div>
       </footer>

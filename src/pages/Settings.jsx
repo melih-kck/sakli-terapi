@@ -6,6 +6,7 @@ import PsychologistDocumentsPanel from '../components/PsychologistDocumentsPanel
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
+import { useLanguage } from '../context/LanguageContext';
 import { APPROACHES, COMMUNICATION_CHANNELS, DAYS_TR, SPECIALIZATIONS } from '../data/constants';
 import { supabase } from '../lib/supabase';
 import { BRAND, getMailto } from '../config/brand';
@@ -90,6 +91,7 @@ export default function Settings() {
   const { user } = useAuth();
   const { updateProfile, updatePsychologistProfile, updateClientProfile, updatePassword } = useProfile();
   const { success, warning, error: showError } = useToast();
+  const { t } = useLanguage();
 
   const [activeTab, setActiveTab] = useState(() => getInitialTab(location.search, user));
   const [form, setForm] = useState(() => getInitialSettings(user));
@@ -173,7 +175,7 @@ export default function Settings() {
     try {
       if (activeTab === 'notifications') {
         if (user.id.startsWith('mock-')) {
-          success('Bildirim Tercihleri Kaydedildi', 'Test hesabı tercihleri bu tarayıcı oturumu için güncellendi.');
+          success(t('settingsPage.preferencesSavedTitle'), t('settingsPage.demoPreferencesSaved'));
           return;
         }
 
@@ -193,7 +195,7 @@ export default function Settings() {
         }
 
         setPreferencesError('');
-        success('Bildirim Tercihleri Kaydedildi', 'E-posta bildirim seçimleriniz güncellendi.');
+        success(t('settingsPage.preferencesSavedTitle'), t('settingsPage.preferencesSaved'));
         return;
       }
 
@@ -258,7 +260,7 @@ export default function Settings() {
         : { success: true };
 
       if (clientResult.success) {
-        success('Ayarlar Kaydedildi', 'Hesap ve tercih bilgileriniz güncellendi.');
+        success(t('settingsPage.settingsSavedTitle'), t('settingsPage.settingsSaved'));
       }
 
     } finally {
@@ -294,7 +296,7 @@ export default function Settings() {
         <Navbar />
         <main className="page-content container" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="text-center">
-            <h2>Ayarlar sayfasına erişmek için giriş yapmalısınız.</h2>
+            <h2>{t('settingsPage.noAccess')}</h2>
           </div>
         </main>
       </div>
@@ -306,14 +308,14 @@ export default function Settings() {
       <Navbar />
       <main className="page-content container mt-xl mb-3xl">
         <div className="text-center mb-xl">
-          <h1 className="settings-page-title">Hesap Ayarları</h1>
-          <p className="text-tertiary">Hesap, profil ve gizlilik tercihlerinizi yönetin.</p>
+          <h1 className="settings-page-title">{t('settingsPage.title')}</h1>
+          <p className="text-tertiary">{t('settingsPage.subtitle')}</p>
         </div>
 
         <div className="grid grid-4 gap-lg">
           <div className="card h-fit">
             <div className="card-body" style={{ padding: '0' }}>
-              <div className="tabs" role="tablist" aria-label="Ayar bölümleri" style={{ flexDirection: 'column', border: 'none' }}>
+              <div className="tabs" role="tablist" aria-label={t('settingsPage.tabsLabel')} style={{ flexDirection: 'column', border: 'none' }}>
                 <button
                   type="button"
                   id="settings-tab-account"
@@ -324,7 +326,7 @@ export default function Settings() {
                   onClick={() => setActiveTab('account')}
                   style={{ textAlign: 'left', borderLeft: activeTab === 'account' ? '4px solid var(--primary)' : '4px solid transparent', borderBottom: 'none' }}
                 >
-                  Hesap Bilgileri
+                  {t('settingsPage.account')}
                 </button>
                 {user.role === 'psychologist' && (
                   <>
@@ -338,7 +340,7 @@ export default function Settings() {
                       onClick={() => setActiveTab('profile')}
                       style={{ textAlign: 'left', borderLeft: activeTab === 'profile' ? '4px solid var(--primary)' : '4px solid transparent', borderBottom: 'none' }}
                     >
-                      Profilim
+                      {t('settingsPage.profile')}
                     </button>
                     <button
                       type="button"
@@ -350,7 +352,7 @@ export default function Settings() {
                       onClick={() => setActiveTab('verification')}
                       style={{ textAlign: 'left', borderLeft: activeTab === 'verification' ? '4px solid var(--primary)' : '4px solid transparent', borderBottom: 'none' }}
                     >
-                      Mesleki Belgeler
+                      {t('settingsPage.documents')}
                     </button>
                   </>
                 )}
@@ -364,7 +366,7 @@ export default function Settings() {
                   onClick={() => setActiveTab('notifications')}
                   style={{ textAlign: 'left', borderLeft: activeTab === 'notifications' ? '4px solid var(--primary)' : '4px solid transparent', borderBottom: 'none' }}
                 >
-                  Bildirim Tercihleri
+                  {t('settingsPage.notifications')}
                 </button>
                 <button
                   type="button"
@@ -376,7 +378,7 @@ export default function Settings() {
                   onClick={() => setActiveTab('privacy')}
                   style={{ textAlign: 'left', borderLeft: activeTab === 'privacy' ? '4px solid var(--primary)' : '4px solid transparent', borderBottom: 'none' }}
                 >
-                  Gizlilik & Güvenlik
+                  {t('settingsPage.privacy')}
                 </button>
               </div>
             </div>
@@ -390,11 +392,11 @@ export default function Settings() {
           >
             <div className="card-header">
               <h3 style={{ margin: 0 }}>
-                {activeTab === 'account' && 'Hesap Bilgileri'}
-                {activeTab === 'profile' && 'Psikolog Profilim'}
-                {activeTab === 'verification' && 'Mesleki Belgeler'}
-                {activeTab === 'notifications' && 'Bildirim Tercihleri'}
-                {activeTab === 'privacy' && 'Gizlilik & Güvenlik'}
+                {activeTab === 'account' && t('settingsPage.account')}
+                {activeTab === 'profile' && t('settingsPage.profilePanel')}
+                {activeTab === 'verification' && t('settingsPage.documents')}
+                {activeTab === 'notifications' && t('settingsPage.notifications')}
+                {activeTab === 'privacy' && t('settingsPage.privacy')}
               </h3>
             </div>
 
@@ -406,39 +408,39 @@ export default function Settings() {
                 {activeTab === 'account' && (
                   <div className="grid gap-lg">
                     <div className="input-group">
-                      <label htmlFor="settings-email">E-posta Adresiniz</label>
+                      <label htmlFor="settings-email">{t('settingsPage.email')}</label>
                       <input id="settings-email" type="email" value={user.email || ''} disabled style={{ opacity: 0.7 }} />
-                      <span className="input-hint">E-posta adresinizi değiştirmek için destek ile iletişime geçin.</span>
+                      <span className="input-hint">{t('settingsPage.emailHint')}</span>
                     </div>
 
                     <div className="input-group">
-                      <label htmlFor="settings-display-name">{user.role === 'client' ? 'Rumuz' : 'Ad Soyad'}</label>
+                      <label htmlFor="settings-display-name">{user.role === 'client' ? t('settingsPage.alias') : t('settingsPage.fullName')}</label>
                       <input
                         id="settings-display-name"
                         type="text"
                         value={form.displayName}
                         onChange={(event) => updateForm('displayName', event.target.value)}
-                        placeholder={user.role === 'client' ? 'Anonim rumuzunuz' : 'Platformda görünen adınız'}
+                        placeholder={user.role === 'client' ? t('settingsPage.aliasPlaceholder') : t('settingsPage.namePlaceholder')}
                       />
                       <span className="input-hint">
-                        {user.role === 'client' ? 'Psikoloğunuz sizi bu isimle tanır.' : 'Psikolog listesinde ve panelde görünen adınız.'}
+                        {user.role === 'client' ? t('settingsPage.aliasHint') : t('settingsPage.nameHint')}
                       </span>
                     </div>
 
                     {user.role === 'client' && (
                       <div className="grid grid-2 gap-md">
                         <div className="input-group">
-                          <label htmlFor="settings-emergency-name">Acil Durum Kişisi</label>
+                          <label htmlFor="settings-emergency-name">{t('settingsPage.emergencyName')}</label>
                           <input
                             id="settings-emergency-name"
                             type="text"
                             value={form.emergencyName}
                             onChange={(event) => updateForm('emergencyName', event.target.value)}
-                            placeholder="Adı Soyadı"
+                            placeholder={t('settingsPage.emergencyNamePlaceholder')}
                           />
                         </div>
                         <div className="input-group">
-                          <label htmlFor="settings-emergency-phone">Acil Durum Telefonu</label>
+                          <label htmlFor="settings-emergency-phone">{t('settingsPage.emergencyPhone')}</label>
                           <input
                             id="settings-emergency-phone"
                             type="tel"
@@ -456,30 +458,30 @@ export default function Settings() {
                   <div className="grid gap-lg">
                     <div className="grid grid-2 gap-md">
                       <div className="input-group">
-                        <label htmlFor="settings-profile-name">Profilde Görünen Ad</label>
+                        <label htmlFor="settings-profile-name">{t('settingsPage.profileName')}</label>
                         <input
                           id="settings-profile-name"
                           type="text"
                           value={form.displayName}
                           onChange={(event) => updateForm('displayName', event.target.value)}
-                          placeholder="Örn. Uzm. Psk. Ayşe Yılmaz"
+                          placeholder={t('settingsPage.profileNamePlaceholder')}
                         />
                       </div>
                       <div className="input-group">
-                        <label htmlFor="settings-profile-title">Unvan</label>
+                        <label htmlFor="settings-profile-title">{t('settingsPage.titleLabel')}</label>
                         <input
                           id="settings-profile-title"
                           type="text"
                           value={form.psychologistProfile.title}
                           onChange={(event) => updatePsychologistForm('title', event.target.value)}
-                          placeholder="Klinik Psikolog"
+                          placeholder={t('settingsPage.titlePlaceholder')}
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-2 gap-md">
                       <div className="input-group">
-                        <label htmlFor="settings-profile-experience">Deneyim Yılı</label>
+                        <label htmlFor="settings-profile-experience">{t('settingsPage.experience')}</label>
                         <input
                           id="settings-profile-experience"
                           type="number"
@@ -489,7 +491,7 @@ export default function Settings() {
                         />
                       </div>
                       <div className="input-group">
-                        <label htmlFor="settings-profile-price">Randevu Ücreti</label>
+                        <label htmlFor="settings-profile-price">{t('settingsPage.fee')}</label>
                         <input
                           id="settings-profile-price"
                           type="number"
@@ -502,31 +504,31 @@ export default function Settings() {
                     </div>
 
                     <div className="input-group">
-                      <label htmlFor="settings-profile-short-bio">Kısa Tanıtım</label>
+                      <label htmlFor="settings-profile-short-bio">{t('settingsPage.shortBio')}</label>
                       <input
                         id="settings-profile-short-bio"
                         type="text"
                         maxLength="160"
                         value={form.psychologistProfile.shortBio}
                         onChange={(event) => updatePsychologistForm('shortBio', event.target.value)}
-                        placeholder="Liste kartlarında görünecek kısa açıklama"
+                        placeholder={t('settingsPage.shortBioPlaceholder')}
                       />
-                      <span className="input-hint">{form.psychologistProfile.shortBio.length}/160 karakter</span>
+                      <span className="input-hint">{form.psychologistProfile.shortBio.length}/160 {t('settingsPage.characters')}</span>
                     </div>
 
                     <div className="input-group">
-                      <label htmlFor="settings-profile-bio">Hakkımda</label>
+                      <label htmlFor="settings-profile-bio">{t('settingsPage.bio')}</label>
                       <textarea
                         id="settings-profile-bio"
                         rows="5"
                         value={form.psychologistProfile.bio}
                         onChange={(event) => updatePsychologistForm('bio', event.target.value)}
-                        placeholder="Çalışma yaklaşımınızı, deneyiminizi ve danışanlara nasıl destek olduğunuzu yazın."
+                        placeholder={t('settingsPage.bioPlaceholder')}
                       />
                     </div>
 
                     <div className="input-group" role="group" aria-labelledby="settings-specializations-label">
-                      <span className="settings-field-label" id="settings-specializations-label">Uzmanlık Alanları</span>
+                      <span className="settings-field-label" id="settings-specializations-label">{t('settingsPage.specializations')}</span>
                       <div className="filter-tags">
                         {SPECIALIZATIONS.map(spec => (
                           <button
@@ -536,14 +538,14 @@ export default function Settings() {
                             aria-pressed={form.psychologistProfile.specializations.includes(spec.id)}
                             onClick={() => togglePsychologistListItem('specializations', spec.id)}
                           >
-                            {spec.icon} {spec.label}
+                            {spec.icon} {t(`specializations.${spec.id}`)}
                           </button>
                         ))}
                       </div>
                     </div>
 
                     <div className="input-group" role="group" aria-labelledby="settings-approaches-label">
-                      <span className="settings-field-label" id="settings-approaches-label">Terapi Yaklaşımları</span>
+                      <span className="settings-field-label" id="settings-approaches-label">{t('settingsPage.approaches')}</span>
                       <div className="filter-tags">
                         {APPROACHES.map(approach => (
                           <button
@@ -553,14 +555,14 @@ export default function Settings() {
                             aria-pressed={form.psychologistProfile.approaches.includes(approach.id)}
                             onClick={() => togglePsychologistListItem('approaches', approach.id)}
                           >
-                            {approach.label}
+                            {t(`approaches.${approach.id}`)[0]}
                           </button>
                         ))}
                       </div>
                     </div>
 
                     <div className="input-group" role="group" aria-labelledby="settings-channels-label">
-                      <span className="settings-field-label" id="settings-channels-label">Görüşme Kanalları</span>
+                      <span className="settings-field-label" id="settings-channels-label">{t('settingsPage.channels')}</span>
                       <div className="grid grid-3 gap-sm">
                         {EDITABLE_CHANNELS.map(channel => (
                           <button
@@ -571,7 +573,7 @@ export default function Settings() {
                             onClick={() => togglePsychologistListItem('channels', channel.id)}
                             style={{ border: '1px solid var(--border-light)' }}
                           >
-                            {channel.icon} {channel.label}
+                            {channel.icon} {t(`channels.${channel.id}`)[0]}
                           </button>
                         ))}
                       </div>
@@ -579,55 +581,55 @@ export default function Settings() {
 
                     <div className="grid grid-2 gap-md">
                       <div className="input-group">
-                        <label htmlFor="settings-profile-languages">Konuştuğu Diller</label>
+                        <label htmlFor="settings-profile-languages">{t('settingsPage.languages')}</label>
                         <input
                           id="settings-profile-languages"
                           type="text"
                           value={form.psychologistProfile.languagesText}
                           onChange={(event) => updatePsychologistForm('languagesText', event.target.value)}
-                          placeholder="Türkçe, İngilizce"
+                          placeholder={t('settingsPage.languagesPlaceholder')}
                         />
                       </div>
                       <div className="input-group">
-                        <label htmlFor="settings-profile-university">Üniversite / Kurum</label>
+                        <label htmlFor="settings-profile-university">{t('settingsPage.university')}</label>
                         <input
                           id="settings-profile-university"
                           type="text"
                           value={form.psychologistProfile.university}
                           onChange={(event) => updatePsychologistForm('university', event.target.value)}
-                          placeholder="Mezun olunan okul veya kurum"
+                          placeholder={t('settingsPage.universityPlaceholder')}
                         />
                       </div>
                     </div>
 
                     <div className="input-group">
-                      <label htmlFor="settings-profile-supervisor">Süpervizör</label>
+                      <label htmlFor="settings-profile-supervisor">{t('settingsPage.supervisor')}</label>
                       <input
                         id="settings-profile-supervisor"
                         type="text"
                         value={form.psychologistProfile.supervisor}
                         onChange={(event) => updatePsychologistForm('supervisor', event.target.value)}
-                        placeholder="Aday psikologlar için süpervizör adı"
+                        placeholder={t('settingsPage.supervisorPlaceholder')}
                       />
                     </div>
 
                     <div className="input-group" role="group" aria-labelledby="settings-availability-label">
-                      <span className="settings-field-label" id="settings-availability-label">Haftalık Müsaitlik</span>
+                      <span className="settings-field-label" id="settings-availability-label">{t('settingsPage.availability')}</span>
                       <div className="grid grid-2 gap-md">
-                        {DAYS_TR.map(day => (
+                        {DAYS_TR.map((day, index) => (
                           <div key={day} className="input-group">
-                            <label htmlFor={`settings-availability-${day}`}>{day}</label>
+                            <label htmlFor={`settings-availability-${day}`}>{t('settingsPage.weekdays')[index]}</label>
                             <input
                               id={`settings-availability-${day}`}
                               type="text"
                               value={form.psychologistProfile.availability[day] || ''}
                               onChange={(event) => updateAvailability(day, event.target.value)}
-                              placeholder="09:00, 10:00, 14:00"
+                              placeholder={t('settingsPage.availabilityPlaceholder')}
                             />
                           </div>
                         ))}
                       </div>
-                      <span className="input-hint">Saatleri virgülle ayırın. Boş bıraktığınız gün randevuya kapalı görünür.</span>
+                      <span className="input-hint">{t('settingsPage.availabilityHint')}</span>
                     </div>
                   </div>
                 )}
@@ -635,13 +637,13 @@ export default function Settings() {
                 {activeTab === 'notifications' && (
                   <div className="grid gap-lg">
                     <div className="input-group">
-                      <span className="settings-field-label">Uygulama İçi Bildirimler</span>
-                      <span className="input-hint">Randevu ve hesap işlemleri uygulama içinde her zaman gösterilir.</span>
+                      <span className="settings-field-label">{t('settingsPage.inApp')}</span>
+                      <span className="input-hint">{t('settingsPage.inAppHint')}</span>
                     </div>
 
                     {IS_DEMO_MODE && (
                       <p className="settings-demo-note">
-                        Bu seçimler bildirim ayarları arayüzünü gösterir; portföy demosu gerçek e-posta göndermez.
+                        {t('settingsPage.demoEmailNote')}
                       </p>
                     )}
 
@@ -657,8 +659,8 @@ export default function Settings() {
                         }))}
                       />
                       <span>
-                        <strong>Randevu e-postaları</strong><br />
-                        <span className="input-hint">Yeni randevu, onay, iptal ve tamamlanma durumlarını e-postayla alın.</span>
+                        <strong>{t('settingsPage.sessionEmails')}</strong><br />
+                        <span className="input-hint">{t('settingsPage.sessionEmailsHint')}</span>
                       </span>
                     </label>
 
@@ -673,8 +675,8 @@ export default function Settings() {
                           }))}
                         />
                         <span>
-                          <strong>Başvuru durumu e-postaları</strong><br />
-                          <span className="input-hint">Psikolog başvurunuz incelendiğinde e-posta alın.</span>
+                          <strong>{t('settingsPage.applicationEmails')}</strong><br />
+                          <span className="input-hint">{t('settingsPage.applicationEmailsHint')}</span>
                         </span>
                       </label>
                     )}
@@ -689,15 +691,15 @@ export default function Settings() {
                         }))}
                       />
                       <span>
-                        <strong>Önemli hesap e-postaları</strong><br />
-                        <span className="input-hint">Güvenlik ve hesap durumu bildirimlerini e-postayla alın.</span>
+                        <strong>{t('settingsPage.accountEmails')}</strong><br />
+                        <span className="input-hint">{t('settingsPage.accountEmailsHint')}</span>
                       </span>
                     </label>
 
                     <div style={{ padding: 'var(--space-md)', background: 'var(--bg-secondary)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)' }}>
                       {IS_DEMO_MODE
-                        ? 'Tercihler yalnızca bu kurgusal rol üzerinde denenir ve hiçbir dış servise veri göndermez.'
-                        : 'Bu tercihler yalnızca operasyonel e-postaları yönetir. E-posta doğrulama ve şifre sıfırlama gibi zorunlu güvenlik iletileri her zaman gönderilir.'}
+                        ? t('settingsPage.demoEmailSummary')
+                        : t('settingsPage.liveEmailSummary')}
                     </div>
                   </div>
                 )}
@@ -706,66 +708,66 @@ export default function Settings() {
                   <div className="grid gap-lg">
                     {IS_DEMO_MODE ? (
                       <div className="settings-demo-note">
-                        Demo rolleri parola kullanmaz. Parola değiştirme ve hesap kurtarma akışları yalnızca canlı hesap sistemi açıldığında etkinleşir.
+                        {t('settingsPage.demoPasswordNote')}
                       </div>
                     ) : (
                       <div className="card p-md" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-light)' }}>
-                        <h4 className="mb-sm text-primary">Şifre</h4>
+                        <h4 className="mb-sm text-primary">{t('settingsPage.password')}</h4>
                         <div className="grid grid-2 gap-md">
                           <div className="input-group">
-                            <label htmlFor="settings-current-password">Mevcut Şifreniz</label>
+                            <label htmlFor="settings-current-password">{t('settingsPage.currentPassword')}</label>
                             <input
                               id="settings-current-password"
                               type="password"
                               value={passwordForm.current}
                               onChange={(event) => setPasswordForm(prev => ({ ...prev, current: event.target.value }))}
-                              placeholder="Mevcut şifre"
+                              placeholder={t('settingsPage.currentPasswordPlaceholder')}
                               autoComplete="current-password"
                             />
                           </div>
                           <div className="input-group">
-                            <label htmlFor="settings-new-password">Yeni Şifre</label>
+                            <label htmlFor="settings-new-password">{t('settingsPage.newPassword')}</label>
                             <input
                               id="settings-new-password"
                               type="password"
                               value={passwordForm.next}
                               onChange={(event) => setPasswordForm(prev => ({ ...prev, next: event.target.value }))}
-                              placeholder="En az 8 karakter"
+                              placeholder={t('settingsPage.minPassword')}
                               autoComplete="new-password"
                             />
                           </div>
                         </div>
                         <div className="input-group mt-md">
-                          <label htmlFor="settings-confirm-password">Yeni Şifre Tekrar</label>
+                          <label htmlFor="settings-confirm-password">{t('settingsPage.confirmPassword')}</label>
                           <input
                             id="settings-confirm-password"
                             type="password"
                             value={passwordForm.confirm}
                             onChange={(event) => setPasswordForm(prev => ({ ...prev, confirm: event.target.value }))}
-                            placeholder="Yeni şifreyi tekrar yazın"
+                            placeholder={t('settingsPage.confirmPasswordPlaceholder')}
                             autoComplete="new-password"
                           />
                         </div>
                         <button type="button" className="btn btn-outline btn-sm mt-md" onClick={handlePasswordUpdate}>
-                          Şifreyi Güncelle
+                          {t('settingsPage.updatePassword')}
                         </button>
                       </div>
                     )}
 
                     <div className="card p-md" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-light)' }}>
-                      <h4 className="mb-md text-primary">Gizlilik Tercihleri</h4>
+                      <h4 className="mb-md text-primary">{t('settingsPage.privacyPreferences')}</h4>
 
                       <div className="input-group mb-lg" role="group" aria-labelledby="settings-default-channel-label">
-                        <span className="settings-field-label" id="settings-default-channel-label">Varsayılan Seans Giriş Tipi</span>
+                        <span className="settings-field-label" id="settings-default-channel-label">{t('settingsPage.defaultChannel')}</span>
                         <div className="grid grid-3 gap-sm">
-                          <button type="button" aria-pressed={form.channel === 'video-blur'} className={`btn ${form.channel === 'video-blur' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => updateForm('channel', 'video-blur')} style={{ border: '1px solid var(--border-light)' }}>Görüntülü (Blur)</button>
-                          <button type="button" aria-pressed={form.channel === 'voice'} className={`btn ${form.channel === 'voice' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => updateForm('channel', 'voice')} style={{ border: '1px solid var(--border-light)' }}>Sadece Ses</button>
-                          <button type="button" aria-pressed={form.channel === 'text'} className={`btn ${form.channel === 'text' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => updateForm('channel', 'text')} style={{ border: '1px solid var(--border-light)' }}>Yazılı</button>
+                          <button type="button" aria-pressed={form.channel === 'video-blur'} className={`btn ${form.channel === 'video-blur' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => updateForm('channel', 'video-blur')} style={{ border: '1px solid var(--border-light)' }}>{t('settingsPage.video')}</button>
+                          <button type="button" aria-pressed={form.channel === 'voice'} className={`btn ${form.channel === 'voice' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => updateForm('channel', 'voice')} style={{ border: '1px solid var(--border-light)' }}>{t('settingsPage.voice')}</button>
+                          <button type="button" aria-pressed={form.channel === 'text'} className={`btn ${form.channel === 'text' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => updateForm('channel', 'text')} style={{ border: '1px solid var(--border-light)' }}>{t('settingsPage.text')}</button>
                         </div>
                       </div>
 
                       <div className="input-group">
-                        <label htmlFor="settings-privacy-level">Gizlilik Seviyesi ({form.privacyLevel}/5)</label>
+                        <label htmlFor="settings-privacy-level">{t('settingsPage.privacyLevel', { level: form.privacyLevel })}</label>
                         <input
                           id="settings-privacy-level"
                           type="range"
@@ -775,18 +777,17 @@ export default function Settings() {
                           onChange={(event) => updateForm('privacyLevel', Number(event.target.value))}
                         />
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: '4px' }}>
-                          <span>Açık İletişim</span>
-                          <span>Maksimum Gizlilik</span>
+                          <span>{t('settingsPage.openCommunication')}</span>
+                          <span>{t('settingsPage.maximumPrivacy')}</span>
                         </div>
                       </div>
                     </div>
 
                     <div className="card p-md mt-md" style={{ background: 'rgba(255, 82, 82, 0.05)', border: '1px solid var(--danger)' }}>
-                      <h4 className="mb-sm text-danger">{IS_DEMO_MODE ? 'Demo Verisi' : 'Tehlikeli Bölge'}</h4>
+                      <h4 className="mb-sm text-danger">{IS_DEMO_MODE ? t('settingsPage.demoData') : t('settingsPage.dangerZone')}</h4>
                       {IS_DEMO_MODE ? (
                         <p className="text-sm m-0">
-                          Bu rol gerçek bir hesap değildir. Demo oturumu çıkış yaptığınızda kapatılır;
-                          kurgusal değişiklikleri tarayıcı verilerini temizleyerek sıfırlayabilirsiniz.
+                          {t('settingsPage.demoDataBody')}
                         </p>
                       ) : (
                         <>
@@ -806,9 +807,9 @@ export default function Settings() {
 
                 <div className="divider"></div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-md)', flexWrap: 'wrap' }}>
-                  <button type="button" className="btn btn-ghost" onClick={() => setForm(getInitialSettings(user))}>İptal</button>
+                  <button type="button" className="btn btn-ghost" onClick={() => setForm(getInitialSettings(user))}>{t('settingsPage.cancel')}</button>
                   <button type="submit" className="btn btn-primary" disabled={isSaving}>
-                    {isSaving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+                    {isSaving ? t('settingsPage.saving') : t('settingsPage.save')}
                   </button>
                 </div>
                 </form>
