@@ -314,7 +314,7 @@
 .badge-secondary { background: var(--secondary-bg); color: var(--secondary-dark); }
 .badge-accent { background: var(--accent-bg); color: var(--accent-dark); }
 .badge-success { background: var(--success-bg); color: var(--success); }
-.badge-warning { background: var(--warning-bg); color: var(--warning); }
+.badge-warning { background: var(--warning-bg); color: var(--warning-dark); }
 .badge-danger { background: var(--danger-bg); color: var(--danger); }
 .badge-info { background: var(--info-bg); color: var(--info); }
 

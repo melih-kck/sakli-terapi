@@ -40,5 +40,28 @@ export default defineConfig({
         ...devices['Pixel 7'],
       },
     },
+    {
+      name: 'firefox-desktop',
+      testIgnore: /accessibility\.spec\.js/,
+      use: {
+        ...devices['Desktop Firefox'],
+        viewport: { width: 1440, height: 1000 },
+      },
+    },
+    {
+      name: 'webkit-desktop',
+      testIgnore: /accessibility\.spec\.js/,
+      use: {
+        ...devices['Desktop Safari'],
+        viewport: { width: 1440, height: 1000 },
+      },
+    },
+    {
+      name: 'webkit-mobile',
+      testIgnore: /accessibility\.spec\.js/,
+      use: {
+        ...devices['iPhone 15'],
+      },
+    },
   ],
 });
