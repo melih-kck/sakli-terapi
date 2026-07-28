@@ -124,6 +124,22 @@ for (const roleCase of roles) {
   });
 }
 
+test('yönetici demo belgesini açılır pencere engellense bile görüntüler', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.open = () => null;
+  });
+  await openDemoRole(page, 'admin', '/admin');
+
+  await page.locator('summary').click();
+  await page.getByRole('button', { name: 'Görüntüle', exact: true }).click();
+
+  await expect(page).toHaveURL(/\/demo-belge\.html$/);
+  await expect(page.getByRole('heading', {
+    level: 1,
+    name: 'Mesleki Belge İnceleme Örneği',
+  })).toBeVisible();
+});
+
 test('danışan seans odasında blursuz görüntüyü yalnızca açık onayla paylaşır', async ({ page }) => {
   await openDemoRole(page, 'client', '/panel');
 
