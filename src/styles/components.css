@@ -28,7 +28,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 250, 240, 0.12);
   opacity: 0;
   transition: opacity var(--transition-fast);
 }
@@ -36,13 +36,13 @@
 .btn:hover::after { opacity: 1; }
 
 .btn-primary {
-  background: var(--gradient-primary);
+  background: var(--gradient-cta);
   color: var(--text-inverse);
-  box-shadow: var(--shadow-sm), 0 4px 16px rgba(47, 101, 85, 0.2);
+  box-shadow: var(--shadow-sm), 0 4px 16px rgba(189, 63, 54, 0.2);
 }
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md), 0 8px 24px rgba(47, 101, 85, 0.24);
+  box-shadow: var(--shadow-md), 0 8px 24px rgba(169, 72, 64, 0.24);
 }
 .btn-primary:active {
   transform: translateY(0);
@@ -51,12 +51,12 @@
 .btn-secondary {
   background: var(--secondary-dark);
   color: var(--text-inverse);
-  box-shadow: var(--shadow-sm), 0 4px 16px rgba(69, 99, 111, 0.2);
+  box-shadow: var(--shadow-sm), 0 4px 16px rgba(8, 35, 33, 0.18);
 }
 .btn-secondary:hover {
   background: var(--secondary);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md), 0 8px 24px rgba(69, 99, 111, 0.24);
+  box-shadow: var(--shadow-md), 0 8px 24px rgba(29, 74, 70, 0.22);
 }
 
 .btn-outline {
@@ -197,7 +197,7 @@
 .input-group textarea:focus {
   border-color: var(--primary);
   background: var(--bg-primary);
-  box-shadow: 0 0 0 4px rgba(50, 106, 89, 0.12);
+  box-shadow: 0 0 0 4px rgba(189, 63, 54, 0.12);
 }
 
 .input-group input::placeholder,
@@ -285,7 +285,7 @@
   left: 3px;
   width: 20px;
   height: 20px;
-  background: white;
+  background: var(--bg-elevated);
   border-radius: 50%;
   transition: transform var(--transition-fast);
   box-shadow: var(--shadow-xs);
@@ -634,7 +634,7 @@
   background: var(--primary-dark);
   color: var(--text-inverse);
   border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(50, 106, 89, 0.12);
+  box-shadow: 0 0 0 4px rgba(189, 63, 54, 0.12);
 }
 
 .step.completed .step-number {

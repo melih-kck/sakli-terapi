@@ -63,7 +63,7 @@
   border: 1px solid var(--primary);
   padding: var(--space-xl);
   border-radius: var(--radius-lg);
-  box-shadow: 0 0 20px rgba(50, 106, 89, 0.1);
+  box-shadow: 0 0 20px rgba(29, 74, 70, 0.1);
   text-align: center;
 }
 

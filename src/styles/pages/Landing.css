@@ -10,7 +10,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  background-color: #2e3533;
+  background-color: #082321;
   position: relative;
   overflow: hidden;
   padding: 28px 0;
@@ -24,8 +24,8 @@
   background-repeat: no-repeat;
   background-position: calc(50% + 330px) 54%;
   background-size: 360px;
-  filter: hue-rotate(300deg) saturate(0.28) brightness(1.12);
-  opacity: 0.58;
+  filter: hue-rotate(250deg) saturate(0.38) brightness(1.16);
+  opacity: 0.46;
   pointer-events: none;
 }
 
@@ -47,7 +47,7 @@
 
 .hero-title {
   font-size: var(--text-5xl);
-  color: white;
+  color: var(--bg-elevated);
   margin: 12px 0 var(--space-md);
   line-height: 1.1;
 }
@@ -61,7 +61,7 @@
 
 .hero-subtitle {
   font-size: var(--text-lg);
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 250, 240, 0.86);
   max-width: 720px;
   margin: 0 auto var(--space-lg);
   line-height: var(--leading-relaxed);
@@ -79,11 +79,11 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-xl);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 250, 240, 0.08);
   backdrop-filter: blur(12px);
   border-radius: var(--radius-xl);
   padding: var(--space-md) var(--space-2xl);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 250, 240, 0.18);
 }
 
 .hero-stat {
@@ -95,18 +95,18 @@
   font-family: var(--font-heading);
   font-size: var(--text-2xl);
   font-weight: var(--weight-extrabold);
-  color: white;
+  color: var(--bg-elevated);
 }
 
 .hero-stat-label {
   font-size: var(--text-sm);
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 250, 240, 0.7);
 }
 
 .hero-stat-divider {
   width: 1px;
   height: 40px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 250, 240, 0.18);
 }
 
 /* Section Subtitle */

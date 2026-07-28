@@ -101,7 +101,7 @@ export default function Landing() {
                   {IS_DEMO_MODE ? 'Etkileşimli Demoyu Aç' : 'Hemen Başla'}
                 </Link>
               )}
-              <Link to="/psikologlar" className="btn btn-outline btn-xl" id="hero-cta-browse" style={{ borderColor: '#fff', color: '#fff' }}>
+              <Link to="/psikologlar" className="btn btn-outline btn-xl" id="hero-cta-browse" style={{ borderColor: '#FFFAF0', color: '#FFFAF0' }}>
                 Psikologları İncele
               </Link>
             </div>

@@ -50,12 +50,12 @@ export default function Navbar() {
           <div className="logo-icon">
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
               <circle cx="16" cy="16" r="14" fill="url(#logoGrad)" />
-              <path d="M16 8C11.58 8 8 11.58 8 16s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 2.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5-2.5-1.12-2.5-2.5 1.12-2.5 2.5-2.5zm0 11.5c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08s5.97 1.09 6 3.08c-1.29 1.94-3.5 3.22-6 3.22z" fill="white" opacity="0.9"/>
-              <circle cx="16" cy="13" r="3" fill="white" opacity="0.3"/>
+              <path d="M16 8C11.58 8 8 11.58 8 16s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 2.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5-2.5-1.12-2.5-2.5 1.12-2.5 2.5-2.5zm0 11.5c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08s5.97 1.09 6 3.08c-1.29 1.94-3.5 3.22-6 3.22z" fill="#FFFAF0" opacity="0.9"/>
+              <circle cx="16" cy="13" r="3" fill="#FFFAF0" opacity="0.3"/>
               <defs>
                 <linearGradient id="logoGrad" x1="2" y1="2" x2="30" y2="30">
-                  <stop stopColor="#22483D" />
-                  <stop offset="1" stopColor="#596F78" />
+                  <stop stopColor="#102F2D" />
+                  <stop offset="1" stopColor="#1D4A46" />
                 </linearGradient>
               </defs>
             </svg>

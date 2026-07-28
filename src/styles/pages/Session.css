@@ -3,16 +3,17 @@
    ============================================ */
 
 .session-room {
-  --primary: #78b8a4;
-  --primary-light: #9acbbb;
-  --primary-lighter: #bedfd4;
-  --primary-dark: #326d5b;
-  --primary-bg: rgba(120, 184, 164, 0.12);
-  --secondary: #527a82;
-  --secondary-light: #759aa1;
-  --secondary-dark: #3b5c62;
-  --accent: #d5ab78;
-  --accent-light: #e5c79f;
+  --primary: #9eb6ae;
+  --primary-light: #c9d7d1;
+  --primary-lighter: #f4f0e7;
+  --primary-dark: #1d4a46;
+  --primary-bg: rgba(244, 240, 231, 0.1);
+  --secondary: #526861;
+  --secondary-light: #82968f;
+  --secondary-dark: #1d4a46;
+  --accent: #bd3f36;
+  --accent-light: #d36b62;
+  --accent-dark: #a94840;
   --success: #79bd99;
   --success-dark: #3f7a5b;
   --success-bg: rgba(121, 189, 153, 0.12);
@@ -24,17 +25,18 @@
   --danger-bg: rgba(223, 133, 130, 0.12);
   --info: #85adb4;
   --info-bg: rgba(133, 173, 180, 0.13);
-  --bg-primary: #101715;
-  --bg-secondary: #17201e;
-  --bg-tertiary: #202b28;
-  --bg-elevated: #283531;
-  --text-primary: #f2f5f3;
-  --text-secondary: #bac5c0;
-  --text-tertiary: #8f9f98;
-  --border-light: #2c3b37;
-  --border-medium: #40534d;
-  --border-dark: #60736c;
-  --gradient-primary: linear-gradient(135deg, #326d5b 0%, #477f6d 100%);
+  --bg-primary: #082321;
+  --bg-secondary: #102f2d;
+  --bg-tertiary: #163b38;
+  --bg-elevated: #1d4a46;
+  --text-primary: #fffaf0;
+  --text-secondary: #d5ddd7;
+  --text-tertiary: #a3b2ac;
+  --border-light: rgba(244, 240, 231, 0.12);
+  --border-medium: rgba(244, 240, 231, 0.2);
+  --border-dark: rgba(244, 240, 231, 0.32);
+  --gradient-primary: linear-gradient(135deg, #1d4a46 0%, #526861 100%);
+  --gradient-cta: linear-gradient(135deg, #bd3f36 0%, #a94840 100%);
   color-scheme: dark;
   display: flex;
   flex-direction: column;
@@ -42,22 +44,22 @@
   padding-top: 72px;
   box-sizing: border-box;
   background: var(--bg-primary);
-  color: white;
+  color: var(--text-primary);
 }
 
 .session-room .navbar {
-  background: rgba(16, 23, 21, 0.78);
-  border-bottom-color: rgba(190, 223, 212, 0.08);
+  background: rgba(8, 35, 33, 0.82);
+  border-bottom-color: rgba(244, 240, 231, 0.08);
 }
 
 .session-room .navbar-scrolled {
-  background: rgba(16, 23, 21, 0.96);
+  background: rgba(8, 35, 33, 0.96);
   box-shadow: 0 4px 20px rgba(4, 12, 9, 0.42);
 }
 
 .session-room .navbar-demo-badge {
-  border-color: rgba(154, 203, 187, 0.34);
-  background: rgba(120, 184, 164, 0.1);
+  border-color: rgba(244, 240, 231, 0.26);
+  background: rgba(244, 240, 231, 0.08);
   color: var(--primary-light);
 }
 
@@ -102,7 +104,7 @@
 
 .session-access-panel h1 {
   margin-bottom: var(--space-sm);
-  color: white;
+  color: var(--text-primary);
   font-size: var(--text-2xl);
 }
 
@@ -134,7 +136,7 @@
 }
 
 .session-access-summary strong {
-  color: white;
+  color: var(--text-primary);
   font-size: var(--text-sm);
 }
 
@@ -374,7 +376,7 @@
 
 .blur-control-header strong {
   display: block;
-  color: white;
+  color: var(--text-primary);
   font-size: var(--text-base);
   line-height: 1.2;
 }
@@ -463,12 +465,12 @@
 
 .blur-level-button:hover {
   background: var(--bg-elevated);
-  color: white;
+  color: var(--text-primary);
 }
 
 .blur-level-button.active {
   background: var(--primary-dark);
-  color: white;
+  color: var(--text-primary);
   border-color: var(--primary-light);
 }
 
@@ -556,7 +558,7 @@
 
 .blur-segmented button.active {
   background: var(--primary-dark);
-  color: white;
+  color: var(--text-primary);
 }
 
 .blur-send-status {
@@ -664,7 +666,7 @@
 .message-time {
   display: block;
   font-size: 10px;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255, 250, 240, 0.6);
   text-align: right;
 }
 
@@ -679,7 +681,7 @@
   flex: 1;
   background: var(--bg-primary);
   border: 1px solid var(--border-light);
-  color: white;
+  color: var(--text-primary);
   border-radius: var(--radius-md);
   padding: 8px 12px;
 }
@@ -714,7 +716,7 @@
   border-radius: 12px;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-medium);
-  color: white;
+  color: var(--text-primary);
   font-size: 1.25rem;
   cursor: pointer;
   transition: all var(--transition-fast);
