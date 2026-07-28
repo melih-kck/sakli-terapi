@@ -41,6 +41,7 @@
   box-shadow: var(--shadow-sm), 0 4px 16px rgba(189, 63, 54, 0.2);
 }
 .btn-primary:hover {
+  color: var(--text-inverse);
   transform: translateY(-2px);
   box-shadow: var(--shadow-md), 0 8px 24px rgba(169, 72, 64, 0.24);
 }
@@ -55,6 +56,7 @@
 }
 .btn-secondary:hover {
   background: var(--secondary);
+  color: var(--text-inverse);
   transform: translateY(-2px);
   box-shadow: var(--shadow-md), 0 8px 24px rgba(29, 74, 70, 0.22);
 }
@@ -85,6 +87,7 @@
 }
 .btn-danger:hover {
   background: color-mix(in srgb, var(--danger-dark) 84%, black);
+  color: var(--text-inverse);
   transform: translateY(-2px);
 }
 
