@@ -5,6 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { DEMO_ROLE_OPTIONS } from '../data/demo-fixtures';
 import { IS_DEMO_MODE } from '../config/runtime';
 import Navbar from '../components/Navbar';
+import BlurVideoDemo from '../components/BlurVideoDemo';
 import '../styles/pages/Auth.css';
 
 export default function Login() {
@@ -48,14 +49,20 @@ export default function Login() {
     <div className="page">
       <Navbar />
       <main className="auth-page">
-        <div className="split-layout">
-          <div className="split-decorative">
+        <div className={`split-layout ${IS_DEMO_MODE ? 'demo-auth-layout' : ''}`}>
+          <div className={`split-decorative ${IS_DEMO_MODE ? 'demo-blur-side' : ''}`}>
             <div className="auth-decorative-content">
-              <h2>{IS_DEMO_MODE ? t('loginPage.storyTitle') : t('loginPage.welcome')}</h2>
-              <p>{IS_DEMO_MODE ? t('loginPage.storySubtitle') : t('loginPage.liveSubtitle')}</p>
-              <div className="auth-deco-features">
-                {t('loginPage.features').map((feature) => <div className="auth-deco-feat" key={feature}>{feature}</div>)}
-              </div>
+              {IS_DEMO_MODE ? (
+                <BlurVideoDemo />
+              ) : (
+                <>
+                  <h2>{t('loginPage.welcome')}</h2>
+                  <p>{t('loginPage.liveSubtitle')}</p>
+                  <div className="auth-deco-features">
+                    {t('loginPage.features').map((feature) => <div className="auth-deco-feat" key={feature}>{feature}</div>)}
+                  </div>
+                </>
+              )}
             </div>
           </div>
           <div className="split-content">
