@@ -70,6 +70,52 @@
   font-weight: var(--weight-medium);
 }
 
+.demo-auth-layout {
+  grid-template-columns: minmax(0, 1.15fr) minmax(390px, 0.85fr);
+}
+
+.demo-auth-layout .demo-blur-side {
+  align-items: flex-start;
+  padding-top: 112px;
+  padding-bottom: var(--space-2xl);
+  border-right: 1px solid var(--border-light);
+  background: var(--bg-secondary);
+  overflow: visible;
+}
+
+.demo-auth-layout .auth-decorative-content {
+  width: min(100%, 660px);
+  color: var(--text-primary);
+  text-align: left;
+}
+
+.demo-auth-layout .auth-decorative-content > h2 {
+  margin-bottom: 4px;
+  color: var(--text-primary);
+  font-size: var(--text-xl);
+}
+
+.demo-auth-layout .auth-decorative-content > p {
+  margin-bottom: var(--space-xl);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.demo-auth-layout .blur-demo-heading p,
+.demo-auth-layout .blur-demo-disclaimer {
+  color: var(--text-secondary);
+}
+
+.demo-auth-layout .blur-demo-heading p {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.demo-auth-layout .blur-demo-disclaimer {
+  margin: var(--space-sm) 0 0;
+  font-size: var(--text-xs);
+}
+
 /* Auth Form */
 .auth-form-wrapper {
   max-width: 420px;
@@ -633,6 +679,28 @@
 
   .auth-page .auth-form-wrapper {
     max-width: 520px;
+  }
+
+  .auth-page .demo-auth-layout {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: auto;
+  }
+
+  .auth-page .demo-auth-layout .split-content {
+    order: 1;
+    padding-bottom: var(--space-xl);
+  }
+
+  .auth-page .demo-auth-layout .demo-blur-side {
+    display: flex;
+    order: 2;
+    padding: var(--space-xl) var(--space-md) 88px;
+    border-top: 1px solid var(--border-light);
+    border-right: 0;
+  }
+
+  .auth-page .demo-auth-layout .auth-decorative-content {
+    max-width: 620px;
   }
 }
 
