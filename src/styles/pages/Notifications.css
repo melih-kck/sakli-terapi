@@ -106,7 +106,7 @@
 }
 
 .notifications-error {
-  color: var(--danger-dark);
+  color: var(--danger);
 }
 
 @media (max-width: 640px) {

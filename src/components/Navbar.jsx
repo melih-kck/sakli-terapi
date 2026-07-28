@@ -54,8 +54,8 @@ export default function Navbar() {
               <circle cx="16" cy="13" r="3" fill="white" opacity="0.3"/>
               <defs>
                 <linearGradient id="logoGrad" x1="2" y1="2" x2="30" y2="30">
-                  <stop stopColor="#4A3AFF" />
-                  <stop offset="1" stopColor="#7B68EE" />
+                  <stop stopColor="#326D5B" />
+                  <stop offset="1" stopColor="#78B8A4" />
                 </linearGradient>
               </defs>
             </svg>

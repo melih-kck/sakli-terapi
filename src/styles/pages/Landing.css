@@ -10,14 +10,23 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  background-color: #143f3a;
+  background-color: #173b34;
+  position: relative;
+  overflow: hidden;
+  padding: 28px 0;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
   background-image: url('../../assets/hero.png');
   background-repeat: no-repeat;
   background-position: calc(50% + 330px) 54%;
   background-size: 360px;
-  position: relative;
-  overflow: hidden;
-  padding: 28px 0;
+  filter: hue-rotate(240deg) saturate(0.55) brightness(1.05);
+  opacity: 0.82;
+  pointer-events: none;
 }
 
 .hero-content {
@@ -30,7 +39,7 @@
 .hero-eyebrow {
   display: inline-block;
   margin-bottom: var(--space-sm);
-  color: #f8c66a;
+  color: var(--accent-light);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
   text-transform: uppercase;
@@ -44,7 +53,7 @@
 }
 
 .hero-title .text-gradient {
-  background: linear-gradient(135deg, #FFB84D, #FFCF80);
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -285,6 +294,8 @@
   .hero {
     min-height: auto;
     padding: 28px 0 24px;
+  }
+  .hero::after {
     background-position: 50% 38%;
     background-size: 280px;
   }
