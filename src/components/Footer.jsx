@@ -17,8 +17,8 @@ export default function Footer() {
                   <path d="M16 8C11.58 8 8 11.58 8 16s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 2.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5-2.5-1.12-2.5-2.5 1.12-2.5 2.5-2.5zm0 11.5c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08s5.97 1.09 6 3.08c-1.29 1.94-3.5 3.22-6 3.22z" fill="white" opacity="0.9"/>
                   <defs>
                     <linearGradient id="footerLogoGrad" x1="2" y1="2" x2="30" y2="30">
-                      <stop stopColor="#245344" />
-                      <stop offset="1" stopColor="#617F8A" />
+                      <stop stopColor="#22483D" />
+                      <stop offset="1" stopColor="#596F78" />
                     </linearGradient>
                   </defs>
                 </svg>
