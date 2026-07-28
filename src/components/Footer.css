@@ -100,7 +100,7 @@
   padding: var(--space-sm) var(--space-md);
   background: var(--danger-bg);
   border-radius: var(--radius-md);
-  border: 1px solid rgba(223, 133, 130, 0.2);
+  border: 1px solid rgba(179, 83, 86, 0.18);
 }
 
 .emergency-icon {
