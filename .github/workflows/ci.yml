@@ -13,6 +13,8 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      VITE_APP_MODE: demo
 
     steps:
       - name: Check out repository
