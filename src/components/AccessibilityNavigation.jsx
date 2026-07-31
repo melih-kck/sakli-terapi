@@ -26,7 +26,7 @@ export default function AccessibilityNavigation() {
       main.id = 'main-content';
       main.tabIndex = -1;
 
-      const heading = main.querySelector('h1');
+      const heading = document.querySelector('h1');
       const pageName = heading?.textContent?.trim() || BRAND.name;
       document.title = pathname === '/'
         ? t('meta.homeTitle')

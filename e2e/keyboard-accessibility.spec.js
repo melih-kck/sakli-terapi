@@ -59,6 +59,7 @@ test('asenkron seans görünümü ana içerik sözleşmesini korur', async ({ pa
   await expect(page.getByRole('slider', { name: 'Bulanıklık' })).toBeVisible();
   await expect(page.locator('main')).toHaveAttribute('id', 'main-content');
   await expect(page.locator('main')).toHaveAttribute('tabindex', '-1');
+  await expect(page).toHaveTitle('Psikolog ile seans odası | Saklı Terapi');
 });
 
 test('yönetici sekmeleri ok, Home ve End tuşlarıyla çalışır', async ({ page }) => {
