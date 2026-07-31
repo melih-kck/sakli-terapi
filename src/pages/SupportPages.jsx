@@ -12,6 +12,7 @@ import { supabase } from '../lib/supabase';
 import { getAuthRedirectUrl } from '../lib/auth';
 import { BRAND, getMailto } from '../config/brand';
 import { IS_DEMO_MODE } from '../config/runtime';
+import { handleTabListKeyDown } from '../lib/accessibility';
 import '../styles/pages/SupportPages.css';
 
 function PageShell({ eyebrow, title, subtitle, children, aside }) {
@@ -325,10 +326,14 @@ export function FaqPage() {
         {Object.keys(visibleFaqGroups).map(group => (
           <button
             key={group}
+            id={`faq-tab-${group}`}
             className={activeGroup === group ? 'active' : ''}
             type="button"
             role="tab"
+            aria-controls="faq-tab-panel"
             aria-selected={activeGroup === group}
+            tabIndex={activeGroup === group ? 0 : -1}
+            onKeyDown={handleTabListKeyDown}
             onClick={() => { setActiveGroup(group); setOpenIndex(0); }}
           >
             {t(`support.faq.categories.${group}`)}
@@ -336,7 +341,12 @@ export function FaqPage() {
         ))}
       </div>
 
-      <div className="faq-list">
+      <div
+        className="faq-list"
+        id="faq-tab-panel"
+        role="tabpanel"
+        aria-labelledby={`faq-tab-${activeGroup}`}
+      >
         {visibleFaqGroups[activeGroup].map(([question, answer], index) => (
           <div key={question} className={`faq-item ${openIndex === index ? 'open' : ''}`}>
             <button

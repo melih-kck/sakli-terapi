@@ -109,6 +109,7 @@ npm run test:e2e
 | Tarayıcılar | Chromium, Firefox ve WebKit |
 | Mobil | Pixel 7 Chromium ve iPhone 15 WebKit |
 | Erişilebilirlik | 6 kritik ekran × masaüstü/mobil WCAG A ve AA taraması |
+| Klavye ve ekran okuyucu | 7 klavye ve ARIA sözleşmesi, masaüstü/mobil profillerde |
 | Performans | 150 KiB başlangıç aktarım bütçesi |
 | Güvenlik ve teslim | ESLint, production dependency audit ve Vite production build |
 

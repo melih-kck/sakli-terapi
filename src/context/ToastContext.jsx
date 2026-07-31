@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useCallback } from 'react';
+import { useLanguage } from './LanguageContext';
 
 const ToastContext = createContext(null);
 
@@ -36,6 +37,7 @@ export function ToastProvider({ children }) {
 }
 
 function ToastContainer({ toasts, onRemove }) {
+  const { t } = useLanguage();
   if (toasts.length === 0) return null;
 
   const icons = {
@@ -54,7 +56,7 @@ function ToastContainer({ toasts, onRemove }) {
             <div className="toast-title">{toast.title}</div>
             {toast.message && <div className="toast-message">{toast.message}</div>}
           </div>
-          <button type="button" className="toast-close" aria-label="Bildirimi kapat" onClick={() => onRemove(toast.id)}>✕</button>
+          <button type="button" className="toast-close" aria-label={t('common.closeNotification')} onClick={() => onRemove(toast.id)}>✕</button>
         </div>
       ))}
     </div>

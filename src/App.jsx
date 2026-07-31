@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext';
 import DemoNotice from './components/DemoNotice';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import AccessibilityNavigation from './components/AccessibilityNavigation';
 import { FEATURES, IS_DEMO_MODE } from './config/runtime';
 import { useLanguage } from './context/LanguageContext';
 
@@ -97,6 +98,7 @@ function App() {
 
   return (
     <>
+      <AccessibilityNavigation />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Landing />} />

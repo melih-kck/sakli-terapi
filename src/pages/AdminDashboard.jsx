@@ -19,6 +19,7 @@ import {
   suspendPsychologist,
 } from '../lib/admin';
 import { IS_DEMO_MODE } from '../config/runtime';
+import { handleTabListKeyDown } from '../lib/accessibility';
 
 const formatDate = (value, locale, withTime = false) => new Intl.DateTimeFormat(locale, withTime ? {
   dateStyle: 'short',
@@ -331,20 +332,21 @@ export default function AdminDashboard() {
 
           <div className="admin-workspace">
             <div className="tab-navigation admin-tabs" role="tablist" aria-label={t('admin.tabsLabel')}>
-              <button type="button" role="tab" aria-selected={activeTab === 'pending'} className={`tab-item ${activeTab === 'pending' ? 'active' : ''}`} onClick={() => setActiveTab('pending')}>
+              <button type="button" id="admin-tab-pending" role="tab" aria-controls="admin-tab-panel" aria-selected={activeTab === 'pending'} tabIndex={activeTab === 'pending' ? 0 : -1} className={`tab-item ${activeTab === 'pending' ? 'active' : ''}`} onKeyDown={handleTabListKeyDown} onClick={() => setActiveTab('pending')}>
                 {t('admin.pending')} {pendingList.length > 0 && <span className="badge badge-warning">{pendingList.length}</span>}
               </button>
-              <button type="button" role="tab" aria-selected={activeTab === 'approved'} className={`tab-item ${activeTab === 'approved' ? 'active' : ''}`} onClick={() => setActiveTab('approved')}>
+              <button type="button" id="admin-tab-approved" role="tab" aria-controls="admin-tab-panel" aria-selected={activeTab === 'approved'} tabIndex={activeTab === 'approved' ? 0 : -1} className={`tab-item ${activeTab === 'approved' ? 'active' : ''}`} onKeyDown={handleTabListKeyDown} onClick={() => setActiveTab('approved')}>
                 {t('admin.active')}
               </button>
-              <button type="button" role="tab" aria-selected={activeTab === 'inactive'} className={`tab-item ${activeTab === 'inactive' ? 'active' : ''}`} onClick={() => setActiveTab('inactive')}>
+              <button type="button" id="admin-tab-inactive" role="tab" aria-controls="admin-tab-panel" aria-selected={activeTab === 'inactive'} tabIndex={activeTab === 'inactive' ? 0 : -1} className={`tab-item ${activeTab === 'inactive' ? 'active' : ''}`} onKeyDown={handleTabListKeyDown} onClick={() => setActiveTab('inactive')}>
                 {t('admin.inactive')}
               </button>
-              <button type="button" role="tab" aria-selected={activeTab === 'audit'} className={`tab-item ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>
+              <button type="button" id="admin-tab-audit" role="tab" aria-controls="admin-tab-panel" aria-selected={activeTab === 'audit'} tabIndex={activeTab === 'audit' ? 0 : -1} className={`tab-item ${activeTab === 'audit' ? 'active' : ''}`} onKeyDown={handleTabListKeyDown} onClick={() => setActiveTab('audit')}>
                 {t('admin.audit')}
               </button>
             </div>
 
+            <div id="admin-tab-panel" role="tabpanel" aria-labelledby={`admin-tab-${activeTab}`}>
             {isLoading ? (
               <div className="admin-empty-state">{t('admin.loading')}</div>
             ) : activeTab === 'audit' ? (
@@ -388,6 +390,7 @@ export default function AdminDashboard() {
                 </table>
               </div>
             )}
+            </div>
           </div>
         </div>
       </main>
