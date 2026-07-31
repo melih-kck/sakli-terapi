@@ -26,8 +26,12 @@ export const translations = {
       demoProfile: 'Demo profili',
       candidatePsychologist: 'Aday Psikolog',
       clinicalPsychologist: 'Klinik Psikolog',
+      skipToContent: 'Ana içeriğe geç',
+      pageLoaded: '{{page}} sayfası yüklendi',
+      closeNotification: 'Bildirimi kapat',
     },
     meta: {
+      homeTitle: 'Saklı Terapi | Etkileşimli Portföy Demosu',
       description: 'Saklı Terapi, mahremiyet odaklı çevrim içi psikolojik destek deneyimini araştıran etkileşimli bir ürün ve teknoloji prototipidir.',
     },
     demo: {
@@ -881,8 +885,12 @@ export const translations = {
       demoProfile: 'Demo profile',
       candidatePsychologist: 'Candidate Psychologist',
       clinicalPsychologist: 'Clinical Psychologist',
+      skipToContent: 'Skip to main content',
+      pageLoaded: '{{page}} page loaded',
+      closeNotification: 'Dismiss notification',
     },
     meta: {
+      homeTitle: 'Saklı Terapi | Interactive Portfolio Demo',
       description: 'Saklı Terapi is an interactive product and technology prototype exploring privacy-first online psychological support.',
     },
     demo: {

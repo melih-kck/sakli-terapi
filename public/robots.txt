@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin-mfa
+Disallow: /panel
+Disallow: /psikolog-panel
+Disallow: /ayarlar
+Disallow: /bildirimler
+Disallow: /seans/
+
+Sitemap: https://sakli-terapi.vercel.app/sitemap.xml

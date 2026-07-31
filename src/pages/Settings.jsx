@@ -11,6 +11,7 @@ import { APPROACHES, COMMUNICATION_CHANNELS, DAYS_TR, SPECIALIZATIONS } from '..
 import { supabase } from '../lib/supabase';
 import { BRAND, getMailto } from '../config/brand';
 import { IS_DEMO_MODE } from '../config/runtime';
+import { handleTabListKeyDown } from '../lib/accessibility';
 import '../styles/pages/Settings.css';
 
 const EDITABLE_CHANNELS = COMMUNICATION_CHANNELS.filter(channel => ['text', 'voice', 'video-blur'].includes(channel.id));
@@ -315,14 +316,16 @@ export default function Settings() {
         <div className="grid grid-4 gap-lg">
           <div className="card h-fit">
             <div className="card-body" style={{ padding: '0' }}>
-              <div className="tabs" role="tablist" aria-label={t('settingsPage.tabsLabel')} style={{ flexDirection: 'column', border: 'none' }}>
+              <div className="tabs" role="tablist" aria-orientation="vertical" aria-label={t('settingsPage.tabsLabel')} style={{ flexDirection: 'column', border: 'none' }}>
                 <button
                   type="button"
                   id="settings-tab-account"
                   role="tab"
                   aria-selected={activeTab === 'account'}
                   aria-controls="settings-panel"
+                  tabIndex={activeTab === 'account' ? 0 : -1}
                   className={`tab-item ${activeTab === 'account' ? 'active' : ''}`}
+                  onKeyDown={handleTabListKeyDown}
                   onClick={() => setActiveTab('account')}
                   style={{ textAlign: 'left', borderLeft: activeTab === 'account' ? '4px solid var(--primary)' : '4px solid transparent', borderBottom: 'none' }}
                 >
@@ -336,7 +339,9 @@ export default function Settings() {
                       role="tab"
                       aria-selected={activeTab === 'profile'}
                       aria-controls="settings-panel"
+                      tabIndex={activeTab === 'profile' ? 0 : -1}
                       className={`tab-item ${activeTab === 'profile' ? 'active' : ''}`}
+                      onKeyDown={handleTabListKeyDown}
                       onClick={() => setActiveTab('profile')}
                       style={{ textAlign: 'left', borderLeft: activeTab === 'profile' ? '4px solid var(--primary)' : '4px solid transparent', borderBottom: 'none' }}
                     >
@@ -348,7 +353,9 @@ export default function Settings() {
                       role="tab"
                       aria-selected={activeTab === 'verification'}
                       aria-controls="settings-panel"
+                      tabIndex={activeTab === 'verification' ? 0 : -1}
                       className={`tab-item ${activeTab === 'verification' ? 'active' : ''}`}
+                      onKeyDown={handleTabListKeyDown}
                       onClick={() => setActiveTab('verification')}
                       style={{ textAlign: 'left', borderLeft: activeTab === 'verification' ? '4px solid var(--primary)' : '4px solid transparent', borderBottom: 'none' }}
                     >
@@ -362,7 +369,9 @@ export default function Settings() {
                   role="tab"
                   aria-selected={activeTab === 'notifications'}
                   aria-controls="settings-panel"
+                  tabIndex={activeTab === 'notifications' ? 0 : -1}
                   className={`tab-item ${activeTab === 'notifications' ? 'active' : ''}`}
+                  onKeyDown={handleTabListKeyDown}
                   onClick={() => setActiveTab('notifications')}
                   style={{ textAlign: 'left', borderLeft: activeTab === 'notifications' ? '4px solid var(--primary)' : '4px solid transparent', borderBottom: 'none' }}
                 >
@@ -374,7 +383,9 @@ export default function Settings() {
                   role="tab"
                   aria-selected={activeTab === 'privacy'}
                   aria-controls="settings-panel"
+                  tabIndex={activeTab === 'privacy' ? 0 : -1}
                   className={`tab-item ${activeTab === 'privacy' ? 'active' : ''}`}
+                  onKeyDown={handleTabListKeyDown}
                   onClick={() => setActiveTab('privacy')}
                   style={{ textAlign: 'left', borderLeft: activeTab === 'privacy' ? '4px solid var(--primary)' : '4px solid transparent', borderBottom: 'none' }}
                 >

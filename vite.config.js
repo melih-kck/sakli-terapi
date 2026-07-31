@@ -7,9 +7,16 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const isDemoMode = env.VITE_APP_MODE !== 'live'
+  const publicSiteUrl = (env.PUBLIC_APP_URL || 'https://sakli-terapi.vercel.app').replace(/\/$/, '')
+  const siteMetadata = {
+    name: 'site-metadata',
+    transformIndexHtml(html) {
+      return html.replaceAll('__PUBLIC_SITE_URL__', publicSiteUrl)
+    },
+  }
 
   return {
-    plugins: [react()],
+    plugins: [siteMetadata, react()],
     resolve: {
       alias: isDemoMode
         ? {

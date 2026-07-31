@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -15,6 +15,8 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const mobileMenuRef = useRef(null);
+  const hamburgerRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -26,6 +28,41 @@ export default function Navbar() {
     const frameId = requestAnimationFrame(() => setIsMobileOpen(false));
     return () => cancelAnimationFrame(frameId);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isMobileOpen) return undefined;
+
+    const menu = mobileMenuRef.current;
+    const focusableSelector = 'a[href], button:not(:disabled), select:not(:disabled), [tabindex]:not([tabindex="-1"])';
+    const focusableElements = [...menu.querySelectorAll(focusableSelector)];
+    const focusFrame = requestAnimationFrame(() => focusableElements[0]?.focus());
+
+    const handleMenuKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setIsMobileOpen(false);
+        requestAnimationFrame(() => hamburgerRef.current?.focus());
+        return;
+      }
+
+      if (event.key !== 'Tab' || focusableElements.length === 0) return;
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleMenuKeyDown);
+    return () => {
+      cancelAnimationFrame(focusFrame);
+      document.removeEventListener('keydown', handleMenuKeyDown);
+    };
+  }, [isMobileOpen]);
 
   const handleLogout = () => {
     logout();
@@ -86,7 +123,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Nav Links */}
-        <div className={`navbar-links ${isMobileOpen ? 'open' : ''}`} id="navbar-menu">
+        <div ref={mobileMenuRef} className={`navbar-links ${isMobileOpen ? 'open' : ''}`} id="navbar-menu">
           <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`} id="nav-home">
             {t('common.home')}
           </Link>
@@ -157,6 +194,7 @@ export default function Navbar() {
 
         {/* Mobile Hamburger */}
         <button
+          ref={hamburgerRef}
           className={`navbar-hamburger ${isMobileOpen ? 'open' : ''}`}
           type="button"
           onClick={() => setIsMobileOpen(!isMobileOpen)}
@@ -172,7 +210,16 @@ export default function Navbar() {
       </div>
 
       {/* Mobile Overlay */}
-      {isMobileOpen && <div className="navbar-overlay" aria-hidden="true" onClick={() => setIsMobileOpen(false)} />}
+      {isMobileOpen && (
+        <div
+          className="navbar-overlay"
+          aria-hidden="true"
+          onClick={() => {
+            setIsMobileOpen(false);
+            requestAnimationFrame(() => hamburgerRef.current?.focus());
+          }}
+        />
+      )}
     </nav>
   );
 }
