@@ -49,6 +49,18 @@ test('gizlilik demosu ekran okuyucu adlarını ve durumunu sunar', async ({ page
   await expect(page.locator('.blur-demo-status')).toContainText('Karşı taraf şu anda');
 });
 
+test('asenkron seans görünümü ana içerik sözleşmesini korur', async ({ page }) => {
+  await page.goto('/giris');
+  await page.locator('#demo-login-client').click();
+  await expect(page).toHaveURL(/\/panel$/);
+  await page.locator('a[href="/seans/demo-session-privacy"]').click();
+
+  await expect(page).toHaveURL(/\/seans\/demo-session-privacy$/);
+  await expect(page.getByRole('slider', { name: 'Bulanıklık' })).toBeVisible();
+  await expect(page.locator('main')).toHaveAttribute('id', 'main-content');
+  await expect(page.locator('main')).toHaveAttribute('tabindex', '-1');
+});
+
 test('yönetici sekmeleri ok, Home ve End tuşlarıyla çalışır', async ({ page }) => {
   await page.goto('/giris');
   await page.locator('#demo-login-admin').click();
