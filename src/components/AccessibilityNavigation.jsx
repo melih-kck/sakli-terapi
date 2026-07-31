@@ -12,12 +12,16 @@ export default function AccessibilityNavigation() {
   useEffect(() => {
     const shouldMoveFocus = previousPath.current !== null && previousPath.current !== pathname;
     previousPath.current = pathname;
-    let frameId;
+    let prepareFrameId;
+    let announcementFrameId;
     let observer;
+    let preparedMain;
 
     const preparePage = () => {
       const main = document.querySelector('main');
       if (!main) return false;
+      const isNewMain = main !== preparedMain;
+      preparedMain = main;
 
       main.id = 'main-content';
       main.tabIndex = -1;
@@ -36,10 +40,11 @@ export default function AccessibilityNavigation() {
         document.querySelector('meta[property="og:url"]')?.setAttribute('content', canonicalUrl);
       }
 
-      if (shouldMoveFocus) {
+      if (shouldMoveFocus && isNewMain) {
         main.focus({ preventScroll: true });
         setAnnouncement('');
-        frameId = requestAnimationFrame(() => {
+        cancelAnimationFrame(announcementFrameId);
+        announcementFrameId = requestAnimationFrame(() => {
           setAnnouncement(t('common.pageLoaded', { page: pageName }));
         });
       }
@@ -47,16 +52,16 @@ export default function AccessibilityNavigation() {
       return true;
     };
 
-    frameId = requestAnimationFrame(() => {
-      if (preparePage()) return;
-      observer = new MutationObserver(() => {
-        if (preparePage()) observer.disconnect();
-      });
-      observer.observe(document.getElementById('root'), { childList: true, subtree: true });
+    prepareFrameId = requestAnimationFrame(() => {
+      preparePage();
+      observer = new MutationObserver(preparePage);
+      const root = document.getElementById('root');
+      if (root) observer.observe(root, { childList: true, subtree: true });
     });
 
     return () => {
-      cancelAnimationFrame(frameId);
+      cancelAnimationFrame(prepareFrameId);
+      cancelAnimationFrame(announcementFrameId);
       observer?.disconnect();
     };
   }, [pathname, t]);
