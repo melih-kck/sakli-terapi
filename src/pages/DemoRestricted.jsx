@@ -26,7 +26,7 @@ export default function DemoRestricted({ title, description }) {
               <div className="content-section">
                 <h2>{t(`support.restricted.${mode}Heading`)}</h2>
                 <p>{t(`support.restricted.${mode}Body`)}</p>
-                <div className="flex gap-md mt-lg">
+                <div className="restricted-actions mt-lg">
                   <Link to="/giris" className="btn btn-primary">{t(`support.restricted.${mode}Primary`)}</Link>
                   <Link to="/hakkinda" className="btn btn-outline">{t(`support.restricted.${mode}Secondary`)}</Link>
                 </div>
