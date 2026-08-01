@@ -15,6 +15,7 @@ const sessionRoomMigration = readSource('./migration-014-session-room-access.sql
 const verificationMigration = readSource('./migration-015-psychologist-verification.sql');
 const adminMfaMigration = readSource('./migration-016-admin-mfa.sql');
 const publicViewSecurityMigration = readSource('./migration-017-public-view-security.sql');
+const authMetadataMigration = readSource('./migration-019-auth-metadata-minimization.sql');
 const verificationQuery = readSource('./verify-rls.sql');
 const verificationDocuments = readSource('./verification-documents.js');
 const adminQueries = readSource('./admin.js');
@@ -254,6 +255,18 @@ describe('Supabase privacy boundaries', () => {
     expect(monitoring).toContain('VITE_SENTRY_DSN');
     expect(monitoring).toContain('sendDefaultPii: false');
     expect(monitoring).toContain('delete sanitized.user');
+  });
+
+  it('removes transient onboarding details from Auth metadata', () => {
+    expect(authMetadataMigration).toContain('AFTER INSERT ON auth.users');
+    expect(authMetadataMigration).toContain('on_auth_user_created_scrub_metadata');
+    expect(authMetadataMigration).toContain("'emergencyPhone'");
+    expect(authMetadataMigration).toContain("'supervisorName'");
+    expect(authMetadataMigration).toContain('UPDATE auth.users AS users');
+    expect(authMetadataMigration).toContain(
+      'REVOKE ALL ON FUNCTION private.scrub_auth_onboarding_metadata()',
+    );
+    expect(verificationQuery).toContain('auth metadata still contains onboarding fields');
   });
 
   it('stores psychologist verification files in a private restricted bucket', () => {

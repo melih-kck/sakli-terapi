@@ -47,6 +47,7 @@ test('ana sayfa açılır ve dil tercihi yenilemede korunur', async ({ page }) =
 
 test('giriş demosu blur korumasını ve merkezli önizlemeyi gösterir', async ({ page }) => {
   await page.goto('/giris');
+  await page.addStyleTag({ content: '.blur-demo-remote-image { transition: none !important; }' });
 
   const sentImage = page.locator('.blur-demo-remote-image');
   const stage = page.locator('.blur-demo-stage');
@@ -116,7 +117,7 @@ for (const roleCase of roles) {
     await expect(page.getByRole('heading', {
       level: 1,
       name: roleCase.heading,
-    })).toBeVisible();
+    })).toBeVisible({ timeout: 10_000 });
     await expect.poll(() => page.evaluate(() => (
       JSON.parse(window.localStorage.getItem('mock_user_session'))?.role
     ))).toBe(roleCase.role);

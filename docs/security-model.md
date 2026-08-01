@@ -1,6 +1,6 @@
 # Supabase Security Model
 
-Migrations 009 through 017 are the canonical authorization boundary for
+Migrations 009 through 019 are the canonical authorization boundary for
 application tables. Run `src/lib/verify-rls.sql` after applying them to a
 Supabase project.
 
@@ -73,6 +73,11 @@ can request only their own and the other participant's random PeerJS IDs through
 `get_session_room_access`. Clients can cancel sessions; only the assigned
 psychologist can complete one after its scheduled start.
 
+Migration 019 removes transient onboarding fields from Auth metadata after the
+profile trigger has copied them into RLS-protected application tables. This
+keeps emergency-contact and professional-application details out of subsequent
+JWT `user_metadata` claims while preserving unrelated provider metadata.
+
 `payment_required=false` records the current deferred-payment phase without
 marking a session as paid. If payment is enabled later, server-created sessions
 can require a provider-confirmed `paid` status before room access.
@@ -83,7 +88,7 @@ secret-protected operational-email worker and must never be exposed to Vite.
 
 ## Verification
 
-1. Apply migrations 009 through 016 in order.
+1. Apply migrations 009 through 019 in order.
 2. Run `src/lib/verify-rls.sql`.
 3. Test with separate client, psychologist, and admin accounts.
 4. Confirm anonymous requests can query only the two public views.

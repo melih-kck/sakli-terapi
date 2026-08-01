@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 
-export const VERIFICATION_BUCKET = 'psychologist-documents';
+const VERIFICATION_BUCKET = 'psychologist-documents';
 export const MAX_VERIFICATION_FILE_SIZE = 8 * 1024 * 1024;
 
 export const DOCUMENT_TYPE_LABELS = {
@@ -10,24 +10,30 @@ export const DOCUMENT_TYPE_LABELS = {
   other: 'Diğer mesleki belge',
 };
 
-export const DOCUMENT_STATUS_LABELS = {
-  pending: 'İnceleniyor',
-  approved: 'Onaylandı',
-  rejected: 'Yeniden yüklenmeli',
-};
-
 const FILE_EXTENSIONS = {
   'application/pdf': 'pdf',
   'image/jpeg': 'jpg',
   'image/png': 'png',
 };
 
-export function validateVerificationFile(file) {
-  if (!file) return 'Yüklenecek dosyayı seçin.';
-  if (!FILE_EXTENSIONS[file.type]) return 'Yalnızca PDF, JPG veya PNG dosyası yükleyebilirsiniz.';
-  if (file.size < 1) return 'Boş dosyalar yüklenemez.';
-  if (file.size > MAX_VERIFICATION_FILE_SIZE) return 'Dosya boyutu en fazla 8 MB olabilir.';
+export function getVerificationFileValidationCode(file) {
+  if (!file) return 'required';
+  if (!FILE_EXTENSIONS[file.type]) return 'unsupported';
+  if (file.size < 1) return 'empty';
+  if (file.size > MAX_VERIFICATION_FILE_SIZE) return 'tooLarge';
   return null;
+}
+
+const VALIDATION_MESSAGES_TR = {
+  required: 'Yüklenecek dosyayı seçin.',
+  unsupported: 'Yalnızca PDF, JPG veya PNG dosyası yükleyebilirsiniz.',
+  empty: 'Boş dosyalar yüklenemez.',
+  tooLarge: 'Dosya boyutu en fazla 8 MB olabilir.',
+};
+
+export function validateVerificationFile(file) {
+  const code = getVerificationFileValidationCode(file);
+  return code ? VALIDATION_MESSAGES_TR[code] : null;
 }
 
 export async function fetchMyVerificationDocuments(userId) {

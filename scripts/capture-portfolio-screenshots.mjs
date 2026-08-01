@@ -1,6 +1,6 @@
 import { mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { chromium } from 'playwright';
+import { chromium } from '@playwright/test';
 
 const baseURL = process.env.PORTFOLIO_BASE_URL || 'http://127.0.0.1:5174';
 const outputDirectory = new URL('../docs/screenshots/', import.meta.url);

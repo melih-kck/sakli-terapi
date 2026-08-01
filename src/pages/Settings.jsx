@@ -116,7 +116,7 @@ export default function Settings() {
       if (!isMounted) return;
       if (error) {
         console.error('E-posta bildirim tercihleri yüklenemedi:', error);
-        setPreferencesError('E-posta tercihleri şu anda yüklenemiyor.');
+        setPreferencesError(t('settingsPage.preferencesLoadError'));
         return;
       }
 
@@ -132,7 +132,7 @@ export default function Settings() {
 
     loadEmailPreferences();
     return () => { isMounted = false; };
-  }, [user?.id]);
+  }, [t, user?.id]);
 
   const updateForm = (key, value) => {
     setForm(prev => ({ ...prev, [key]: value }));
@@ -191,7 +191,7 @@ export default function Settings() {
 
         if (error) {
           console.error('E-posta bildirim tercihleri kaydedilemedi:', error);
-          showError('Tercihler Kaydedilemedi', 'E-posta bildirim tercihlerinizi güncelleyemedik.');
+          showError(t('settingsPage.preferencesSaveErrorTitle'), t('settingsPage.preferencesSaveErrorBody'));
           return;
         }
 
@@ -203,7 +203,7 @@ export default function Settings() {
       const profileUpdates = {};
 
       if (activeTab === 'profile' && form.psychologistProfile.channels.length === 0) {
-        showError('Profil Kaydedilemedi', 'En az bir görüşme kanalı seçmelisiniz.');
+        showError(t('settingsPage.profileSaveErrorTitle'), t('settingsPage.channelRequired'));
         return;
       }
 
@@ -271,17 +271,17 @@ export default function Settings() {
 
   const handlePasswordUpdate = async () => {
     if (!passwordForm.current) {
-      showError('Şifre Güncellenemedi', 'Mevcut şifrenizi yazmalısınız.');
+      showError(t('settingsPage.passwordUpdateErrorTitle'), t('settingsPage.currentPasswordRequired'));
       return;
     }
 
     if (!passwordForm.next || passwordForm.next.length < 8) {
-      showError('Şifre Güncellenemedi', 'Yeni şifre en az 8 karakter olmalıdır.');
+      showError(t('settingsPage.passwordUpdateErrorTitle'), t('settingsPage.passwordMinLength'));
       return;
     }
 
     if (passwordForm.next !== passwordForm.confirm) {
-      showError('Şifre Güncellenemedi', 'Yeni şifre ve tekrar alanı aynı olmalıdır.');
+      showError(t('settingsPage.passwordUpdateErrorTitle'), t('settingsPage.passwordMismatch'));
       return;
     }
 
@@ -802,13 +802,13 @@ export default function Settings() {
                         </p>
                       ) : (
                         <>
-                          <p className="text-sm mb-md">Hesap silme talebi destek onayıyla ilerler; ani ve geri alınamaz silme burada yapılmaz.</p>
+                          <p className="text-sm mb-md">{t('settingsPage.accountDeletionBody')}</p>
                           <a
                             className="btn btn-danger btn-sm"
-                            href={getMailto(BRAND.supportEmail, 'Hesap silme talebi')}
-                            onClick={() => warning('Hesap Silme', 'Talebinizi tamamlamak için destek ekibine e-posta gönderin.')}
+                            href={getMailto(BRAND.supportEmail, t('settingsPage.accountDeletionSubject'))}
+                            onClick={() => warning(t('settingsPage.accountDeletionTitle'), t('settingsPage.accountDeletionToast'))}
                           >
-                            Hesap Silme Talebi
+                            {t('settingsPage.accountDeletionAction')}
                           </a>
                         </>
                       )}

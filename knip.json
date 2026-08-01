@@ -1,0 +1,15 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "api/*.js",
+    "scripts/*.mjs",
+    "e2e/*.spec.js"
+  ],
+  "project": [
+    "src/**/*.{js,jsx}",
+    "api/**/*.js",
+    "scripts/**/*.mjs",
+    "e2e/**/*.js",
+    "*.js"
+  ]
+}

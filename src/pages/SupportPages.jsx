@@ -86,12 +86,12 @@ export function ReviewPage() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!canReviewSession) {
-      warning('Değerlendirme Gönderilemedi', 'Yalnızca tamamlanmış ve daha önce değerlendirilmemiş seanslar yorumlanabilir.');
+      warning(t('support.reviews.unavailableToastTitle'), t('support.reviews.unavailableToastBody'));
       return;
     }
 
     if (comment.trim().length < 10) {
-      warning('Kısa Değerlendirme', 'Yorum alanına en az birkaç cümle ekleyin.');
+      warning(t('support.reviews.shortToastTitle'), t('support.reviews.shortToastBody'));
       return;
     }
 
@@ -106,7 +106,7 @@ export function ReviewPage() {
     if (!result.success) return;
 
     setSubmitted(true);
-    success('Değerlendirme Alındı', 'Yorumunuz anonim biçimde incelemeye gönderildi.');
+    success(t('support.reviews.receivedToastTitle'), t('support.reviews.receivedToastBody'));
   };
 
   return (

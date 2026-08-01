@@ -26,9 +26,6 @@ export default defineConfig(({ mode }) => {
           }
         : {},
     },
-    server: {
-      allowedHosts: true,
-    },
     test: {
       environment: 'jsdom',
       setupFiles: './src/test/setup.js',

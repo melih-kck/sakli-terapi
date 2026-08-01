@@ -241,11 +241,21 @@ export default function Landing() {
                   className={`accordion-item ${openFaq === i ? 'open' : ''}`}
                   id={`faq-item-${i}`}
                 >
-                  <div className="accordion-header" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
+                  <button
+                    className="accordion-header"
+                    type="button"
+                    aria-expanded={openFaq === i}
+                    aria-controls={`landing-faq-answer-${i}`}
+                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  >
                     <span>{faq.q}</span>
-                    <span className="accordion-icon">{openFaq === i ? '−' : '+'}</span>
-                  </div>
-                  <div className="accordion-body">
+                    <span className="accordion-icon" aria-hidden="true">{openFaq === i ? '−' : '+'}</span>
+                  </button>
+                  <div
+                    className="accordion-body"
+                    id={`landing-faq-answer-${i}`}
+                    hidden={openFaq !== i}
+                  >
                     <div className="accordion-content">{faq.a}</div>
                   </div>
                 </div>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import {
   createTotpQrDataUrl,
   getUnverifiedTotpFactors,
@@ -13,6 +14,7 @@ import '../styles/pages/Auth.css';
 
 export default function AdminMfa() {
   const { mfaStatus, refreshMfaStatus } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [enrollment, setEnrollment] = useState(null);
   const [code, setCode] = useState('');
@@ -40,13 +42,13 @@ export default function AdminMfa() {
 
       const { data, error: enrollError } = await supabase.auth.mfa.enroll({
         factorType: 'totp',
-        friendlyName: `${BRAND.name} Yönetici`,
+        friendlyName: t('adminMfa.friendlyName', { brand: BRAND.name }),
       });
       if (enrollError) throw enrollError;
       setEnrollment(data);
     } catch (enrollError) {
       console.error('Yönetici MFA kurulumu başlatılamadı:', enrollError);
-      setError('Doğrulama kurulumu başlatılamadı. Sayfayı yenileyip tekrar deneyin.');
+      setError(t('adminMfa.setupFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -59,11 +61,11 @@ export default function AdminMfa() {
     const factorId = enrollment?.id || mfaStatus.factorId;
 
     if (!normalizedCode) {
-      setError('Doğrulama uygulamasındaki 6 haneli kodu girin.');
+      setError(t('adminMfa.codeRequired'));
       return;
     }
     if (!factorId) {
-      setError('Doğrulama anahtarı bulunamadı. Kurulumu yeniden başlatın.');
+      setError(t('adminMfa.factorMissing'));
       return;
     }
 
@@ -83,7 +85,7 @@ export default function AdminMfa() {
       navigate('/admin', { replace: true });
     } catch (verifyError) {
       console.error('Yönetici MFA doğrulaması başarısız:', verifyError);
-      setError('Kod doğrulanamadı. Yeni üretilen kodu kontrol edip tekrar deneyin.');
+      setError(t('adminMfa.verificationFailed'));
       setCode('');
     } finally {
       setIsSubmitting(false);
@@ -98,27 +100,27 @@ export default function AdminMfa() {
       <Navbar />
       <main className="admin-mfa-main">
         <section className="admin-mfa-panel" aria-labelledby="admin-mfa-title">
-          <span className="admin-mfa-eyebrow">Yönetici Güvenliği</span>
-          <h1 id="admin-mfa-title">İkinci doğrulama gerekli</h1>
+          <span className="admin-mfa-eyebrow">{t('adminMfa.eyebrow')}</span>
+          <h1 id="admin-mfa-title">{t('adminMfa.title')}</h1>
           <p className="auth-subtitle">
-            Yönetim paneline erişmek için doğrulama uygulamanızdaki kodu kullanın.
+            {t('adminMfa.subtitle')}
           </p>
           {(error || mfaStatus.error) && (
             <div className="auth-error admin-mfa-error">{error || mfaStatus.error}</div>
           )}
 
           {mfaStatus.loading ? (
-            <div className="admin-mfa-status">Güvenlik durumu kontrol ediliyor...</div>
+            <div className="admin-mfa-status">{t('adminMfa.checking')}</div>
           ) : needsEnrollment ? (
             <div className="admin-mfa-enrollment-start">
-              <p>Bu yönetici hesabında henüz doğrulama uygulaması kayıtlı değil.</p>
+              <p>{t('adminMfa.enrollmentIntro')}</p>
               <button
                 type="button"
                 className="btn btn-primary btn-lg"
                 onClick={startEnrollment}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Hazırlanıyor...' : 'Doğrulama Uygulaması Ekle'}
+                {isSubmitting ? t('adminMfa.preparing') : t('adminMfa.addApp')}
               </button>
             </div>
           ) : (
@@ -129,12 +131,12 @@ export default function AdminMfa() {
                     <img
                       className="admin-mfa-qr"
                       src={qrCodeUrl}
-                      alt="Yönetici doğrulama uygulaması QR kodu"
+                      alt={t('adminMfa.qrAlt')}
                     />
                   )}
                   <details className="admin-mfa-secret">
-                    <summary>QR kodu taranamıyorsa</summary>
-                    <label htmlFor="admin-mfa-secret">Kurulum anahtarı</label>
+                    <summary>{t('adminMfa.qrHelp')}</summary>
+                    <label htmlFor="admin-mfa-secret">{t('adminMfa.secretLabel')}</label>
                     <input
                       id="admin-mfa-secret"
                       type="text"
@@ -148,7 +150,7 @@ export default function AdminMfa() {
 
               <form className="auth-form admin-mfa-form" onSubmit={verifyCode}>
                 <div className="input-group">
-                  <label htmlFor="admin-mfa-code">6 haneli doğrulama kodu</label>
+                  <label htmlFor="admin-mfa-code">{t('adminMfa.codeLabel')}</label>
                   <input
                     id="admin-mfa-code"
                     type="text"
@@ -166,7 +168,7 @@ export default function AdminMfa() {
                   className="btn btn-primary btn-block btn-lg"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Doğrulanıyor...' : 'Yönetim Paneline Devam Et'}
+                  {isSubmitting ? t('adminMfa.verifying') : t('adminMfa.continue')}
                 </button>
               </form>
             </>

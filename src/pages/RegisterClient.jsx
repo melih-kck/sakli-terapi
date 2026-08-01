@@ -7,7 +7,7 @@ import { BRAND } from '../config/brand';
 import '../styles/pages/Auth.css';
 
 export default function RegisterClient() {
-  const { register } = useAuth();
+  const { register, isLoading } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const totalSteps = 5;
@@ -45,6 +45,7 @@ export default function RegisterClient() {
   };
 
   const handleSubmit = async () => {
+    if (isLoading || !canProceed()) return;
     const result = await register(form.email, form.password, form, 'client');
     if (result.success) {
       navigate(result.needsEmailConfirmation ? '/e-posta-dogrula' : '/giris', {
@@ -62,7 +63,7 @@ export default function RegisterClient() {
       <main className="page-content">
         <div className="container container-md" style={{ padding: 'var(--space-2xl) var(--space-lg)' }}>
           <div className="text-center mb-xl">
-            <h2>Danışan Kaydı</h2>
+            <h1>Danışan Kaydı</h1>
             <p style={{ color: 'var(--text-secondary)' }}>Anonim hesabınızı oluşturun</p>
           </div>
 
@@ -123,18 +124,18 @@ export default function RegisterClient() {
                   </p>
                   <div className="auth-form">
                     <div className="input-group">
-                      <label>Hangi konularda destek arıyorsunuz? (Birden fazla seçebilirsiniz)</label>
-                      <div className="topic-grid">
+                      <span className="input-group-label" id="reg-topics-label">Hangi konularda destek arıyorsunuz? (Birden fazla seçebilirsiniz)</span>
+                      <div className="topic-grid" role="group" aria-labelledby="reg-topics-label">
                         {SPECIALIZATIONS.map(spec => (
-                          <button key={spec.id} type="button" className={`tag ${form.topics.includes(spec.id) ? 'active' : ''}`} onClick={() => toggleTopic(spec.id)} id={`reg-topic-${spec.id}`}>
+                          <button key={spec.id} type="button" className={`tag ${form.topics.includes(spec.id) ? 'active' : ''}`} aria-pressed={form.topics.includes(spec.id)} onClick={() => toggleTopic(spec.id)} id={`reg-topic-${spec.id}`}>
                             {spec.icon} {spec.label}
                           </button>
                         ))}
                       </div>
                     </div>
                     <div className="input-group">
-                      <label>Tercih ettiğiniz seans / iletişim türü?</label>
-                      <div className="style-options">
+                      <span className="input-group-label" id="reg-style-label">Tercih ettiğiniz seans / iletişim türü?</span>
+                      <div className="style-options" role="radiogroup" aria-labelledby="reg-style-label">
                         {[
                           { id: 'video-blur', label: '👤 Görüntülü (Blur)', desc: 'Yüzünüz gizlenerek kameralı görüşme' }, 
                           { id: 'voice', label: '🎙️ Sadece Sesli', desc: 'Kamera kapalı, sesli arama' }, 
@@ -219,7 +220,9 @@ export default function RegisterClient() {
                       {[5, 4, 3, 2, 1].map(level => (
                         <button
                           key={level}
+                          type="button"
                           className={`privacy-level-btn ${form.privacyLevel === level ? 'active' : ''}`}
+                          aria-pressed={form.privacyLevel === level}
                           onClick={() => update('privacyLevel', level)}
                           id={`reg-privacy-${level}`}
                         >
@@ -242,17 +245,17 @@ export default function RegisterClient() {
             {/* Navigation */}
             <div className="card-footer register-nav">
               {step > 1 ? (
-                <button className="btn btn-ghost" onClick={() => setStep(step - 1)} id="reg-back">← Geri</button>
+                <button type="button" className="btn btn-ghost" onClick={() => setStep(step - 1)} id="reg-back">← Geri</button>
               ) : (
                 <Link to="/kayit" className="btn btn-ghost">← Geri</Link>
               )}
               {step < totalSteps ? (
-                <button className="btn btn-primary" onClick={() => setStep(step + 1)} disabled={!canProceed()} id="reg-next">
+                <button type="button" className="btn btn-primary" onClick={() => setStep(step + 1)} disabled={!canProceed()} id="reg-next">
                   İleri →
                 </button>
               ) : (
-                <button className="btn btn-primary btn-lg" onClick={handleSubmit} id="reg-submit">
-                  ✅ Kaydı Tamamla
+                <button type="button" className="btn btn-primary btn-lg" onClick={handleSubmit} disabled={isLoading} id="reg-submit">
+                  {isLoading ? 'Kaydediliyor...' : '✅ Kaydı Tamamla'}
                 </button>
               )}
             </div>

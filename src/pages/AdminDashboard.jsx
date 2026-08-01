@@ -48,9 +48,9 @@ export default function AdminDashboard() {
       navigate('/giris');
     } else if (user?.role !== 'admin') {
       navigate('/');
-      showError('Yetkisiz Erişim', 'Bu sayfayı görüntüleme yetkiniz yok.');
+      showError(t('admin.unauthorizedTitle'), t('admin.unauthorizedBody'));
     }
-  }, [isAuthenticated, user, navigate, showError]);
+  }, [isAuthenticated, user, navigate, showError, t]);
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -67,11 +67,11 @@ export default function AdminDashboard() {
       setAuditLog(history);
     } catch (error) {
       console.error('Admin verileri yüklenirken hata:', error);
-      showError('Veriler Yüklenemedi', 'Yönetim verileri şu anda alınamıyor.');
+      showError(t('admin.loadErrorTitle'), t('admin.loadErrorBody'));
     } finally {
       setIsLoading(false);
     }
-  }, [showError]);
+  }, [showError, t]);
 
   useEffect(() => {
     if (user?.role === 'admin') Promise.resolve().then(loadData);
@@ -83,7 +83,7 @@ export default function AdminDashboard() {
     setProcessingId(null);
 
     if (!result.success) {
-      showError('İşlem Tamamlanamadı', result.error);
+      showError(t('admin.operationFailed'), result.error);
       return;
     }
 
@@ -94,26 +94,27 @@ export default function AdminDashboard() {
   const handleApprove = async (psychologist) => {
     const { id, display_name: name, verification_documents: documents = [] } = psychologist;
     if (!documents.some(document => document.status === 'approved')) {
-      showError('Belge Onayı Gerekli', 'Profili etkinleştirmeden önce en az bir mesleki belgeyi onaylayın.');
+      showError(t('admin.documentRequiredTitle'), t('admin.documentRequiredBody'));
       return;
     }
-    if (!window.confirm(`${name} adlı psikoloğu onaylamak istediğinize emin misiniz?`)) return;
+    if (!window.confirm(t('admin.confirmApproveProfile', { name }))) return;
     await runStatusUpdate(
       id,
       () => approvePsychologist(id),
-      'Onaylandı',
-      `${name} artık platformda aktif.`,
+      t('admin.approvedTitle'),
+      t('admin.approvedBody', { name }),
     );
   };
 
   const handleDocumentView = async (document) => {
     setProcessingId(`document-view-${document.id}`);
     try {
-      const signedUrl = await getVerificationDocumentUrl(document.storage_path);
+      const documentUrl = getVerificationDocumentUrl(document.storage_path);
+      const signedUrl = typeof documentUrl === 'string' ? documentUrl : await documentUrl;
       window.location.assign(signedUrl);
     } catch (error) {
       console.error('Mesleki belge açılamadı:', error);
-      showError('Belge Açılamadı', 'Güvenli belge bağlantısı oluşturulamadı.');
+      showError(t('admin.documentOpenErrorTitle'), t('admin.documentOpenErrorBody'));
     } finally {
       setProcessingId(null);
     }
@@ -122,12 +123,12 @@ export default function AdminDashboard() {
   const handleDocumentReview = async (document, psychologistName, status) => {
     let reason = null;
     if (status === 'approved') {
-      if (!window.confirm(`${document.original_name} adlı belgeyi onaylamak istediğinize emin misiniz?`)) return;
+      if (!window.confirm(t('admin.confirmApproveDocument', { name: document.original_name }))) return;
     } else {
-      reason = window.prompt(`${psychologistName} için belge ret nedenini yazın:`);
+      reason = window.prompt(t('admin.rejectDocumentPrompt', { name: psychologistName }));
       if (reason === null) return;
       if (reason.trim().length < 5) {
-        showError('Neden Gerekli', 'Lütfen en az 5 karakterlik açıklayıcı bir neden yazın.');
+        showError(t('admin.reasonRequiredTitle'), t('admin.reasonRequiredBody'));
         return;
       }
       reason = reason.trim();
@@ -136,19 +137,20 @@ export default function AdminDashboard() {
     await runStatusUpdate(
       `document-review-${document.id}`,
       () => reviewVerificationDocument(document.id, status, reason),
-      status === 'approved' ? 'Belge Onaylandı' : 'Belge Reddedildi',
-      `${document.original_name} adlı belgenin durumu güncellendi.`,
+      status === 'approved' ? t('admin.documentApprovedTitle') : t('admin.documentRejectedTitle'),
+      t('admin.documentUpdatedBody', { name: document.original_name }),
     );
   };
 
   const handleReasonedAction = async (id, name, mode) => {
     const isSuspension = mode === 'suspend';
-    const reason = window.prompt(
-      `${name} için ${isSuspension ? 'askıya alma' : 'ret'} nedenini yazın:`,
-    );
+    const reason = window.prompt(t('admin.accountReasonPrompt', {
+      name,
+      action: isSuspension ? t('admin.suspensionReason') : t('admin.rejectionReason'),
+    }));
     if (reason === null) return;
     if (reason.trim().length < 5) {
-      showError('Neden Gerekli', 'Lütfen en az 5 karakterlik açıklayıcı bir neden yazın.');
+      showError(t('admin.reasonRequiredTitle'), t('admin.reasonRequiredBody'));
       return;
     }
 
@@ -157,15 +159,15 @@ export default function AdminDashboard() {
       () => (isSuspension
         ? suspendPsychologist(id, reason.trim())
         : rejectPsychologist(id, reason.trim())),
-      isSuspension ? 'Askıya Alındı' : 'Reddedildi',
-      `${name} adlı hesabın durumu güncellendi.`,
+      isSuspension ? t('admin.suspendedTitle') : t('admin.rejectedTitle'),
+      t('admin.accountUpdatedBody', { name }),
     );
   };
 
   const handleDemoReset = async () => {
-    if (!window.confirm('Kurgusal yönetici verilerini başlangıç durumuna döndürmek istiyor musunuz?')) return;
+    if (!window.confirm(t('admin.confirmReset'))) return;
     resetDemoAdminData();
-    success('Demo Sıfırlandı', 'Başvuru ve işlem geçmişi başlangıç durumuna döndürüldü.');
+    success(t('admin.resetTitle'), t('admin.resetBody'));
     await loadData();
   };
 

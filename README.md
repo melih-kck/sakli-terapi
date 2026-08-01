@@ -95,7 +95,8 @@ VITE_ENABLE_PAYMENTS=false
 ## Kalite Kontrolleri
 
 ```bash
-npm audit --omit=dev --audit-level=high
+npm audit --audit-level=high
+npm audit signatures
 npm run lint
 npm test
 npm run build
@@ -104,14 +105,15 @@ npm run test:e2e
 
 | Katman | Otomatik kapsam |
 |---|---|
-| Birim ve bileşen | 78 Vitest testi |
+| Birim ve bileşen | 91 Vitest testi |
 | Kritik ürün yolculukları | 7 senaryo × 5 tarayıcı/cihaz profili |
+| Sayfa sağlığı | 15 açık ve rol tabanlı rota × masaüstü/mobil Chromium |
 | Tarayıcılar | Chromium, Firefox ve WebKit |
 | Mobil | Pixel 7 Chromium ve iPhone 15 WebKit |
-| Erişilebilirlik | 6 kritik ekran × masaüstü/mobil WCAG A ve AA taraması |
-| Klavye ve ekran okuyucu | 8 klavye ve ARIA sözleşmesi, masaüstü/mobil profillerde |
+| Erişilebilirlik | 15 açık ve rol tabanlı ekran × masaüstü/mobil WCAG A ve AA taraması |
+| Klavye ve ekran okuyucu | 9 klavye ve ARIA sözleşmesi × 5 tarayıcı/cihaz profili |
 | Performans | 150 KiB başlangıç aktarım bütçesi |
-| Güvenlik ve teslim | ESLint, production dependency audit ve Vite production build |
+| Güvenlik ve teslim | ESLint, tam bağımlılık denetimi, paket imza doğrulaması ve Vite production build |
 
 Uçtan uca paket; ana sayfa, kalıcı dil tercihi, blur onayı, üç demo rolü, belge görüntüleme ve seans odası akışını doğrular. Erişilebilirlik kontrolleri axe-core ile otomatikleştirilmiştir; otomatik tarama manuel klavye ve yardımcı teknoloji değerlendirmesinin yerini tutmaz.
 

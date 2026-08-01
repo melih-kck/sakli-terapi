@@ -27,7 +27,8 @@ const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 const DemoRestricted = lazy(() => import('./pages/DemoRestricted'));
 const lazyNamed = (loader, exportName) => lazy(() => loader().then(module => ({ default: module[exportName] })));
 const EmailVerificationPage = lazy(() => import('./pages/EmailVerification'));
-const EmailConfirmationPage = lazyNamed(() => import('./pages/EmailVerification'), 'EmailConfirmationPage');
+const EmailConfirmationPage = lazy(() => import('./pages/EmailVerification')
+  .then(module => ({ default: module.EmailConfirmationPage })));
 const FaqPage = lazyNamed(() => import('./pages/SupportPages'), 'FaqPage');
 const ForgotPasswordPage = lazyNamed(() => import('./pages/SupportPages'), 'ForgotPasswordPage');
 const PrivacyPolicyPage = lazyNamed(() => import('./pages/SupportPages'), 'PrivacyPolicyPage');

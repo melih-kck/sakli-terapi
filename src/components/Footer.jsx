@@ -31,7 +31,7 @@ export default function Footer() {
             <p className="footer-description">
               {IS_DEMO_MODE
                 ? t('demo.description')
-                : `${BRAND.tagline} Rumuz temelli çevrim içi psikolojik destek platformu.`}
+                : t('footer.liveDescription', { tagline: BRAND.tagline })}
             </p>
           </div>
 

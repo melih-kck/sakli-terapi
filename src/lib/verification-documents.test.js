@@ -5,6 +5,7 @@ vi.mock('./supabase', () => ({
 }));
 
 import {
+  getVerificationFileValidationCode,
   MAX_VERIFICATION_FILE_SIZE,
   validateVerificationFile,
 } from './verification-documents';
@@ -24,6 +25,10 @@ describe('psychologist verification file validation', () => {
   });
 
   it('rejects missing, empty, unsupported, and oversized files', () => {
+    expect(getVerificationFileValidationCode(null)).toBe('required');
+    expect(getVerificationFileValidationCode(makeFile({ size: 0 }))).toBe('empty');
+    expect(getVerificationFileValidationCode(makeFile({ type: 'text/plain' }))).toBe('unsupported');
+    expect(getVerificationFileValidationCode(makeFile({ size: MAX_VERIFICATION_FILE_SIZE + 1 }))).toBe('tooLarge');
     expect(validateVerificationFile(null)).toContain('seçin');
     expect(validateVerificationFile(makeFile({ size: 0 }))).toContain('Boş');
     expect(validateVerificationFile(makeFile({ type: 'text/plain' }))).toContain('PDF');

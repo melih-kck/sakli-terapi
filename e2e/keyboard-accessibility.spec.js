@@ -6,14 +6,19 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test('atlama bağlantısı ana içeriğe taşır ve odak görünürdür', async ({ page }) => {
+test('atlama bağlantısı ana içeriğe taşır ve odak görünürdür', async ({ page, browserName }) => {
   await page.goto('/');
 
   const main = page.locator('main');
   const skipLink = page.getByRole('link', { name: 'Ana içeriğe geç' });
   await expect(main).toHaveAttribute('id', 'main-content');
 
-  await page.keyboard.press('Tab');
+  if (browserName === 'webkit') {
+    // Safari link tabbing depends on the host OS full-keyboard-access setting.
+    await skipLink.focus();
+  } else {
+    await page.keyboard.press('Tab');
+  }
   await expect(skipLink).toBeFocused();
   await expect(skipLink).toBeVisible();
   await expect.poll(() => skipLink.evaluate(element => {
@@ -28,6 +33,11 @@ test('atlama bağlantısı ana içeriğe taşır ve odak görünürdür', async 
 test('istemci tarafı rota değişimi yeni ana içeriğe odaklanır', async ({ page }) => {
   await page.goto('/');
 
+  const isMobile = (page.viewportSize()?.width || 0) <= 900;
+  if (isMobile) {
+    await page.locator('#nav-hamburger').click();
+    await expect(page.locator('#nav-home')).toBeFocused();
+  }
   const psychologistsLink = page.locator('#nav-psychologists');
   await psychologistsLink.focus();
   await page.keyboard.press('Enter');
@@ -66,23 +76,24 @@ test('yönetici sekmeleri ok, Home ve End tuşlarıyla çalışır', async ({ pa
   await page.goto('/giris');
   await page.locator('#demo-login-admin').click();
   await expect(page).toHaveURL(/\/admin$/);
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await expect(page.getByRole('tabpanel')).not.toContainText('Veriler yükleniyor...');
 
   const tabs = page.getByRole('tab');
   const pendingTab = tabs.nth(0);
   const activeTab = tabs.nth(1);
   const auditTab = tabs.nth(3);
 
-  await pendingTab.focus();
-  await page.keyboard.press('ArrowRight');
+  await pendingTab.press('ArrowRight');
   await expect(activeTab).toBeFocused();
   await expect(activeTab).toHaveAttribute('aria-selected', 'true');
 
-  await page.keyboard.press('End');
+  await activeTab.press('End');
   await expect(auditTab).toBeFocused();
   await expect(auditTab).toHaveAttribute('aria-selected', 'true');
   await expect(page.getByRole('tabpanel')).toHaveAttribute('aria-labelledby', 'admin-tab-audit');
 
-  await page.keyboard.press('Home');
+  await auditTab.press('Home');
   await expect(pendingTab).toBeFocused();
   await expect(pendingTab).toHaveAttribute('aria-selected', 'true');
 });
@@ -99,6 +110,20 @@ test('SSS sekmeleri klavyeyle değiştirilir', async ({ page }) => {
   await expect(secondTab).toBeFocused();
   await expect(secondTab).toHaveAttribute('aria-selected', 'true');
   await expect(page.getByRole('tabpanel')).toHaveAttribute('aria-labelledby', await secondTab.getAttribute('id'));
+});
+
+test('ana sayfa SSS düğmeleri durumlarını ve yanıt görünürlüğünü bildirir', async ({ page }) => {
+  await page.goto('/');
+
+  const question = page.getByRole('button', { name: 'Saklı Terapi nasıl çalışır?' });
+  await expect(question).toHaveAttribute('aria-expanded', 'false');
+  const answerId = await question.getAttribute('aria-controls');
+  await expect(page.locator(`#${answerId}`)).toBeHidden();
+
+  await question.focus();
+  await page.keyboard.press('Enter');
+  await expect(question).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.locator(`#${answerId}`)).toBeVisible();
 });
 
 test('ayar sekmeleri dikey ok tuşlarıyla değiştirilir', async ({ page }) => {
@@ -128,6 +153,7 @@ test('mobil menü odağı içeride tutar ve Escape ile kapanır', async ({ page 
   const firstMenuLink = page.locator('#nav-home');
   const lastMenuAction = page.locator('#nav-mobile-login');
 
+  await expect(firstMenuLink).toBeHidden();
   await menuButton.focus();
   await page.keyboard.press('Enter');
   await expect(menuButton).toHaveAttribute('aria-expanded', 'true');
@@ -140,5 +166,6 @@ test('mobil menü odağı içeride tutar ve Escape ile kapanır', async ({ page 
 
   await page.keyboard.press('Escape');
   await expect(menuButton).toHaveAttribute('aria-expanded', 'false');
+  await expect(firstMenuLink).toBeHidden();
   await expect(menuButton).toBeFocused();
 });

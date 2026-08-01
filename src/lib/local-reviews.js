@@ -2,7 +2,7 @@ import { IS_DEMO_MODE } from '../config/runtime';
 
 const GLOBAL_REVIEWS_KEY = 'sakli-terapi-global-reviews';
 
-export const getLocalReviews = () => {
+const getLocalReviews = () => {
   try {
     const saved = localStorage.getItem(GLOBAL_REVIEWS_KEY);
     return saved ? JSON.parse(saved) : [];

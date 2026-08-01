@@ -36,13 +36,3 @@ export const COMMUNICATION_CHANNELS = [
 ];
 
 export const DAYS_TR = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
-export const DAYS_SHORT_TR = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
-export const MONTHS_TR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-
-export const MOODS = [
-  { value: 1, emoji: '😢', label: 'Çok Kötü' },
-  { value: 2, emoji: '😞', label: 'Kötü' },
-  { value: 3, emoji: '😐', label: 'Normal' },
-  { value: 4, emoji: '🙂', label: 'İyi' },
-  { value: 5, emoji: '😄', label: 'Çok İyi' },
-];

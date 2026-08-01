@@ -6,6 +6,7 @@ import { createDefaultMfaStatus, readAdminMfaStatus } from '../lib/admin-mfa';
 import { BRAND } from '../config/brand';
 import { FEATURES, IS_DEMO_MODE } from '../config/runtime';
 import { createDemoUser } from '../data/demo-fixtures';
+import { useLanguage } from './LanguageContext';
 import { useToast } from './ToastContext';
 
 const AuthContext = createContext();
@@ -94,6 +95,7 @@ export function AuthProvider({ children }) {
   const currentUserId = user?.id;
   const currentUserEmail = user?.email;
   const { success, error: showError } = useToast();
+  const { t } = useLanguage();
 
   const refreshMfaStatus = useCallback(async (role) => {
     if (IS_DEMO_MODE && role === 'admin') {
@@ -351,7 +353,7 @@ export function AuthProvider({ children }) {
       setSession(null);
       setUser(demoUser);
       const nextMfaStatus = await refreshMfaStatus(demoUser.role);
-      success('Demo Hazır', 'Kurgusal verilerle güvenli inceleme ortamı açıldı.');
+      success(t('common.demoReadyTitle'), t('common.demoReadyDescription'));
       return {
         success: true,
         role: demoUser.role,
@@ -360,7 +362,7 @@ export function AuthProvider({ children }) {
     } finally {
       setIsLoading(false);
     }
-  }, [refreshMfaStatus, success]);
+  }, [refreshMfaStatus, success, t]);
 
   const register = useCallback(async (email, password, profileData, role) => {
     setIsLoading(true);
@@ -530,8 +532,8 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('mock_user_session');
     setUser(null);
     setMfaStatus(createDefaultMfaStatus());
-    success('Çıkış', 'Başarıyla çıkış yapıldı.');
-  }, [success]);
+    success(t('common.logoutTitle'), t('common.logoutDescription'));
+  }, [success, t]);
 
   const refreshUserProfile = useCallback(async () => {
     if (!currentUserId || currentUserId.startsWith('mock-')) return { success: false };

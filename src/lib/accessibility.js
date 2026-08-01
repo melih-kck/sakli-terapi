@@ -18,6 +18,17 @@ export const handleTabListKeyDown = (event) => {
   else if (event.key === nextKey) nextIndex = (currentIndex + 1) % tabs.length;
   else nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
 
-  tabs[nextIndex].focus();
-  tabs[nextIndex].click();
+  const nextTab = tabs[nextIndex];
+  const nextTabId = nextTab.id;
+  nextTab.click();
+  nextTab.focus();
+
+  const refocusAfterRender = (attemptsRemaining) => {
+    const currentTab = nextTabId ? document.getElementById(nextTabId) : nextTab;
+    currentTab?.focus();
+    if (attemptsRemaining > 0) {
+      requestAnimationFrame(() => refocusAfterRender(attemptsRemaining - 1));
+    }
+  };
+  requestAnimationFrame(() => refocusAfterRender(2));
 };
