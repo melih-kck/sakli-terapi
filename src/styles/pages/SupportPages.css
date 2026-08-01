@@ -127,6 +127,12 @@
   margin-top: var(--space-lg);
 }
 
+.restricted-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
 .content-checkbox {
   margin-top: var(--space-md);
 }
@@ -315,6 +321,15 @@
   }
 
   .content-actions .btn {
+    width: 100%;
+  }
+
+  .restricted-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .restricted-actions .btn {
     width: 100%;
   }
 }
