@@ -39,7 +39,7 @@ Geri dönüş doğrudan üretim projesi üzerinde denenmez.
 1. Ayrı bir geçici Supabase projesi oluşturun.
 2. Uzantıları ve proje ayarlarını üretimle eşleştirin.
 3. Rol, şema ve veri dökümlerini Supabase'in resmi geri yükleme sırasıyla uygulayın.
-4. Temiz projenin varsayılan yetkilerini kaynak projeyle eşitlemek için `migration-006` ile `migration-017` arasındaki migration'ları sırayla yeniden uygulayın.
+4. Temiz projenin varsayılan yetkilerini kaynak projeyle eşitlemek için `migration-006` ile `migration-019` arasındaki migration'ları sırayla yeniden uygulayın.
 5. Storage dosyalarını resmi taşıma betiği veya Storage API ile aynı nesne yoluna `upsert: true` kullanarak yükleyin. Dashboard'un normal yüklemesi çakışmada dosya adına ` (1)` ekleyebileceği için kurtarma amacıyla kullanılmamalıdır.
 6. Storage kovasının `public=false` olduğunu doğrulayın.
 7. `src/lib/verify-rls.sql` dosyasını çalıştırın; hiçbir doğrulama hatasını beklenen restore gürültüsü olarak geçmeyin.

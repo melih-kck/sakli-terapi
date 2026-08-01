@@ -1,7 +1,7 @@
 import { ALLOW_LOCAL_SIMULATION } from '../config/runtime';
 
-export const SESSION_JOIN_EARLY_MINUTES = 15;
-export const SESSION_JOIN_LATE_MINUTES = 90;
+const SESSION_JOIN_EARLY_MINUTES = 15;
+const SESSION_JOIN_LATE_MINUTES = 90;
 
 export const formatLocalDateIso = (date = new Date()) => {
   const year = date.getFullYear();
@@ -105,7 +105,7 @@ export const getSessionJoinState = (session, now = new Date()) => {
     };
   }
 
-  // TEST ORTAMI İÇİN BYPASS (Saati beklemeden girebilme)
+  // The portfolio demo keeps its fictional session room available at all times.
   if (ALLOW_LOCAL_SIMULATION) {
     return {
       canJoin: true,

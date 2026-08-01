@@ -1,3 +1,5 @@
+import { createHash, timingSafeEqual } from 'node:crypto';
+
 const REQUIRED_ENVIRONMENT = [
   'SUPABASE_SERVICE_ROLE_KEY',
   'RESEND_API_KEY',
@@ -14,8 +16,16 @@ export const escapeHtml = (value = '') => String(value)
   .replaceAll("'", '&#039;');
 
 const getBearerToken = (request) => {
-  const authorization = request.headers.authorization || '';
+  const authorization = request.headers?.authorization;
+  if (typeof authorization !== 'string') return '';
   return authorization.startsWith('Bearer ') ? authorization.slice(7) : '';
+};
+
+export const hasValidWorkerToken = (request, expectedToken) => {
+  if (!expectedToken) return false;
+  const providedDigest = createHash('sha256').update(getBearerToken(request)).digest();
+  const expectedDigest = createHash('sha256').update(expectedToken).digest();
+  return timingSafeEqual(providedDigest, expectedDigest);
 };
 
 const getConfiguration = () => ({
@@ -47,21 +57,41 @@ const callSupabaseRpc = async (configuration, functionName, body) => {
   return response.json();
 };
 
+export const getSafeEmailActionUrl = (actionPath, appUrl) => {
+  if (typeof actionPath !== 'string' || !actionPath.startsWith('/') || actionPath.startsWith('//')) {
+    return null;
+  }
+
+  try {
+    const baseUrl = new URL(appUrl);
+    const actionUrl = new URL(actionPath, baseUrl);
+    return actionUrl.origin === baseUrl.origin ? actionUrl.toString() : null;
+  } catch {
+    return null;
+  }
+};
+
+const normalizeEmailSubject = (value) => {
+  const normalized = Array.from(String(value || ''), (character) => {
+    const code = character.charCodeAt(0);
+    return code <= 31 || code === 127 ? ' ' : character;
+  }).join('').trim().slice(0, 200);
+  return normalized || BRAND_NAME;
+};
+
 export const buildEmailContent = (notification, appUrl) => {
-  const safeTitle = escapeHtml(notification.notification_title);
+  const subject = normalizeEmailSubject(notification.notification_title);
+  const safeTitle = escapeHtml(subject);
   const safeMessage = escapeHtml(notification.notification_message);
-  const actionPath = notification.notification_action_url;
-  const actionUrl = actionPath?.startsWith('/') && !actionPath.startsWith('//')
-    ? new URL(notification.notification_action_url, appUrl).toString()
-    : null;
+  const actionUrl = getSafeEmailActionUrl(notification.notification_action_url, appUrl);
   const actionMarkup = actionUrl
-    ? `<p style="margin:24px 0 0"><a href="${escapeHtml(actionUrl)}" style="display:inline-block;padding:12px 18px;background:#6d5dfc;color:#fff;text-decoration:none;border-radius:6px">${BRAND_NAME}'de Görüntüle</a></p>`
+    ? `<p style="margin:24px 0 0"><a href="${escapeHtml(actionUrl)}" style="display:inline-block;padding:12px 18px;background:#BD3F36;color:#FFFAF0;text-decoration:none;border-radius:6px">${BRAND_NAME}'de Görüntüle</a></p>`
     : '';
 
   return {
-    subject: notification.notification_title,
-    text: `${notification.notification_title}\n\n${notification.notification_message}${actionUrl ? `\n\n${actionUrl}` : ''}`,
-    html: `<!doctype html><html lang="tr"><body style="margin:0;background:#f5f6f8;font-family:Arial,sans-serif;color:#20242c"><div style="max-width:600px;margin:0 auto;padding:32px 20px"><div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;padding:28px"><p style="margin:0 0 18px;font-size:18px;font-weight:700">${BRAND_NAME}</p><h1 style="margin:0 0 12px;font-size:22px">${safeTitle}</h1><p style="margin:0;line-height:1.6;color:#4f5663">${safeMessage}</p>${actionMarkup}</div><p style="margin:16px 0 0;font-size:12px;color:#737b88">Bu e-posta, hesap ayarlarınızda etkinleştirdiğiniz operasyonel bildirim tercihlerine göre gönderildi.</p></div></body></html>`,
+    subject,
+    text: `${subject}\n\n${notification.notification_message}${actionUrl ? `\n\n${actionUrl}` : ''}`,
+    html: `<!doctype html><html lang="tr"><body style="margin:0;background:#F4F0E7;font-family:Arial,sans-serif;color:#102F2D"><div style="max-width:600px;margin:0 auto;padding:32px 20px"><div style="background:#FFFAF0;border:1px solid #D8D5CC;border-radius:8px;padding:28px"><p style="margin:0 0 18px;font-size:18px;font-weight:700">${BRAND_NAME}</p><h1 style="margin:0 0 12px;font-size:22px">${safeTitle}</h1><p style="margin:0;line-height:1.6;color:#526861">${safeMessage}</p>${actionMarkup}</div><p style="margin:16px 0 0;font-size:12px;color:#526861">Bu e-posta, hesap ayarlarınızda etkinleştirdiğiniz operasyonel bildirim tercihlerine göre gönderildi.</p></div></body></html>`,
   };
 };
 
@@ -98,20 +128,27 @@ export default async function handler(request, response) {
   }
 
   const configuration = getConfiguration();
-  const missingEnvironment = REQUIRED_ENVIRONMENT.filter(name => !process.env[name]);
-  if (!configuration.supabaseUrl) missingEnvironment.push('SUPABASE_URL');
-  if (!configuration.workerSecret) missingEnvironment.push('EMAIL_WORKER_SECRET');
-
-  if (missingEnvironment.length > 0) {
+  if (!configuration.workerSecret) {
+    console.error('Email delivery worker secret is not configured.');
     return response.status(503).json({
       success: false,
       code: 'email_delivery_not_configured',
-      missing: [...new Set(missingEnvironment)],
     });
   }
 
-  if (getBearerToken(request) !== configuration.workerSecret) {
+  if (!hasValidWorkerToken(request, configuration.workerSecret)) {
     return response.status(401).json({ success: false, code: 'unauthorized' });
+  }
+
+  const missingEnvironment = REQUIRED_ENVIRONMENT.filter(name => !process.env[name]);
+  if (!configuration.supabaseUrl) missingEnvironment.push('SUPABASE_URL');
+
+  if (missingEnvironment.length > 0) {
+    console.error('Email delivery environment is incomplete:', [...new Set(missingEnvironment)]);
+    return response.status(503).json({
+      success: false,
+      code: 'email_delivery_not_configured',
+    });
   }
 
   let notifications;

@@ -28,7 +28,7 @@ const getShortBio = (bio = '') => {
   return bio.length > 120 ? `${bio.slice(0, 117)}...` : bio;
 };
 
-export const normalizePsychologist = (psychologist) => {
+const normalizePsychologist = (psychologist) => {
   const name = psychologist.display_name || psychologist.name || psychologist.title || `${BRAND.name} Psikoloğu`;
   const channels = (psychologist.channels?.length ? psychologist.channels : ['video-blur', 'voice', 'text'])
     .filter(channel => ALLOWED_CHANNELS.includes(channel));

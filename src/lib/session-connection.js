@@ -35,12 +35,10 @@ export const normalizeIncomingSessionMessage = (
 export const isExpectedSessionPeer = ({
   connection,
   targetPeerId,
-  sessionId,
   expectedRole,
 }) => (
   Boolean(connection)
   && connection.peer === targetPeerId
-  && connection.metadata?.sessionId === String(sessionId)
   && connection.metadata?.role === expectedRole
 );
 

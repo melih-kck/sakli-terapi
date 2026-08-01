@@ -1,4 +1,4 @@
--- Read-only verification for Migrations 009-017.
+-- Read-only verification for Migrations 009-019.
 -- Run in Supabase SQL Editor after applying the migrations.
 
 SELECT
@@ -316,5 +316,44 @@ BEGIN
     'SELECT'
   ) THEN
     RAISE EXCEPTION 'ordinary session reads expose room credentials';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_catalog.pg_trigger
+    WHERE tgrelid = 'auth.users'::regclass
+      AND tgname = 'on_auth_user_created_scrub_metadata'
+      AND NOT tgisinternal
+  ) THEN
+    RAISE EXCEPTION 'auth metadata scrub trigger is missing';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM auth.users
+    WHERE COALESCE(raw_user_meta_data, '{}'::jsonb) ?| ARRAY[
+      'role',
+      'alias',
+      'name',
+      'privacyLevel',
+      'topics',
+      'preferredChannel',
+      'emergencyName',
+      'emergencyPhone',
+      'city',
+      'title',
+      'shortBio',
+      'bio',
+      'experience',
+      'isCandidate',
+      'basePrice',
+      'specializations',
+      'approaches',
+      'channels',
+      'university',
+      'supervisorName'
+    ]::text[]
+  ) THEN
+    RAISE EXCEPTION 'auth metadata still contains onboarding fields';
   END IF;
 END $$;

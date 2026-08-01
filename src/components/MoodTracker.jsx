@@ -2,11 +2,11 @@ import './MoodTracker.css';
 import { useLanguage } from '../context/LanguageContext';
 
 const MOODS = [
-  { value: 1, emoji: '😢', label: 'Çok Kötü' },
-  { value: 2, emoji: '😞', label: 'Kötü' },
-  { value: 3, emoji: '😐', label: 'Normal' },
-  { value: 4, emoji: '🙂', label: 'İyi' },
-  { value: 5, emoji: '😄', label: 'Çok İyi' },
+  { value: 1, emoji: '😢' },
+  { value: 2, emoji: '😞' },
+  { value: 3, emoji: '😐' },
+  { value: 4, emoji: '🙂' },
+  { value: 5, emoji: '😄' },
 ];
 
 export default function MoodTracker({ value, onChange, history = [], size = 'md' }) {
@@ -19,7 +19,9 @@ export default function MoodTracker({ value, onChange, history = [], size = 'md'
         {MOODS.map((mood, index) => (
           <button
             key={mood.value}
+            type="button"
             className={`mood-option ${value === mood.value ? 'selected' : ''}`}
+            aria-pressed={value === mood.value}
             onClick={() => onChange && onChange(mood.value)}
             title={moodLabels[index]}
             id={`mood-${mood.value}`}

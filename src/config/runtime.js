@@ -15,9 +15,3 @@ export const FEATURES = Object.freeze({
   liveSessions: !IS_DEMO_MODE && readBoolean(import.meta.env.VITE_ENABLE_LIVE_SESSIONS),
   payments: !IS_DEMO_MODE && readBoolean(import.meta.env.VITE_ENABLE_PAYMENTS),
 });
-
-export const DEMO_DISCLOSURE = Object.freeze({
-  short: 'Portföy demosu',
-  title: 'Ürün ve mühendislik portföyü için hazırlanmış teknoloji prototipi',
-  description: 'Bu sürüm sağlık hizmeti sunmaz, gerçek randevu kabul etmez ve yalnızca kurgusal veriler kullanır.',
-});

@@ -5,6 +5,10 @@ describe('auth helpers', () => {
   it('builds same-origin auth redirect URLs', () => {
     expect(getAuthRedirectUrl('/hesap-dogrulandi', 'https://sakli-terapi.vercel.app/path'))
       .toBe('https://sakli-terapi.vercel.app/hesap-dogrulandi');
+    expect(getAuthRedirectUrl('https://attacker.example/reset', 'https://sakli-terapi.vercel.app'))
+      .toBe('https://sakli-terapi.vercel.app/');
+    expect(getAuthRedirectUrl('//attacker.example/reset', 'https://sakli-terapi.vercel.app'))
+      .toBe('https://sakli-terapi.vercel.app/');
   });
 
   it('recognizes unconfirmed email errors without exposing other auth failures', () => {

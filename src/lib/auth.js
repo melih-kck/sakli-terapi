@@ -1,6 +1,10 @@
-export const getAuthRedirectUrl = (path, origin = window.location.origin) => (
-  new URL(path, origin).toString()
-);
+export const getAuthRedirectUrl = (path, origin = window.location.origin) => {
+  const baseUrl = new URL(origin);
+  const redirectUrl = new URL(path, baseUrl);
+  return redirectUrl.origin === baseUrl.origin
+    ? redirectUrl.toString()
+    : new URL('/', baseUrl).toString();
+};
 
 export const isEmailNotConfirmedError = (authError) => {
   const code = authError?.code?.toLowerCase?.() || '';

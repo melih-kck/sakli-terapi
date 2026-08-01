@@ -308,7 +308,7 @@ export async function reviewVerificationDocument(documentId, status, reason = nu
 
 export const getVerificationDocumentUrl = (storagePath) => {
   if (IS_DEMO_MODE) {
-    return Promise.resolve(new URL('/demo-belge.html', window.location.origin).toString());
+    return new URL('/demo-belge.html', window.location.origin).toString();
   }
   return createVerificationDocumentUrl(storagePath);
 };

@@ -36,14 +36,13 @@ describe('session-connection', () => {
     }, 'psychologist', now)).toBeNull();
   });
 
-  it('checks peer id and server-bound session metadata together', () => {
+  it('checks the opaque server-issued peer id and expected participant role together', () => {
     const expected = {
       connection: {
         peer: 'target-peer',
-        metadata: { sessionId: 'session-1', role: 'psychologist' },
+        metadata: { role: 'psychologist' },
       },
       targetPeerId: 'target-peer',
-      sessionId: 'session-1',
       expectedRole: 'psychologist',
     };
 
@@ -56,7 +55,7 @@ describe('session-connection', () => {
       ...expected,
       connection: {
         ...expected.connection,
-        metadata: { sessionId: 'other-session', role: 'psychologist' },
+        metadata: { role: 'client' },
       },
     })).toBe(false);
   });

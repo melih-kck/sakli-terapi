@@ -20,6 +20,12 @@ export default function RegisterPsychologist() {
     specializations: [], approaches: [],
     shortBio: '', basePrice: '1000'
   });
+  const currentYear = new Date().getFullYear();
+  const hasPasswordMismatch = Boolean(
+    formData.password
+    && formData.passwordConfirm
+    && formData.password !== formData.passwordConfirm
+  );
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
   
@@ -36,13 +42,17 @@ export default function RegisterPsychologist() {
 
   const handleNext = () => setStep(prev => prev + 1);
   const handlePrev = () => setStep(prev => prev - 1);
+  const handleStepSubmit = (event) => {
+    event.preventDefault();
+    if (step === 1 && hasPasswordMismatch) return;
+    handleNext();
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.password !== formData.passwordConfirm) return;
+    if (isLoading || formData.password !== formData.passwordConfirm) return;
 
     const graduationYear = Number(formData.graduationYear);
-    const currentYear = new Date().getFullYear();
     const result = await register(formData.email, formData.password, {
       ...formData,
       title: isCandidate ? 'Aday Psikolog' : 'Psikolog',
@@ -62,7 +72,11 @@ export default function RegisterPsychologist() {
     <div className="page auth-page">
       <Navbar />
       <main className="page-content" style={{ padding: 'var(--space-2xl) 0' }}>
-        
+        <div className="container container-md text-center mb-xl">
+          <h1>Psikolog Başvurusu</h1>
+          <p className="section-subtitle">Mesleki profilinizi inceleme için hazırlayın.</p>
+        </div>
+
         {/* Step Indicator */}
         <div className="register-steps">
           {[1, 2, 3, 4].map(num => (
@@ -78,7 +92,7 @@ export default function RegisterPsychologist() {
 
         <div className="register-card card card-elevated">
           <div className="card-body">
-            <form onSubmit={step === 4 ? handleSubmit : (e) => { e.preventDefault(); handleNext(); }}>
+            <form onSubmit={step === 4 ? handleSubmit : handleStepSubmit}>
               
               {/* Step 1: Personal Info */}
               {step === 1 && (
@@ -90,32 +104,32 @@ export default function RegisterPsychologist() {
 
                   <div className="grid grid-2 gap-md mb-md">
                     <div className="input-group">
-                      <label>Ad Soyad</label>
-                      <input type="text" name="name" className="input" placeholder="Örn: Ayşe Yılmaz" value={formData.name} onChange={handleChange} required />
+                      <label htmlFor="psych-register-name">Ad Soyad</label>
+                      <input id="psych-register-name" type="text" name="name" className="input" placeholder="Örn: Ayşe Yılmaz" value={formData.name} onChange={handleChange} required />
                     </div>
                     <div className="input-group">
-                      <label>E-posta Adresi</label>
-                      <input type="email" name="email" className="input" value={formData.email} onChange={handleChange} required />
+                      <label htmlFor="psych-register-email">E-posta Adresi</label>
+                      <input id="psych-register-email" type="email" name="email" className="input" value={formData.email} onChange={handleChange} autoComplete="email" required />
                     </div>
                   </div>
 
                   <div className="grid grid-2 gap-md mb-lg">
                     <div className="input-group">
-                      <label>Şifre</label>
-                      <input type="password" name="password" className="input" value={formData.password} onChange={handleChange} minLength="8" required />
+                      <label htmlFor="psych-register-password">Şifre</label>
+                      <input id="psych-register-password" type="password" name="password" className="input" value={formData.password} onChange={handleChange} minLength="8" autoComplete="new-password" required />
                     </div>
                     <div className="input-group">
-                      <label>Şifre Tekrar</label>
-                      <input type="password" name="passwordConfirm" className="input" value={formData.passwordConfirm} onChange={handleChange} minLength="8" required />
-                      {formData.password && formData.passwordConfirm && formData.password !== formData.passwordConfirm && (
-                        <span className="input-hint" style={{ color: 'var(--danger)' }}>Şifreler eşleşmiyor.</span>
+                      <label htmlFor="psych-register-password-confirm">Şifre Tekrar</label>
+                      <input id="psych-register-password-confirm" type="password" name="passwordConfirm" className="input" value={formData.passwordConfirm} onChange={handleChange} minLength="8" autoComplete="new-password" aria-invalid={hasPasswordMismatch} aria-describedby={hasPasswordMismatch ? 'psych-password-error' : undefined} required />
+                      {hasPasswordMismatch && (
+                        <span className="input-hint" id="psych-password-error" role="alert" style={{ color: 'var(--danger)' }}>Şifreler eşleşmiyor.</span>
                       )}
                     </div>
                   </div>
 
                   <div className="input-group mb-lg">
                     <label className="checkbox-group">
-                      <input type="checkbox" checked={isCandidate} onChange={(e) => setIsCandidate(e.target.checked)} />
+                       <input id="psych-register-candidate" type="checkbox" checked={isCandidate} onChange={(e) => setIsCandidate(e.target.checked)} />
                       <span><strong>Aday Psikologum (Son Sınıf)</strong><br/><small className="text-tertiary">Süpervizör eşliğinde stajyer olarak seans vermek istiyorum.</small></span>
                     </label>
                   </div>
@@ -129,19 +143,19 @@ export default function RegisterPsychologist() {
                   
                   <div className="grid grid-2 gap-md mb-md">
                     <div className="input-group">
-                      <label>Üniversite</label>
-                      <input type="text" name="university" className="input" value={formData.university} onChange={handleChange} required />
+                      <label htmlFor="psych-register-university">Üniversite</label>
+                      <input id="psych-register-university" type="text" name="university" className="input" value={formData.university} onChange={handleChange} required />
                     </div>
                     <div className="input-group">
-                      <label>{isCandidate ? 'Beklenen Mezuniyet' : 'Mezuniyet Yılı'}</label>
-                      <input type="number" name="graduationYear" className="input" value={formData.graduationYear} onChange={handleChange} required />
+                      <label htmlFor="psych-register-graduation-year">{isCandidate ? 'Beklenen Mezuniyet' : 'Mezuniyet Yılı'}</label>
+                      <input id="psych-register-graduation-year" type="number" name="graduationYear" className="input" value={formData.graduationYear} onChange={handleChange} min={currentYear - 80} max={isCandidate ? currentYear + 10 : currentYear} required />
                     </div>
                   </div>
 
                   {isCandidate && (
                     <div className="input-group mb-md">
-                      <label>Süpervizör (Danışman) Adı</label>
-                      <input type="text" name="supervisorName" className="input" placeholder="Örn: Prof. Dr. Ayşe Yılmaz" value={formData.supervisorName} onChange={handleChange} required />
+                      <label htmlFor="psych-register-supervisor">Süpervizör (Danışman) Adı</label>
+                      <input id="psych-register-supervisor" type="text" name="supervisorName" className="input" placeholder="Örn: Prof. Dr. Ayşe Yılmaz" value={formData.supervisorName} onChange={handleChange} required />
                       <span className="input-hint">Bu alan yönetici incelemesi içindir ve herkese açık profilde gösterilmez.</span>
                     </div>
                   )}
@@ -159,13 +173,14 @@ export default function RegisterPsychologist() {
                   <h3>3. Uzmanlık ve Profil</h3>
                   
                   <div className="input-group mb-md">
-                    <label>Uzmanlık Alanları (En fazla 3 adet)</label>
-                    <div className="topic-grid">
+                    <span className="input-group-label" id="psych-register-specializations">Uzmanlık Alanları (En fazla 3 adet)</span>
+                    <div className="topic-grid" role="group" aria-labelledby="psych-register-specializations">
                       {SPECIALIZATIONS.map(spec => (
                         <button
                           key={spec.id} 
                           type="button"
                           className={`btn btn-sm ${formData.specializations.includes(spec.id) ? 'btn-primary' : 'btn-outline'}`}
+                          aria-pressed={formData.specializations.includes(spec.id)}
                           onClick={() => handleSpecToggle(spec.id)}
                           disabled={!formData.specializations.includes(spec.id) && formData.specializations.length >= 3}
                         >
@@ -176,22 +191,24 @@ export default function RegisterPsychologist() {
                   </div>
 
                   <div className="input-group mb-md">
-                    <label>Kısa Biyografi (Profilde Görüntülenecek)</label>
+                    <label htmlFor="psych-register-bio">Kısa Biyografi (Profilde Görüntülenecek)</label>
                     <textarea 
+                      id="psych-register-bio"
                       name="shortBio" 
                       className="input" 
                       rows="3" 
                       placeholder="Danışanların sizi daha iyi tanıması için 1-2 cümlelik özet..."
                       value={formData.shortBio}
                       onChange={handleChange}
+                      maxLength="600"
                       required
                     ></textarea>
                   </div>
 
                   <div className="input-group mb-lg">
-                    <label>Taban Seans Ücreti (TL)</label>
+                    <label htmlFor="psych-register-price">Taban Seans Ücreti (TL)</label>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
-                      <input type="number" name="basePrice" className="input" style={{ width: '150px' }} value={formData.basePrice} onChange={handleChange} min="500" required />
+                      <input id="psych-register-price" type="number" name="basePrice" className="input" style={{ width: '150px' }} value={formData.basePrice} onChange={handleChange} min="500" required />
                       <span className="text-tertiary text-sm">₺ / Seans (Kendi ücretinizi belirleyebilirsiniz)</span>
                     </div>
                   </div>
@@ -234,7 +251,7 @@ export default function RegisterPsychologist() {
                 ) : <div></div>}
                 
                 {step < 4 ? (
-                  <button type="submit" className="btn btn-primary" disabled={isLoading}>İleri</button>
+                  <button type="submit" className="btn btn-primary" disabled={isLoading || (step === 1 && hasPasswordMismatch)}>İleri</button>
                 ) : (
                   <button type="submit" className="btn btn-primary" disabled={isLoading}>
                     {isLoading ? 'Başvuru gönderiliyor...' : 'Başvuruyu Tamamla'}

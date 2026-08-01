@@ -172,6 +172,7 @@ export default function PsychDashboard() {
   const renderAppointmentActions = (appointment) => {
     const isUpdating = String(updatingSessionId) === String(appointment.id);
     const joinState = getSessionJoinState(appointment);
+    const [joinLabel] = t(`dashboard.join.${joinState.code}`);
     const requiresPayment = appointment.paymentRequired && appointment.paymentStatus !== 'paid';
     const startsAt = getSessionDateTime(appointment);
     const canComplete = Boolean(startsAt && startsAt <= new Date() && !requiresPayment);
@@ -235,7 +236,7 @@ export default function PsychDashboard() {
         {joinState.canJoin ? (
           <Link to={`/seans/${appointment.id}`} className="btn btn-primary btn-sm">{t('dashboard.psychologist.goToAppointment')}</Link>
         ) : (
-          <button type="button" className="btn btn-outline btn-sm" disabled>{joinState.label}</button>
+          <button type="button" className="btn btn-outline btn-sm" disabled>{joinLabel}</button>
         )}
       </>
     );

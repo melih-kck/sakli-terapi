@@ -42,7 +42,10 @@ export default defineConfig({
     },
     {
       name: 'firefox-desktop',
-      testIgnore: /accessibility\.spec\.js/,
+      testIgnore: [
+        /(^|[\\/])accessibility\.spec\.js$/,
+        /(^|[\\/])site-health\.spec\.js$/,
+      ],
       use: {
         ...devices['Desktop Firefox'],
         viewport: { width: 1440, height: 1000 },
@@ -50,7 +53,10 @@ export default defineConfig({
     },
     {
       name: 'webkit-desktop',
-      testIgnore: /accessibility\.spec\.js/,
+      testIgnore: [
+        /(^|[\\/])accessibility\.spec\.js$/,
+        /(^|[\\/])site-health\.spec\.js$/,
+      ],
       use: {
         ...devices['Desktop Safari'],
         viewport: { width: 1440, height: 1000 },
@@ -58,7 +64,10 @@ export default defineConfig({
     },
     {
       name: 'webkit-mobile',
-      testIgnore: /accessibility\.spec\.js/,
+      testIgnore: [
+        /(^|[\\/])accessibility\.spec\.js$/,
+        /(^|[\\/])site-health\.spec\.js$/,
+      ],
       use: {
         ...devices['iPhone 15'],
       },

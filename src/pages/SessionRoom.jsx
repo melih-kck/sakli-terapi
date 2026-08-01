@@ -80,6 +80,10 @@ export default function SessionRoom() {
     helper: t(`dashboard.join.${sessionAccess.code}`)[1],
   };
   const locale = language === 'en' ? 'en-US' : 'tr-TR';
+  const translationRef = useRef(t);
+  const localeRef = useRef(locale);
+  translationRef.current = t;
+  localeRef.current = locale;
   const panelPath = user?.role === 'admin' ? '/admin' : isClient ? '/panel' : '/psikolog-panel';
   const isMockUser = ALLOW_LOCAL_SIMULATION && user?.id?.startsWith('mock-');
   const [roomAccess, setRoomAccess] = useState(null);
@@ -252,9 +256,19 @@ export default function SessionRoom() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (!camOnRef.current) {
-      drawCanvasNotice(ctx, canvas, 'Kamera kapalı', 'Gizlilik modu aktif');
+      drawCanvasNotice(
+        ctx,
+        canvas,
+        translationRef.current('sessionRoom.system.cameraOffCanvas'),
+        translationRef.current('sessionRoom.system.privacyModeCanvas'),
+      );
     } else if (!videoReady) {
-      drawCanvasNotice(ctx, canvas, 'Kamera hazırlanıyor', 'Güvenli görüntü oluşturuluyor');
+      drawCanvasNotice(
+        ctx,
+        canvas,
+        translationRef.current('sessionRoom.system.cameraPreparingCanvas'),
+        translationRef.current('sessionRoom.system.secureVideoCanvas'),
+      );
     } else {
       const pxBlur = getSessionBlurPreset(blurLevelRef.current).pixels;
       if (pxBlur === 0) {
@@ -275,11 +289,11 @@ export default function SessionRoom() {
 
   const addSystemMessage = useCallback((text) => {
     setMessages(prev => [...prev, {
-      id: crypto.randomUUID(), text, sender: 'system', time: new Date().toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'})
+      id: crypto.randomUUID(), text, sender: 'system', time: new Date().toLocaleTimeString(localeRef.current, {hour: '2-digit', minute:'2-digit'})
     }]);
   }, []);
 
-  const markRemoteUnavailable = useCallback((message = "Karşı taraf bağlantısı kesildi. Yeniden bağlanması bekleniyor...") => {
+  const markRemoteUnavailable = useCallback((message) => {
     if (remoteVideoRef.current) {
       remoteVideoRef.current.srcObject = null;
     }
@@ -288,14 +302,14 @@ export default function SessionRoom() {
     setRemoteVideoReady(false);
     setRemoteVideoMissing(sessionChannel === 'video-blur');
     setSessionStatus('ready');
-    addSystemMessage(message);
+    addSystemMessage(message || translationRef.current('sessionRoom.system.disconnected'));
   }, [addSystemMessage, sessionChannel]);
 
   const handleDataConnection = useCallback((conn) => {
     connRef.current = conn;
 
     const markOpen = () => {
-      addSystemMessage("Sohbet bağlantısı kuruldu.");
+      addSystemMessage(translationRef.current('sessionRoom.system.chatConnected'));
       if (sessionChannel === 'text') {
         setSessionStatus('active');
       }
@@ -333,11 +347,11 @@ export default function SessionRoom() {
 
     if (!hasAudioTrack && !remoteAudioMissingNoticeShownRef.current) {
       remoteAudioMissingNoticeShownRef.current = true;
-      addSystemMessage('Karşı tarafın mikrofon akışı alınamadı. Karşı taraf mikrofon iznini kontrol etmeli.');
+      addSystemMessage(translationRef.current('sessionRoom.system.remoteMicMissing'));
     }
 
     remoteStream.getVideoTracks().forEach((track) => {
-      track.onended = () => markRemoteUnavailable("Karşı tarafın kamera bağlantısı kapandı. Yeniden bağlanması bekleniyor...");
+      track.onended = () => markRemoteUnavailable(translationRef.current('sessionRoom.system.cameraDisconnected'));
       track.onmute = () => setRemoteVideoReady(false);
       track.onunmute = () => setRemoteVideoReady(true);
     });
@@ -354,12 +368,12 @@ export default function SessionRoom() {
         setRemotePlaybackBlocked(true);
         if (!remotePlaybackNoticeShownRef.current) {
           remotePlaybackNoticeShownRef.current = true;
-          addSystemMessage('Tarayıcı gelen sesi otomatik başlatmadı. Sesi Aç düğmesini kullanın.');
+          addSystemMessage(translationRef.current('sessionRoom.system.autoplayBlocked'));
         }
       });
 
     setSessionStatus('active');
-    addSystemMessage("Görüşme başladı!");
+    addSystemMessage(translationRef.current('sessionRoom.system.started'));
   }, [addSystemMessage, markRemoteUnavailable, sessionChannel]);
 
   useEffect(() => {
@@ -385,7 +399,7 @@ export default function SessionRoom() {
         || result.access?.participantRole !== expectedRole
         || result.access?.channel !== currentSession.channel
       ) {
-        setRoomAccessError(result.error || 'Seans odası kimliği doğrulanamadı.');
+        setRoomAccessError(result.error || t('sessionRoom.system.roomIdentityFailed'));
         setRoomAccess(null);
       } else {
         setRoomAccess(result.access);
@@ -396,7 +410,7 @@ export default function SessionRoom() {
     return () => {
       isCurrent = false;
     };
-  }, [currentSession, getSessionRoomAccess, hasLoadedSessions, isClient, sessionAccess.canJoin, user]);
+  }, [currentSession, getSessionRoomAccess, hasLoadedSessions, isClient, sessionAccess.canJoin, t, user]);
 
   useEffect(() => {
     if (!user) return;
@@ -412,7 +426,6 @@ export default function SessionRoom() {
 
     const isMounted = { current: true };
     const peerMetadata = {
-      sessionId: String(sessionId),
       role: participantRole,
     };
     const clearConnectionAttemptTimer = () => {
@@ -427,7 +440,7 @@ export default function SessionRoom() {
         if (sessionChannel === 'text') {
           demoModeRef.current = true;
           setSessionStatus('active');
-          addSystemMessage('Yerel metin simülasyonu hazır. Mesajlar yalnızca bu tarayıcıda işlenir.');
+          addSystemMessage(translationRef.current('sessionRoom.system.demoTextReady'));
           return;
         }
 
@@ -438,8 +451,8 @@ export default function SessionRoom() {
           drawCanvasNotice(
             demoCanvas.getContext('2d'),
             demoCanvas,
-            'Güvenli demo görüntüsü',
-            'Kamera izni gerekmez',
+            translationRef.current('sessionRoom.system.demoCanvasTitle'),
+            translationRef.current('sessionRoom.system.demoCanvasSubtitle'),
           );
           const demoStream = typeof demoCanvas.captureStream === 'function'
             ? demoCanvas.captureStream(15)
@@ -456,7 +469,7 @@ export default function SessionRoom() {
           camOnRef.current = true;
           syncPipPreview();
           setSessionStatus('ready');
-          addSystemMessage('Demo görüntüsü hazır. Görüşme simülasyonunu başlatabilirsiniz.');
+          addSystemMessage(translationRef.current('sessionRoom.system.demoVideoReady'));
           return;
         }
 
@@ -469,7 +482,7 @@ export default function SessionRoom() {
         setCameraAvailable(null);
         demoModeRef.current = true;
         setSessionStatus('active');
-        addSystemMessage('Yerel sesli görüşme simülasyonu hazır. Gerçek mikrofon verisi kullanılmaz.');
+        addSystemMessage(translationRef.current('sessionRoom.system.demoVoiceReady'));
         return;
       }
 
@@ -496,12 +509,12 @@ export default function SessionRoom() {
         camOnRef.current = media.videoAvailable === true;
 
         if (!media.audioAvailable) {
-          addSystemMessage('Mikrofon izni alınamadı. Sesiniz karşı tarafa iletilmeyecek.');
+          addSystemMessage(translationRef.current('sessionRoom.system.microphoneDenied'));
         }
         if (sessionChannel === 'video-blur' && !media.videoAvailable) {
           addSystemMessage(media.audioAvailable
-            ? 'Kamera izni alınamadı. Görüşmeye yalnızca ses ile devam ediliyor.'
-            : 'Kamera izni alınamadı. Görüntünüz karşı tarafa iletilmeyecek.');
+            ? translationRef.current('sessionRoom.system.cameraAudioOnly')
+            : translationRef.current('sessionRoom.system.cameraDenied'));
         }
 
         let stream = media.stream;
@@ -534,8 +547,10 @@ export default function SessionRoom() {
             drawCanvasNotice(
               canvas.getContext('2d'),
               canvas,
-              'Kamera kullanılamıyor',
-              media.audioAvailable ? 'Sesli görüşme devam ediyor' : 'Medya izni gerekli',
+              translationRef.current('sessionRoom.system.cameraUnavailableCanvas'),
+              media.audioAvailable
+                ? translationRef.current('sessionRoom.system.audioContinuesCanvas')
+                : translationRef.current('sessionRoom.system.mediaPermissionCanvas'),
             );
             outgoingVideoStream = canvas.captureStream(15);
           }
@@ -551,7 +566,7 @@ export default function SessionRoom() {
         setCameraAvailable(sessionChannel === 'video-blur' ? false : null);
         setMicOn(false);
         setCamOn(false);
-        addSystemMessage('Kamera ve mikrofon akışı hazırlanamadı. Tarayıcı izinlerini kontrol edin.');
+        addSystemMessage(translationRef.current('sessionRoom.system.mediaFailed'));
         setSessionStatus('ready');
       } finally {
         // React StrictMode causes useEffect to run twice. 
@@ -616,7 +631,7 @@ export default function SessionRoom() {
         clearConnectionAttemptTimer();
         connRef.current = null;
         if (!callRef.current) {
-          markRemoteUnavailable('Sohbet bağlantısı kesildi. Yeniden bağlanması bekleniyor...');
+          markRemoteUnavailable(translationRef.current('sessionRoom.system.chatDisconnected'));
           scheduleClientReconnect();
         }
       });
@@ -625,7 +640,6 @@ export default function SessionRoom() {
     const isExpectedPeer = (connection) => isExpectedSessionPeer({
       connection,
       targetPeerId,
-      sessionId,
       expectedRole: expectedPeerRole,
     });
 
@@ -638,7 +652,7 @@ export default function SessionRoom() {
       peer.on('open', () => {
         peerInitRetryRef.current = 0;
         setSessionStatus('ready');
-        addSystemMessage("Sunucuya bağlanıldı. Karşı taraf bekleniyor...");
+        addSystemMessage(translationRef.current('sessionRoom.system.serverConnected'));
         
         // Client initiates the call to Psychologist
         if (isClient) {
@@ -655,7 +669,7 @@ export default function SessionRoom() {
       peer.on('connection', (conn) => {
         if (!isExpectedPeer(conn)) {
           conn.close();
-          addSystemMessage('Yetkisiz bir bağlantı isteği reddedildi.');
+          addSystemMessage(translationRef.current('sessionRoom.system.unauthorizedConnection'));
           return;
         }
         handleDataConnection(conn);
@@ -665,7 +679,7 @@ export default function SessionRoom() {
       peer.on('call', (call) => {
         if (!isExpectedPeer(call)) {
           call.close();
-          addSystemMessage('Yetkisiz bir görüşme isteği reddedildi.');
+          addSystemMessage(translationRef.current('sessionRoom.system.unauthorizedCall'));
           return;
         }
 
@@ -685,14 +699,14 @@ export default function SessionRoom() {
         // pes etme, 2 saniye bekle ve sunucu temizlenince tekrar dene.
         if (err.type === 'unavailable-id' && peerInitRetryRef.current < 2) {
           peerInitRetryRef.current += 1;
-          addSystemMessage("Sunucu eski bağlantınızı temizliyor. Birkaç saniye içinde yeniden denenecek...");
+          addSystemMessage(translationRef.current('sessionRoom.system.staleConnection'));
           setTimeout(() => {
             if (isMounted.current) {
               initPeer();
             }
           }, 2000);
         } else if (err.type === 'unavailable-id') {
-          addSystemMessage('Bu randevu başka bir sekmede açık. Diğer sekmeyi kapatıp sayfayı yenileyin.');
+          addSystemMessage(translationRef.current('sessionRoom.system.duplicateTab'));
         } else if (err.type === 'peer-unavailable' && isClient) {
           clearConnectionAttemptTimer();
           if (connRef.current) {
@@ -701,13 +715,13 @@ export default function SessionRoom() {
           }
           scheduleClientReconnect();
         } else if (err.type !== 'peer-unavailable') {
-          addSystemMessage('Görüşme sunucusuna bağlanılamadı. İnternet bağlantınızı kontrol edin.');
+          addSystemMessage(translationRef.current('sessionRoom.system.serverFailed'));
         }
       });
 
       peer.on('disconnected', () => {
         if (!isMounted.current || peer.destroyed) return;
-        addSystemMessage('Görüşme sunucusuyla bağlantı yenileniyor...');
+        addSystemMessage(translationRef.current('sessionRoom.system.reconnecting'));
         try {
           peer.reconnect();
         } catch {
@@ -742,7 +756,7 @@ export default function SessionRoom() {
 
         connRef.current = null;
         conn.close();
-        addSystemMessage('Bağlantı yanıt vermedi. Otomatik olarak yeniden deneniyor...');
+        addSystemMessage(translationRef.current('sessionRoom.system.connectionTimedOut'));
         scheduleClientReconnect();
       }, SESSION_CONNECTION_ATTEMPT_TIMEOUT_MS);
       
@@ -813,10 +827,10 @@ export default function SessionRoom() {
       const response = {
         id: crypto.randomUUID(),
         text: isClient
-          ? 'Demo uzmanı mesajınızı aldı. Bu yanıt yalnızca ürün akışını göstermek için oluşturuldu.'
-          : 'Demo danışanı mesajınızı aldı. Bu yanıt yalnızca ürün akışını göstermek için oluşturuldu.',
+          ? t('sessionRoom.system.demoPsychologistReply')
+          : t('sessionRoom.system.demoClientReply'),
         sender: isClient ? 'psychologist' : 'client',
-        time: new Date().toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'}),
+        time: new Date().toLocaleTimeString(locale, {hour: '2-digit', minute:'2-digit'}),
       };
       clearTimeout(demoResponseTimerRef.current);
       demoResponseTimerRef.current = setTimeout(() => {
@@ -828,7 +842,7 @@ export default function SessionRoom() {
       connRef.current.send(msg);
     } else {
       setMessages(prev => [...prev, {
-        id: crypto.randomUUID(), text: 'Karşı taraf odada olmadığı için mesajınız iletilemedi.', sender: 'system', time: new Date().toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'})
+        id: crypto.randomUUID(), text: t('sessionRoom.system.messageDeliveryFailed'), sender: 'system', time: new Date().toLocaleTimeString(locale, {hour: '2-digit', minute:'2-digit'})
       }]);
     }
     setChatInput('');
@@ -872,9 +886,9 @@ export default function SessionRoom() {
       if (sessionChannel === 'video-blur') {
         setRemoteVideoReady(true);
       }
-      addSystemMessage('Karşı tarafın sesi açıldı.');
+      addSystemMessage(t('sessionRoom.system.remoteAudioEnabled'));
     } catch {
-      addSystemMessage('Ses başlatılamadı. Tarayıcının ses iznini ve cihaz ses düzeyini kontrol edin.');
+      addSystemMessage(t('sessionRoom.system.remoteAudioFailed'));
     }
   };
 

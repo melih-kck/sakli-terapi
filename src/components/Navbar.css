@@ -270,12 +270,16 @@
     padding: 80px var(--space-lg) var(--space-lg);
     gap: var(--space-xs);
     box-shadow: -10px 0 30px rgba(8, 35, 33, 0.16);
+    visibility: hidden;
+    pointer-events: none;
     transition: right var(--transition-normal);
     z-index: 5;
   }
 
   .navbar-links.open {
     right: 0;
+    visibility: visible;
+    pointer-events: auto;
   }
 
   .nav-link {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -17,6 +17,7 @@ export default function Navbar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const mobileMenuRef = useRef(null);
   const hamburgerRef = useRef(null);
+  const previousPathnameRef = useRef(location.pathname);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -25,17 +26,32 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
+    if (previousPathnameRef.current === location.pathname) return undefined;
+    previousPathnameRef.current = location.pathname;
     const frameId = requestAnimationFrame(() => setIsMobileOpen(false));
     return () => cancelAnimationFrame(frameId);
   }, [location.pathname]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isMobileOpen) return undefined;
 
     const menu = mobileMenuRef.current;
     const focusableSelector = 'a[href], button:not(:disabled), select:not(:disabled), [tabindex]:not([tabindex="-1"])';
     const focusableElements = [...menu.querySelectorAll(focusableSelector)];
-    const focusFrame = requestAnimationFrame(() => focusableElements[0]?.focus());
+    let focusFrame;
+    let focusAttemptsRemaining = 30;
+    const focusFirstVisibleElement = () => {
+      const firstElement = focusableElements[0];
+      if (firstElement && getComputedStyle(firstElement).visibility === 'visible') {
+        firstElement.focus();
+        return;
+      }
+      focusAttemptsRemaining -= 1;
+      if (focusAttemptsRemaining > 0) {
+        focusFrame = requestAnimationFrame(focusFirstVisibleElement);
+      }
+    };
+    focusFrame = requestAnimationFrame(focusFirstVisibleElement);
 
     const handleMenuKeyDown = (event) => {
       if (event.key === 'Escape') {

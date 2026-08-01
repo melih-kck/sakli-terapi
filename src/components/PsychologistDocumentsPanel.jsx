@@ -5,9 +5,9 @@ import {
   createVerificationDocumentUrl,
   DOCUMENT_TYPE_LABELS,
   fetchMyVerificationDocuments,
+  getVerificationFileValidationCode,
   removeVerificationDocument,
   uploadVerificationDocument,
-  validateVerificationFile,
 } from '../lib/verification-documents';
 
 const formatDate = (value, locale) => new Intl.DateTimeFormat(locale, {
@@ -45,7 +45,7 @@ export default function PsychologistDocumentsPanel({ user }) {
         if (isMounted) setDocuments(loadedDocuments);
       } catch (error) {
         console.error('Mesleki belgeler yüklenemedi:', error);
-        if (isMounted) showError('Belgeler Yüklenemedi', 'Mesleki belgelerinize şu anda erişilemiyor.');
+        if (isMounted) showError(t('documentsPanel.loadErrorTitle'), t('documentsPanel.loadErrorBody'));
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -53,24 +53,24 @@ export default function PsychologistDocumentsPanel({ user }) {
 
     Promise.resolve().then(loadDocuments);
     return () => { isMounted = false; };
-  }, [showError, userId]);
+  }, [showError, t, userId]);
 
   const handleFileChange = (event) => {
     const file = event.target.files?.[0] || null;
-    const validationError = validateVerificationFile(file);
-    if (validationError) {
+    const validationCode = getVerificationFileValidationCode(file);
+    if (validationCode) {
       setSelectedFile(null);
       event.target.value = '';
-      showError('Dosya Seçilemedi', validationError);
+      showError(t('documentsPanel.fileSelectErrorTitle'), t(`documentsPanel.validation.${validationCode}`));
       return;
     }
     setSelectedFile(file);
   };
 
   const handleUpload = async () => {
-    const validationError = validateVerificationFile(selectedFile);
-    if (validationError) {
-      showError('Belge Yüklenemedi', validationError);
+    const validationCode = getVerificationFileValidationCode(selectedFile);
+    if (validationCode) {
+      showError(t('documentsPanel.uploadErrorTitle'), t(`documentsPanel.validation.${validationCode}`));
       return;
     }
 
@@ -84,10 +84,10 @@ export default function PsychologistDocumentsPanel({ user }) {
       setDocuments(current => [uploaded, ...current]);
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
-      success('Belge Yüklendi', 'Belgeniz güvenli biçimde alındı ve inceleme sırasına eklendi.');
+      success(t('documentsPanel.uploadedTitle'), t('documentsPanel.uploadedBody'));
     } catch (error) {
       console.error('Mesleki belge yüklenemedi:', error);
-      showError('Belge Yüklenemedi', error.message || 'Dosya yükleme işlemi tamamlanamadı.');
+      showError(t('documentsPanel.uploadErrorTitle'), error.message || t('documentsPanel.uploadErrorBody'));
     } finally {
       setProcessingId(null);
     }
@@ -100,22 +100,22 @@ export default function PsychologistDocumentsPanel({ user }) {
       window.location.assign(signedUrl);
     } catch (error) {
       console.error('Belge açılamadı:', error);
-      showError('Belge Açılamadı', 'Güvenli belge bağlantısı oluşturulamadı.');
+      showError(t('documentsPanel.openErrorTitle'), t('documentsPanel.openErrorBody'));
     } finally {
       setProcessingId(null);
     }
   };
 
   const handleDelete = async (document) => {
-    if (!window.confirm(`${document.original_name} adlı belgeyi silmek istediğinize emin misiniz?`)) return;
+    if (!window.confirm(t('documentsPanel.confirmDelete', { name: document.original_name }))) return;
     setProcessingId(`delete-${document.id}`);
     try {
       await removeVerificationDocument(document);
       setDocuments(current => current.filter(item => item.id !== document.id));
-      success('Belge Silindi', 'Belge ve kayıt bilgisi güvenli depodan kaldırıldı.');
+      success(t('documentsPanel.deletedTitle'), t('documentsPanel.deletedBody'));
     } catch (error) {
       console.error('Mesleki belge silinemedi:', error);
-      showError('Belge Silinemedi', error.message || 'Belge silme işlemi tamamlanamadı.');
+      showError(t('documentsPanel.deleteErrorTitle'), error.message || t('documentsPanel.deleteErrorBody'));
     } finally {
       setProcessingId(null);
     }

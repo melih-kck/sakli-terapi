@@ -171,7 +171,8 @@
   gap: var(--space-xs);
 }
 
-.input-group label {
+.input-group label,
+.input-group-label {
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   color: var(--text-primary);
@@ -856,10 +857,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
   padding: var(--space-md) var(--space-lg);
   cursor: pointer;
   font-weight: var(--weight-medium);
   color: var(--text-primary);
+  text-align: left;
   transition: all var(--transition-fast);
 }
 

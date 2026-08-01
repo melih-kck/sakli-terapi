@@ -16,6 +16,13 @@ export default function AccessibilityNavigation() {
     let announcementFrameId;
     let observer;
     let preparedMain;
+    let externalFocusMoved = false;
+    let applyingRouteFocus = false;
+
+    const handleFocusIn = () => {
+      if (!applyingRouteFocus) externalFocusMoved = true;
+    };
+    document.addEventListener('focusin', handleFocusIn);
 
     const preparePage = () => {
       const main = document.querySelector('main');
@@ -41,7 +48,11 @@ export default function AccessibilityNavigation() {
       }
 
       if (shouldMoveFocus && isNewMain) {
-        main.focus({ preventScroll: true });
+        if (!externalFocusMoved) {
+          applyingRouteFocus = true;
+          main.focus({ preventScroll: true });
+          applyingRouteFocus = false;
+        }
         setAnnouncement('');
         cancelAnimationFrame(announcementFrameId);
         announcementFrameId = requestAnimationFrame(() => {
@@ -63,6 +74,7 @@ export default function AccessibilityNavigation() {
       cancelAnimationFrame(prepareFrameId);
       cancelAnimationFrame(announcementFrameId);
       observer?.disconnect();
+      document.removeEventListener('focusin', handleFocusIn);
     };
   }, [pathname, t]);
 
