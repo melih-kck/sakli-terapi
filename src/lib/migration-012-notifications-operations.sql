@@ -26,7 +26,11 @@ CREATE TABLE IF NOT EXISTS public.notifications (
   message text NOT NULL CHECK (char_length(message) BETWEEN 1 AND 500),
   action_url text CHECK (
     action_url IS NULL
-    OR (action_url LIKE '/%' AND action_url NOT LIKE '//%')
+    OR (
+      action_url LIKE '/%'
+      AND action_url NOT LIKE '//%'
+      AND pg_catalog.strpos(action_url, '\') = 0
+    )
   ),
   read_at timestamp with time zone,
   created_at timestamp with time zone NOT NULL DEFAULT now()
@@ -109,6 +113,7 @@ BEGIN
     CASE
       WHEN notification_action_url LIKE '/%'
        AND notification_action_url NOT LIKE '//%'
+       AND pg_catalog.strpos(notification_action_url, '\') = 0
       THEN notification_action_url
       ELSE NULL
     END

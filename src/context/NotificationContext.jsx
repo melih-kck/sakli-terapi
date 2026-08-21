@@ -161,6 +161,7 @@ export function NotificationProvider({ user, children }) {
       .from('notifications')
       .update({ read_at: readAt })
       .eq('id', notificationId)
+      .eq('user_id', userId)
       .is('read_at', null);
 
     if (error) return { success: false, error: error.message };
@@ -192,6 +193,7 @@ export function NotificationProvider({ user, children }) {
     const { error } = await supabase
       .from('notifications')
       .update({ read_at: readAt })
+      .eq('user_id', userId)
       .is('read_at', null);
 
     if (error) return { success: false, error: error.message };

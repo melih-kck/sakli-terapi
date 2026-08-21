@@ -95,7 +95,7 @@ VITE_ENABLE_PAYMENTS=false
 ## Kalite Kontrolleri
 
 ```bash
-npm audit --audit-level=high
+npm audit --audit-level=low
 npm audit signatures
 npm run lint
 npm test

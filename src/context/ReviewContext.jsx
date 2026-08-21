@@ -3,6 +3,7 @@ import { createContext, useContext, useState, useCallback, useEffect, useMemo } 
 import { supabase } from '../lib/supabase';
 import { appendLocalReview, getLocalReviewsForPsychologist } from '../lib/local-reviews';
 import { useToast } from './ToastContext';
+import { useLanguage } from './LanguageContext';
 import { ALLOW_LOCAL_SIMULATION } from '../config/runtime';
 
 // ---------------------------------------------------------------------------
@@ -94,6 +95,7 @@ const isDevMockUser = (user) => ALLOW_LOCAL_SIMULATION && Boolean(user?.id?.star
 export function ReviewProvider({ user, sessions: sessionContextSessions = [], markSessionReviewed, children }) {
   const [reviews, setReviews] = useState([]);
   const { success, error: showError } = useToast();
+  const { t } = useLanguage();
 
   // -----------------------------------------------------------------------
   // Hydrate reviews from localStorage when a mock-client user is present,
@@ -123,8 +125,9 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
   const submitReview = useCallback(async ({ sessionId, ratings, rating, comment, anonymous }) => {
     // --- Guard: must be a logged-in client ---------------------------------
     if (!user || user.role !== 'client') {
-      showError('Değerlendirme Gönderilemedi', 'Değerlendirme göndermek için danışan hesabıyla giriş yapmalısınız.');
-      return { success: false, error: 'Değerlendirme göndermek için danışan hesabıyla giriş yapmalısınız.' };
+      const message = t('toast.review.mustBeClientMessage');
+      showError(t('toast.review.submitFailedTitle'), message);
+      return { success: false, error: message };
     }
 
     // --- Find the target session -------------------------------------------
@@ -166,32 +169,32 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
     }
 
     if (!sessionToReview) {
-      const message = `Seans bulunamadı. (Veritabanında da yok). Aranan: ${sessionId}`;
-      showError('Değerlendirme Gönderilemedi', message);
+      const message = t('toast.review.sessionNotFoundMessage', { sessionId });
+      showError(t('toast.review.submitFailedTitle'), message);
       return { success: false, error: message };
     }
 
     if (sessionToReview.status !== 'completed') {
-      const message = 'Yalnızca tamamlanmış seanslar değerlendirilebilir.';
-      showError('Değerlendirme Gönderilemedi', message);
+      const message = t('toast.review.onlyCompletedMessage');
+      showError(t('toast.review.submitFailedTitle'), message);
       return { success: false, error: message };
     }
 
     if (sessionToReview.reviewed) {
-      const message = 'Bu seans için daha önce değerlendirme gönderilmiş.';
-      showError('Değerlendirme Gönderilemedi', message);
+      const message = t('toast.review.alreadyReviewedMessage');
+      showError(t('toast.review.submitFailedTitle'), message);
       return { success: false, error: message };
     }
 
     if (!isDevMockUser(user) && !UUID_PATTERN.test(String(sessionId))) {
-      const message = 'Geçersiz seans kaydı.';
-      showError('Değerlendirme Gönderilemedi', message);
+      const message = t('toast.review.invalidSessionMessage');
+      showError(t('toast.review.submitFailedTitle'), message);
       return { success: false, error: message };
     }
 
     if ((comment || '').trim().length < 10) {
-      const message = 'Değerlendirme en az 10 karakter olmalıdır.';
-      showError('Değerlendirme Gönderilemedi', message);
+      const message = t('toast.review.commentTooShortMessage');
+      showError(t('toast.review.submitFailedTitle'), message);
       return { success: false, error: message };
     }
 
@@ -224,8 +227,8 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
       categoriesRating.trust,
     ];
     if (ratingValues.some(value => !Number.isFinite(value) || value < 1 || value > 5)) {
-      const message = 'Puanlar 1 ile 5 arasında olmalıdır.';
-      showError('Değerlendirme Gönderilemedi', message);
+      const message = t('toast.review.ratingsRangeMessage');
+      showError(t('toast.review.submitFailedTitle'), message);
       return { success: false, error: message };
     }
 
@@ -262,7 +265,7 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
         await markSessionReviewed(sessionId);
       }
 
-      success('Değerlendirme Gönderildi', 'Geri bildiriminiz için teşekkürler! 🙏');
+      success(t('toast.review.submittedTitle'), t('toast.review.submittedMessage'));
       return { success: true, review: newReview };
     }
 
@@ -277,7 +280,7 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
 
       if (error) {
         console.error('Değerlendirme insert hatası:', error);
-        showError('Değerlendirme Gönderilemedi', error.message || 'Veritabanı hatası oluştu.');
+        showError(t('toast.review.submitFailedTitle'), error.message || t('toast.review.dbErrorFallbackMessage'));
         return { success: false, error: error.message };
       }
 
@@ -290,14 +293,14 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
         await markSessionReviewed(sessionId);
       }
 
-      success('Değerlendirme Gönderildi', 'Geri bildiriminiz için teşekkürler! 🙏');
+      success(t('toast.review.submittedTitle'), t('toast.review.submittedMessage'));
       return { success: true, review: normalized };
     } catch (err) {
       console.error('Değerlendirme gönderim hatası:', err);
-      showError('Sistem Hatası', 'Değerlendirme gönderilirken beklenmeyen bir hata oluştu.');
+      showError(t('common.systemErrorTitle'), t('toast.review.systemErrorMessage'));
       return { success: false, error: err.message };
     }
-  }, [user, sessionContextSessions, markSessionReviewed, success, showError]);
+  }, [user, sessionContextSessions, markSessionReviewed, success, showError, t]);
 
   // -----------------------------------------------------------------------
   // fetchReviewsForPsychologist
