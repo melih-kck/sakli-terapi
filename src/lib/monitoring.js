@@ -49,6 +49,18 @@ export const sanitizeMonitoringEvent = (event) => {
     sanitized.breadcrumbs = sanitized.breadcrumbs.map(sanitizeMonitoringBreadcrumb);
   }
 
+  // Only forward the known-safe React componentStack field from custom
+  // context (see captureError below); drop anything else so a future
+  // captureError(error, context) call can't accidentally ship unreviewed
+  // data (form values, raw API error payloads, etc.) to Sentry.
+  if (sanitized.contexts?.['sakli-terapi']) {
+    const { componentStack } = sanitized.contexts['sakli-terapi'];
+    sanitized.contexts = {
+      ...sanitized.contexts,
+      'sakli-terapi': componentStack ? { componentStack } : undefined,
+    };
+  }
+
   return sanitized;
 };
 

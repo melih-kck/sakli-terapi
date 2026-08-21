@@ -85,7 +85,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="footer-bottom">
-          <p>© 2026 {BRAND.name}. {IS_DEMO_MODE ? t('footer.portfolio') : t('footer.rights')}</p>
+          <p>© {new Date().getFullYear()} {BRAND.name}. {IS_DEMO_MODE ? t('footer.portfolio') : t('footer.rights')}</p>
           <div className="footer-badges">
             <span className="footer-badge">🔒 {t('footer.tls')}</span>
             <span className="footer-badge">🛡️ {t('footer.roleAccess')}</span>
