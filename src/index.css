@@ -17,8 +17,11 @@
   --space-4xl: 96px;
 
   /* Border Radius */
-  --radius-sm: 4px;
-  --radius-md: 8px;
+  /* --radius-sm/--radius-md are intentionally NOT redeclared here: they are
+     canonically defined in design-system.css (8px/12px), and this file
+     loads after it, so redeclaring different values here would silently
+     override them sitewide for every border-radius: var(--radius-md) etc.
+     usage in components.css. */
   --radius-lg: 16px;
   --radius-full: 9999px;
 

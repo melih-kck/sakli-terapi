@@ -5,16 +5,18 @@ import Footer from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
 import { maskEmail } from '../lib/auth';
 import { supabase } from '../lib/supabase';
+import { useLanguage } from '../context/LanguageContext';
 import '../styles/pages/SupportPages.css';
 
 function VerificationShell({ title, subtitle, children }) {
+  const { t } = useLanguage();
   return (
     <div className="page">
       <Navbar />
       <main className="content-page-main">
         <section className="content-hero">
           <div className="container">
-            <span className="content-eyebrow">Hesap Güvenliği</span>
+            <span className="content-eyebrow">{t('emailVerification.accountSecurityEyebrow')}</span>
             <h1>{title}</h1>
             <p>{subtitle}</p>
           </div>
@@ -31,6 +33,7 @@ function VerificationShell({ title, subtitle, children }) {
 export default function EmailVerificationPage() {
   const location = useLocation();
   const { resendVerification } = useAuth();
+  const { t } = useLanguage();
   const [email, setEmail] = useState(location.state?.email || '');
   const [isSending, setIsSending] = useState(false);
   const [cooldown, setCooldown] = useState(0);
@@ -56,37 +59,37 @@ export default function EmailVerificationPage() {
 
   return (
     <VerificationShell
-      title="E-postanızı Doğrulayın"
-      subtitle="Hesabınızı etkinleştirmek için size gönderdiğimiz güvenli bağlantıyı açın."
+      title={t('emailVerification.title')}
+      subtitle={t('emailVerification.subtitle')}
     >
       <form className="content-form-panel" onSubmit={handleResend}>
         <div className="content-success-box">
-          <h2>Doğrulama bağlantısı gönderildi</h2>
+          <h2>{t('emailVerification.linkSentTitle')}</h2>
           <p>
             {email
-              ? `${maskEmail(email)} adresinin gelen kutusunu ve spam klasörünü kontrol edin.`
-              : 'Kayıtta kullandığınız e-posta adresinin gelen kutusunu ve spam klasörünü kontrol edin.'}
+              ? t('emailVerification.checkInboxWithEmail', { email: maskEmail(email) })
+              : t('emailVerification.checkInboxGeneric')}
           </p>
         </div>
 
         <div className="input-group">
-          <label htmlFor="verification-email">E-posta adresi</label>
+          <label htmlFor="verification-email">{t('emailVerification.emailLabel')}</label>
           <input
             id="verification-email"
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            placeholder="ornek@email.com"
+            placeholder={t('emailVerification.emailPlaceholder')}
             autoComplete="email"
             required
           />
-          <span className="input-hint">Bağlantı gelmediyse aynı adrese yeniden gönderebilirsiniz.</span>
+          <span className="input-hint">{t('emailVerification.resendHint')}</span>
         </div>
 
         <div className="content-actions">
-          <Link className="btn btn-ghost" to="/giris">Giriş Sayfasına Dön</Link>
+          <Link className="btn btn-ghost" to="/giris">{t('emailVerification.backToLogin')}</Link>
           <button className="btn btn-primary" type="submit" disabled={isSending || cooldown > 0}>
-            {isSending ? 'Gönderiliyor...' : cooldown > 0 ? `${cooldown} sn sonra yeniden gönder` : 'Bağlantıyı Yeniden Gönder'}
+            {isSending ? t('emailVerification.sending') : cooldown > 0 ? t('emailVerification.resendCooldown', { seconds: cooldown }) : t('emailVerification.resendButton')}
           </button>
         </div>
       </form>
@@ -96,8 +99,9 @@ export default function EmailVerificationPage() {
 
 export function EmailConfirmationPage() {
   const { user, isLoading } = useAuth();
+  const { t } = useLanguage();
   const [status, setStatus] = useState('checking');
-  const [message, setMessage] = useState('Doğrulama bağlantınız kontrol ediliyor.');
+  const [message, setMessage] = useState(() => t('emailVerification.checkingMessage'));
 
   useEffect(() => {
     let isMounted = true;
@@ -109,14 +113,14 @@ export function EmailConfirmationPage() {
     const markSuccess = () => {
       if (!isMounted) return;
       setStatus('success');
-      setMessage('E-posta adresiniz doğrulandı. Hesabınız kullanıma hazır.');
+      setMessage(t('emailVerification.successMessage'));
     };
 
     const verifySession = async () => {
       if (authError) {
         if (isMounted) {
           setStatus('error');
-          setMessage('Doğrulama bağlantısı geçersiz veya süresi dolmuş olabilir.');
+          setMessage(t('emailVerification.invalidLinkMessage'));
         }
         return;
       }
@@ -127,7 +131,7 @@ export function EmailConfirmationPage() {
         if (error) {
           if (isMounted) {
             setStatus('error');
-            setMessage('Doğrulama bağlantısı kullanılamadı. Yeni bir bağlantı isteyin.');
+            setMessage(t('emailVerification.codeExchangeFailedMessage'));
           }
           return;
         }
@@ -148,7 +152,7 @@ export function EmailConfirmationPage() {
       if (isMounted) {
         setStatus(current => {
           if (current !== 'checking') return current;
-          setMessage('Doğrulama tamamlanamadı. Bağlantının süresi dolmuş olabilir.');
+          setMessage(t('emailVerification.timeoutMessage'));
           return 'error';
         });
       }
@@ -159,7 +163,7 @@ export function EmailConfirmationPage() {
       window.clearTimeout(timeout);
       subscription.unsubscribe();
     };
-  }, []);
+  }, [t]);
 
   const dashboardPath = user?.role === 'admin'
     ? '/admin'
@@ -169,32 +173,32 @@ export function EmailConfirmationPage() {
 
   return (
     <VerificationShell
-      title={status === 'success' ? 'E-posta Doğrulandı' : 'E-posta Doğrulama'}
+      title={status === 'success' ? t('emailVerification.successTitle') : t('emailVerification.confirmationTitle')}
       subtitle={message}
     >
       <div className="content-form-panel">
         {status === 'checking' && (
           <div className="content-empty-box">
-            <h3>Bağlantı kontrol ediliyor</h3>
-            <p>Bu işlem yalnızca birkaç saniye sürer.</p>
+            <h3>{t('emailVerification.checkingTitle')}</h3>
+            <p>{t('emailVerification.checkingBody')}</p>
           </div>
         )}
 
         {status === 'success' && (
           <div className="content-success-box">
-            <h2>Hesabınız hazır</h2>
-            <p>E-posta adresiniz başarıyla doğrulandı.</p>
+            <h2>{t('emailVerification.readyTitle')}</h2>
+            <p>{t('emailVerification.readyBody')}</p>
             <Link className="btn btn-primary" to={user && !isLoading ? dashboardPath : '/giris'}>
-              {user && !isLoading ? 'Panele Devam Et' : 'Giriş Yap'}
+              {user && !isLoading ? t('emailVerification.continueToDashboard') : t('emailVerification.loginButton')}
             </Link>
           </div>
         )}
 
         {status === 'error' && (
           <div className="content-empty-box">
-            <h3>Bağlantı doğrulanamadı</h3>
+            <h3>{t('emailVerification.errorTitle')}</h3>
             <p>{message}</p>
-            <Link className="btn btn-primary" to="/e-posta-dogrula">Yeni Bağlantı İste</Link>
+            <Link className="btn btn-primary" to="/e-posta-dogrula">{t('emailVerification.requestNewLink')}</Link>
           </div>
         )}
       </div>

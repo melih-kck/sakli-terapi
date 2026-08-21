@@ -46,4 +46,27 @@ describe('monitoring privacy filters', () => {
       message: 'Input interaction',
     });
   });
+
+  it('only forwards the known-safe componentStack field from custom context', () => {
+    const event = sanitizeMonitoringEvent({
+      contexts: {
+        'sakli-terapi': {
+          componentStack: 'in AppErrorBoundary',
+          formValues: { email: 'private@example.com' },
+        },
+      },
+    });
+
+    expect(event.contexts['sakli-terapi']).toEqual({ componentStack: 'in AppErrorBoundary' });
+  });
+
+  it('drops the custom context entirely when it has no componentStack', () => {
+    const event = sanitizeMonitoringEvent({
+      contexts: {
+        'sakli-terapi': { formValues: { email: 'private@example.com' } },
+      },
+    });
+
+    expect(event.contexts['sakli-terapi']).toBeUndefined();
+  });
 });
