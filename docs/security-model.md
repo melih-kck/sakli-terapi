@@ -4,6 +4,13 @@ Migrations 009 through 019 are the canonical authorization boundary for
 application tables. Run `src/lib/verify-rls.sql` after applying them to a
 Supabase project.
 
+Migrations 006 through 008 are earlier, prerequisite hardening steps (RLS
+groundwork, session-update hardening, and the auth-profile trigger) that
+009–019 build on. They are not part of the authorization boundary itself, but
+restore drills (`backup-recovery.md`, `backup-log.md`) reapply the full
+006–019 range because the migrations are cumulative and 009+ assume 006–008
+are already in place.
+
 ## Access Matrix
 
 | Role | Allowed access |

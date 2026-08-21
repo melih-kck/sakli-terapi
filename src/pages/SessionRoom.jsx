@@ -819,7 +819,7 @@ export default function SessionRoom() {
       id: crypto.randomUUID(),
       text: safeText,
       sender: isClient ? 'client' : 'psychologist',
-      time: new Date().toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'})
+      time: new Date().toLocaleTimeString(locale, {hour: '2-digit', minute:'2-digit'})
     };
 
     setMessages(prev => [...prev, msg]);

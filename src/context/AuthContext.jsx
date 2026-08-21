@@ -6,6 +6,7 @@ import { createDefaultMfaStatus, readAdminMfaStatus } from '../lib/admin-mfa';
 import { BRAND } from '../config/brand';
 import { FEATURES, IS_DEMO_MODE } from '../config/runtime';
 import { createDemoUser } from '../data/demo-fixtures';
+import { getInitials, normalizePsychologistProfile, normalizeClientProfile } from '../lib/profile-normalization';
 import { useLanguage } from './LanguageContext';
 import { useToast } from './ToastContext';
 
@@ -44,48 +45,6 @@ const clearLegacySensitiveCaches = () => {
     localStorage.setItem(demoCleanupKey, 'true');
   }
 };
-
-const getInitials = (name = '') => {
-  const words = name.trim().split(/\s+/).filter(Boolean);
-  return words
-    .filter(word => !['dr.', 'uzm.', 'psk.'].includes(word.toLocaleLowerCase('tr-TR')))
-    .slice(0, 2)
-    .map(word => word.charAt(0).toLocaleUpperCase('tr-TR'))
-    .join('') || 'ST';
-};
-
-const normalizePsychologistProfile = (profile = {}) => ({
-  displayName: profile.display_name || profile.displayName || '',
-  avatarInitials: profile.avatar_initials || profile.avatarInitials || getInitials(profile.display_name || profile.displayName || ''),
-  title: profile.title || 'Psikolog',
-  bio: profile.bio || '',
-  shortBio: profile.short_bio || profile.shortBio || '',
-  experience: Number(profile.experience || 0),
-  basePrice: Number(profile.base_price ?? profile.basePrice ?? 1000),
-  specializations: profile.specializations || [],
-  approaches: profile.approaches || [],
-  channels: profile.channels?.length ? profile.channels : ['video-blur', 'voice', 'text'],
-  availability: profile.availability || {},
-  languages: profile.languages?.length ? profile.languages : ['Türkçe'],
-  university: profile.university || '',
-  supervisor: profile.supervisor || '',
-  isCandidate: Boolean(profile.is_candidate ?? profile.isCandidate),
-  approvalStatus: profile.approval_status || profile.approvalStatus || 'pending',
-  reviewReason: profile.review_reason || profile.reviewReason || '',
-  reviewedAt: profile.reviewed_at || profile.reviewedAt || null,
-  rating: Number(profile.rating || 0),
-  reviewCount: Number(profile.review_count ?? profile.reviewCount ?? 0),
-  sessionCount: Number(profile.session_count ?? profile.sessionCount ?? 0),
-});
-
-const normalizeClientProfile = (profile = {}) => ({
-  topics: profile.topics || profile.clientTopics || [],
-  preferredChannel: profile.preferredChannel || profile.preferred_channel || 'video-blur',
-  emergencyName: profile.emergencyName || profile.emergency_name || '',
-  emergencyPhone: profile.emergencyPhone || profile.emergency_phone || '',
-  city: profile.city || '',
-  privacyLevel: Number(profile.privacyLevel || profile.privacy_level || 5),
-});
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -176,10 +135,10 @@ export function AuthProvider({ children }) {
       const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
 
       if (error || !data) {
-        const message = 'Hesap profili bulunamadı. Lütfen destek ekibiyle iletişime geçin.';
+        const message = t('toast.auth.profileNotFoundMessage');
         console.error('Hesap profili yüklenemedi:', error);
         setUser(null);
-        showError('Profil Yüklenemedi', message);
+        showError(t('toast.auth.profileNotFoundTitle'), message);
         return { success: false, error: message };
       }
 
@@ -204,12 +163,12 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error('Profil çekilemedi:', err);
       setUser(null);
-      showError('Profil Yüklenemedi', 'Hesap bilgileriniz alınamadı. Lütfen tekrar deneyin.');
+      showError(t('toast.auth.profileNotFoundTitle'), t('toast.auth.profileFetchFailedMessage'));
       return { success: false, error: err.message };
     } finally {
       setIsLoading(false);
     }
-  }, [fetchPsychologistProfile, fetchClientProfile, fetchMoodHistory, refreshMfaStatus, showError]);
+  }, [fetchPsychologistProfile, fetchClientProfile, fetchMoodHistory, refreshMfaStatus, showError, t]);
 
   useEffect(() => {
     let isMounted = true;
@@ -286,8 +245,8 @@ export function AuthProvider({ children }) {
     setIsLoading(true);
     try {
       if (IS_DEMO_MODE) {
-        const message = 'Portföy sürümünde gerçek hesap girişi kapalıdır.';
-        showError('Demo Sürümü', message);
+        const message = t('toast.auth.demoLoginDisabledMessage');
+        showError(t('toast.auth.demoModeTitle'), message);
         return { success: false, error: message };
       }
 
@@ -304,7 +263,7 @@ export function AuthProvider({ children }) {
         };
         setUser(mockUser);
         localStorage.setItem('mock_user_session', JSON.stringify(mockUser));
-        success('Test Girişi Başarılı', 'Panele yönlendiriliyorsunuz...');
+        success(t('toast.auth.testLoginSuccessTitle'), t('toast.auth.redirectingMessage'));
         return { success: true, role: mockRole };
       }
 
@@ -316,11 +275,11 @@ export function AuthProvider({ children }) {
       const { data, error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
       if (error) {
         if (isEmailNotConfirmedError(error)) {
-          showError('E-posta Doğrulanmadı', 'Giriş yapmadan önce e-posta adresinizi doğrulayın.');
+          showError(t('toast.auth.emailNotConfirmedTitle'), t('toast.auth.emailNotConfirmedMessage'));
           return { success: false, error: error.message, needsEmailConfirmation: true };
         }
 
-        showError('Giriş Başarısız', 'E-posta veya şifre hatalı.');
+        showError(t('toast.auth.loginFailedTitle'), t('toast.auth.invalidCredentialsMessage'));
         return { success: false, error: error.message };
       }
 
@@ -330,16 +289,16 @@ export function AuthProvider({ children }) {
         return profileResult;
       }
 
-      success('Giriş Başarılı', 'Panele yönlendiriliyorsunuz...');
+      success(t('toast.auth.loginSuccessTitle'), t('toast.auth.redirectingMessage'));
       return { success: true, role: profileResult.role, mfa: profileResult.mfa };
     } catch (err) {
       console.error('Giriş hatası:', err);
-      showError('Sistem Hatası', 'Beklenmeyen bir hata oluştu.');
+      showError(t('common.systemErrorTitle'), t('common.unexpectedErrorMessage'));
       return { success: false };
     } finally {
       setIsLoading(false);
     }
-  }, [fetchUserProfile, success, showError]);
+  }, [fetchUserProfile, success, showError, t]);
 
   const loginAsDemo = useCallback(async (role) => {
     if (!IS_DEMO_MODE) {
@@ -372,14 +331,14 @@ export function AuthProvider({ children }) {
         : FEATURES.publicRegistration;
       if (!registrationEnabled) {
         const message = IS_DEMO_MODE
-          ? 'Portföy sürümünde gerçek hesap oluşturma kapalıdır.'
-          : 'Bu hesap türü için yeni kullanıcı alımı henüz açık değildir.';
-        showError(IS_DEMO_MODE ? 'Demo Sürümü' : 'Kayıt Kapalı', message);
+          ? t('toast.auth.demoRegisterDisabledMessage')
+          : t('toast.auth.registrationClosedMessage');
+        showError(IS_DEMO_MODE ? t('toast.auth.demoModeTitle') : t('toast.auth.registrationClosedTitle'), message);
         return { success: false, error: message };
       }
 
       if (isDevMockEmail(email)) {
-        success('Test Kaydı Başarılı', 'Lütfen giriş yapın.');
+        success(t('toast.auth.testRegisterSuccessTitle'), t('toast.auth.pleaseLoginMessage'));
         return { success: true };
       }
 
@@ -426,11 +385,11 @@ export function AuthProvider({ children }) {
         },
       });
 
-      if (error) { showError('Kayıt Hatası', error.message); return { success: false, error: error.message }; }
+      if (error) { showError(t('toast.auth.registrationErrorTitle'), error.message); return { success: false, error: error.message }; }
 
       if (data?.user) {
         if (!data.session) {
-          success('E-postanızı Doğrulayın', 'Hesabınızı etkinleştirmek için gönderdiğimiz bağlantıyı açın.');
+          success(t('toast.auth.verifyEmailTitle'), t('toast.auth.verifyEmailMessage'));
           return { success: true, needsEmailConfirmation: true, email: normalizedEmail };
         }
 
@@ -440,7 +399,7 @@ export function AuthProvider({ children }) {
           privacy_level: Number(profileData.privacyLevel || 5),
         }], { onConflict: 'id' });
         if (insertError) {
-          showError('Profil Hatası', insertError.message);
+          showError(t('toast.auth.profileErrorTitle'), insertError.message);
           return { success: false, error: insertError.message };
         }
 
@@ -463,7 +422,7 @@ export function AuthProvider({ children }) {
             approval_status: 'pending',
           }], { onConflict: 'id' });
           if (psychologistError) {
-            showError('Psikolog Başvurusu Kaydedilemedi', psychologistError.message);
+            showError(t('toast.auth.psychologistApplicationFailedTitle'), psychologistError.message);
             return { success: false, error: psychologistError.message };
           }
         }
@@ -479,7 +438,7 @@ export function AuthProvider({ children }) {
             privacy_level: Number(profileData.privacyLevel || 5),
           }], { onConflict: 'id' });
           if (clientProfileError) {
-            showError('Danışan Profili Kaydedilemedi', clientProfileError.message);
+            showError(t('toast.auth.clientProfileFailedTitle'), clientProfileError.message);
             return { success: false, error: clientProfileError.message };
           }
         }
@@ -489,16 +448,16 @@ export function AuthProvider({ children }) {
         await supabase.auth.signOut();
       }
 
-      success('Kayıt Başarılı', 'Hesabınız oluşturuldu, lütfen giriş yapın.');
+      success(t('toast.auth.registerSuccessTitle'), t('toast.auth.registerSuccessMessage'));
       return { success: true };
     } catch (err) {
       console.error('Kayıt hatası:', err);
-      showError('Sistem Hatası', 'Kayıt olurken beklenmeyen bir hata oluştu.');
+      showError(t('common.systemErrorTitle'), t('toast.auth.registrationFailedGenericMessage'));
       return { success: false };
     } finally {
       setIsLoading(false);
     }
-  }, [success, showError]);
+  }, [success, showError, t]);
 
   const resendVerification = useCallback(async (email) => {
     if (IS_DEMO_MODE) {
@@ -517,13 +476,13 @@ export function AuthProvider({ children }) {
     });
 
     if (error) {
-      showError('E-posta Gönderilemedi', error.message || 'Lütfen kısa bir süre sonra tekrar deneyin.');
+      showError(t('toast.auth.emailSendFailedTitle'), error.message || t('toast.auth.emailSendFailedFallbackMessage'));
       return { success: false, error: error.message };
     }
 
-    success('E-posta Gönderildi', 'Yeni doğrulama bağlantısı e-posta adresinize gönderildi.');
+    success(t('toast.auth.emailSentTitle'), t('toast.auth.emailSentMessage'));
     return { success: true, email: normalizedEmail };
-  }, [showError, success]);
+  }, [showError, success, t]);
 
   const logout = useCallback(async () => {
     if (!IS_DEMO_MODE) {

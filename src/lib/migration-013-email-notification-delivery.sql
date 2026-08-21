@@ -146,6 +146,7 @@ BEGIN
     CASE
       WHEN notification_action_url LIKE '/%'
        AND notification_action_url NOT LIKE '//%'
+       AND pg_catalog.strpos(notification_action_url, '\') = 0
       THEN notification_action_url
       ELSE NULL
     END

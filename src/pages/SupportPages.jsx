@@ -503,6 +503,7 @@ export function TermsPage() {
 
 export function ForgotPasswordPage() {
   const { success, error: showError } = useToast();
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
@@ -519,9 +520,9 @@ export function ForgotPasswordPage() {
 
       if (error) throw error;
       setIsSent(true);
-      success('Bağlantı Gönderildi', 'E-posta kutunuzu kontrol edin.');
+      success(t('toast.auth.resetLinkSentTitle'), t('toast.auth.resetLinkSentMessage'));
     } catch (err) {
-      showError('İşlem Tamamlanamadı', err.message || 'Şifre sıfırlama bağlantısı gönderilemedi.');
+      showError(t('toast.auth.actionFailedTitle'), err.message || t('toast.auth.resetLinkFailedFallbackMessage'));
     } finally {
       setIsLoading(false);
     }
@@ -575,6 +576,7 @@ export function ForgotPasswordPage() {
 export function ResetPasswordPage() {
   const navigate = useNavigate();
   const { success, error: showError } = useToast();
+  const { t } = useLanguage();
   const [status, setStatus] = useState('checking');
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
@@ -620,12 +622,12 @@ export function ResetPasswordPage() {
     event.preventDefault();
 
     if (password.length < 8) {
-      showError('Şifre Güncellenemedi', 'Yeni şifre en az 8 karakter olmalıdır.');
+      showError(t('toast.profile.passwordUpdateFailedTitle'), t('toast.profile.passwordTooShortMessage'));
       return;
     }
 
     if (password !== confirmation) {
-      showError('Şifre Güncellenemedi', 'Şifre alanları birbiriyle eşleşmiyor.');
+      showError(t('toast.profile.passwordUpdateFailedTitle'), t('toast.profile.passwordMismatchMessage'));
       return;
     }
 
@@ -635,10 +637,10 @@ export function ResetPasswordPage() {
       if (error) throw error;
 
       await supabase.auth.signOut();
-      success('Şifre Güncellendi', 'Yeni şifrenizle giriş yapabilirsiniz.');
+      success(t('toast.profile.passwordUpdatedTitle'), t('toast.profile.passwordResetSuccessMessage'));
       navigate('/giris', { replace: true });
     } catch (err) {
-      showError('Şifre Güncellenemedi', err.message || 'Bağlantı geçersiz veya süresi dolmuş olabilir.');
+      showError(t('toast.profile.passwordUpdateFailedTitle'), err.message || t('toast.auth.resetLinkInvalidMessage'));
     } finally {
       setIsSaving(false);
     }

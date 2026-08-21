@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { getSessionSlotKey, isSessionSlotInPast } from '../lib/session-flow';
 import { ALLOW_LOCAL_SIMULATION, FEATURES, IS_DEMO_MODE } from '../config/runtime';
 import { useToast } from './ToastContext';
+import { useLanguage } from './LanguageContext';
 
 // ─── Constants ──────────────────────────────────────────────────────────────────
 
@@ -91,6 +92,7 @@ export function SessionProvider({ user, children }) {
   const [isLoadingSessions, setIsLoadingSessions] = useState(false);
   const [loadedSessionsForUser, setLoadedSessionsForUser] = useState(null);
   const { success, error: showError } = useToast();
+  const { t } = useLanguage();
   const hasLoadedSessions = Boolean(user?.id && loadedSessionsForUser === user.id);
 
   // ── refreshSessions ─────────────────────────────────────────────────────────
@@ -128,7 +130,7 @@ export function SessionProvider({ user, children }) {
 
       if (error) {
         console.warn('Randevular çekilemedi:', error);
-        showError('Randevular Yüklenemedi', error.message);
+        showError(t('toast.session.loadFailedTitle'), error.message);
         return [];
       }
 
@@ -137,14 +139,14 @@ export function SessionProvider({ user, children }) {
       return normalized;
     } catch (err) {
       console.error('Randevular çekilirken hata:', err);
-      showError('Randevular Yüklenemedi', 'Beklenmeyen bir hata oluştu.');
+      showError(t('toast.session.loadFailedTitle'), t('common.unexpectedErrorMessage'));
       return [];
     } finally {
       setIsLoadingSessions(false);
       setLoadedSessionsForUser(user.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, user?.role, showError]);
+  }, [user?.id, user?.role, showError, t]);
 
   // ── Auto-fetch sessions when user changes ───────────────────────────────────
   useEffect(() => {
@@ -257,14 +259,14 @@ export function SessionProvider({ user, children }) {
     }
 
     if (!IS_DEMO_MODE && !FEATURES.liveAppointments) {
-      const message = 'Gerçek randevu alımı kontrollü pilot başlayana kadar kapalıdır.';
-      showError('Randevu Alımı Kapalı', message);
+      const message = t('toast.session.bookingClosedMessage');
+      showError(t('toast.session.bookingClosedTitle'), message);
       return { success: false, error: message };
     }
 
     if (user.role !== 'client') {
-      const message = 'Randevu yalnızca danışan hesabıyla oluşturulabilir.';
-      showError('Randevu Oluşturulamadı', message);
+      const message = t('toast.session.clientOnlyMessage');
+      showError(t('toast.session.createFailedTitle'), message);
       return { success: false, error: message };
     }
 
@@ -297,25 +299,25 @@ export function SessionProvider({ user, children }) {
         return next;
       });
 
-      success('Randevu Oluşturuldu', 'Randevunuz başarıyla kaydedildi.');
+      success(t('toast.session.createdTitle'), t('toast.session.createdMessage'));
       return { success: true, session: fallbackSession, isLocalFallback: true };
     }
 
     if (!UUID_PATTERN.test(String(sessionData.psychologistId))) {
-      const message = 'Geçersiz psikolog kaydı.';
-      showError('Randevu Oluşturulamadı', message);
+      const message = t('toast.session.invalidPsychologistMessage');
+      showError(t('toast.session.createFailedTitle'), message);
       return { success: false, error: message };
     }
 
     if (!sessionData.date || !sessionData.time || !sessionData.channel) {
-      const message = 'Tarih, saat ve görüşme tipi seçilmelidir.';
-      showError('Randevu Oluşturulamadı', message);
+      const message = t('toast.session.missingFieldsMessage');
+      showError(t('toast.session.createFailedTitle'), message);
       return { success: false, error: message };
     }
 
     if (isSessionSlotInPast(sessionData.date, sessionData.time)) {
-      const message = 'Geçmiş bir tarih veya saat için randevu oluşturulamaz.';
-      showError('Randevu Oluşturulamadı', message);
+      const message = t('toast.session.pastSlotMessage');
+      showError(t('toast.session.createFailedTitle'), message);
       return { success: false, error: message };
     }
 
@@ -327,8 +329,8 @@ export function SessionProvider({ user, children }) {
     const requestedSlotKey = getSessionSlotKey(sessionData.date, sessionData.time);
 
     if (bookedSlots.success && bookedSlots.slotKeys.includes(requestedSlotKey)) {
-      const message = 'Bu saat kısa süre önce doldu. Lütfen başka bir saat seçin.';
-      showError('Randevu Oluşturulamadı', message);
+      const message = t('toast.session.slotTakenMessage');
+      showError(t('toast.session.createFailedTitle'), message);
       return { success: false, error: message, code: 'slot_taken' };
     }
 
@@ -349,24 +351,24 @@ export function SessionProvider({ user, children }) {
 
       if (error) {
         if (error.code === '23505') {
-          const message = 'Bu saat kısa süre önce doldu. Lütfen başka bir saat seçin.';
-          showError('Randevu Oluşturulamadı', message);
+          const message = t('toast.session.slotTakenMessage');
+          showError(t('toast.session.createFailedTitle'), message);
           return { success: false, error: message, code: 'slot_taken' };
         }
-        showError('Randevu Oluşturulamadı', error.message);
+        showError(t('toast.session.createFailedTitle'), error.message);
         return { success: false, error: error.message };
       }
 
       const normalized = normalizeSession(data);
       setSessions((prev) => [...prev, normalized]);
-      success('Randevu Oluşturuldu', 'Randevunuz başarıyla kaydedildi.');
+      success(t('toast.session.createdTitle'), t('toast.session.createdMessage'));
       return { success: true, session: normalized };
     } catch (err) {
       console.error('Randevu oluşturulurken hata:', err);
-      showError('Randevu Oluşturulamadı', 'Beklenmeyen bir hata oluştu.');
+      showError(t('toast.session.createFailedTitle'), t('common.unexpectedErrorMessage'));
       return { success: false, error: err.message };
     }
-  }, [user, success, showError, fetchBookedSlots]);
+  }, [user, success, showError, fetchBookedSlots, t]);
 
   // ── updateSession ───────────────────────────────────────────────────────────
   const updateSession = useCallback(async (sessionId, updates) => {
@@ -398,8 +400,8 @@ export function SessionProvider({ user, children }) {
     const payload = toSessionUpdatePayload(updates);
 
     if (Object.keys(payload).length === 0) {
-      const message = 'Bu randevu alanı tarayıcıdan güncellenemez.';
-      showError('Randevu Güncellenemedi', message);
+      const message = t('toast.session.fieldNotEditableMessage');
+      showError(t('toast.session.updateFailedTitle'), message);
       return { success: false, error: message };
     }
 
@@ -412,7 +414,7 @@ export function SessionProvider({ user, children }) {
         .single();
 
       if (error) {
-        showError('Randevu Güncellenemedi', error.message);
+        showError(t('toast.session.updateFailedTitle'), error.message);
         return { success: false, error: error.message };
       }
 
@@ -421,10 +423,10 @@ export function SessionProvider({ user, children }) {
       return { success: true, session: normalized };
     } catch (err) {
       console.error('Randevu güncellenirken hata:', err);
-      showError('Randevu Güncellenemedi', 'Beklenmeyen bir hata oluştu.');
+      showError(t('toast.session.updateFailedTitle'), t('common.unexpectedErrorMessage'));
       return { success: false, error: err.message };
     }
-  }, [user, showError]);
+  }, [user, showError, t]);
 
   // ── markSessionReviewed ─────────────────────────────────────────────────────
   const markSessionReviewed = useCallback(async (sessionId) => {

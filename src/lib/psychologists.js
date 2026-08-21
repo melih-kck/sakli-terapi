@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 import { mockPsychologists } from '../data/mock-psychologists';
 import { BRAND } from '../config/brand';
 import { IS_DEMO_MODE } from '../config/runtime';
+import { getInitials } from './profile-normalization';
 
 const ALLOWED_CHANNELS = ['text', 'voice', 'video-blur'];
 
@@ -11,16 +12,6 @@ const DEFAULT_AVAILABILITY = {
   Çarşamba: ['10:00', '11:00', '14:00'],
   Perşembe: ['09:00', '10:00', '11:00', '14:00'],
   Cuma: ['09:00', '10:00', '11:00'],
-};
-
-const getInitials = (name = '') => {
-  const words = name.trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return 'ST';
-  return words
-    .filter(word => !['dr.', 'uzm.', 'psk.'].includes(word.toLocaleLowerCase('tr-TR')))
-    .slice(0, 2)
-    .map(word => word.charAt(0).toLocaleUpperCase('tr-TR'))
-    .join('') || 'ST';
 };
 
 const getShortBio = (bio = '') => {

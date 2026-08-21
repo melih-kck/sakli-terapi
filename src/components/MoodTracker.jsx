@@ -34,20 +34,26 @@ export default function MoodTracker({ value, onChange, history = [], size = 'md'
       {history.length > 0 && (
         <div className="mood-chart">
           <div className="mood-chart-bars">
-            {history.slice(-7).map((entry, i) => (
-              <div key={i} className="mood-bar-wrapper">
-                <div
-                  className="mood-bar"
-                  style={{ height: `${(entry.mood / 5) * 100}%` }}
-                  title={`${entry.date}: ${MOODS[entry.mood - 1]?.emoji}`}
-                >
-                  <span className="mood-bar-emoji">{MOODS[entry.mood - 1]?.emoji}</span>
+            {history.slice(-7).map((entry, i) => {
+              const entryDateLabel = new Date(entry.date).toLocaleDateString(language === 'en' ? 'en-US' : 'tr-TR');
+              const entryMoodLabel = moodLabels[entry.mood - 1] || '';
+              return (
+                <div key={i} className="mood-bar-wrapper">
+                  <div
+                    className="mood-bar"
+                    style={{ height: `${(entry.mood / 5) * 100}%` }}
+                    role="img"
+                    aria-label={`${entryDateLabel}: ${entryMoodLabel}`}
+                    title={`${entryDateLabel}: ${entryMoodLabel}`}
+                  >
+                    <span className="mood-bar-emoji" aria-hidden="true">{MOODS[entry.mood - 1]?.emoji}</span>
+                  </div>
+                  <span className="mood-bar-day">
+                    {new Date(entry.date).toLocaleDateString(language === 'en' ? 'en-US' : 'tr-TR', { weekday: 'short' }).slice(0, 3)}
+                  </span>
                 </div>
-                <span className="mood-bar-day">
-                  {new Date(entry.date).toLocaleDateString(language === 'en' ? 'en-US' : 'tr-TR', { weekday: 'short' }).slice(0, 3)}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
