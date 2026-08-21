@@ -214,7 +214,7 @@ CREATE TABLE IF NOT EXISTS public.psychologists (
   is_candidate BOOLEAN DEFAULT false,
   approval_status TEXT DEFAULT 'pending',
   document_url TEXT,
-  base_price INTEGER DEFAULT 1000,
+  base_price INTEGER DEFAULT 1000 CHECK (base_price >= 0),
   specializations TEXT[],
   approaches TEXT[],
   channels TEXT[],
@@ -238,6 +238,8 @@ ALTER TABLE public.psychologists ADD COLUMN IF NOT EXISTS is_candidate BOOLEAN D
 ALTER TABLE public.psychologists ADD COLUMN IF NOT EXISTS approval_status TEXT DEFAULT 'pending';
 ALTER TABLE public.psychologists ADD COLUMN IF NOT EXISTS document_url TEXT;
 ALTER TABLE public.psychologists ADD COLUMN IF NOT EXISTS base_price INTEGER DEFAULT 1000;
+ALTER TABLE public.psychologists DROP CONSTRAINT IF EXISTS psychologists_base_price_check;
+ALTER TABLE public.psychologists ADD CONSTRAINT psychologists_base_price_check CHECK (base_price >= 0);
 ALTER TABLE public.psychologists ADD COLUMN IF NOT EXISTS specializations TEXT[];
 ALTER TABLE public.psychologists ADD COLUMN IF NOT EXISTS approaches TEXT[];
 ALTER TABLE public.psychologists ADD COLUMN IF NOT EXISTS channels TEXT[];

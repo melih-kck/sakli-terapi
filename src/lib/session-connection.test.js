@@ -36,6 +36,18 @@ describe('session-connection', () => {
     }, 'psychologist', now)).toBeNull();
   });
 
+  it('formats the incoming message time using the given locale', () => {
+    const now = new Date('2026-07-07T12:00:00');
+    const message = normalizeIncomingSessionMessage({
+      id: 'remote-2',
+      text: 'Ready to talk.',
+      sender: 'client',
+    }, 'client', now, 'en-US');
+
+    expect(message.time).toBe(now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
+    expect(message.time).not.toBe(now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }));
+  });
+
   it('checks the opaque server-issued peer id and expected participant role together', () => {
     const expected = {
       connection: {

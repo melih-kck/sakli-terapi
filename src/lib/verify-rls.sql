@@ -1,5 +1,13 @@
 -- Read-only verification for Migrations 009-019.
 -- Run in Supabase SQL Editor after applying the migrations.
+--
+-- Scope: this only checks privilege METADATA -- that RLS is enabled, that
+-- the expected policies/grants exist, and that AAL2 is referenced in the
+-- admin-gating function's source. It does not impersonate a non-owner role
+-- and attempt a forbidden read/write to assert it actually fails, so a logic
+-- bug inside a policy's USING/WITH CHECK expression (e.g. a wrong column or
+-- an accidental OR where AND was meant) would not be caught here. Treat a
+-- clean run as "the intended objects exist," not as a behavioral guarantee.
 
 SELECT
   c.relname AS table_name,

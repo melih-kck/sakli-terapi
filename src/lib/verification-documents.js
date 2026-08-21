@@ -93,16 +93,20 @@ export async function removeVerificationDocument(document) {
   if (!document?.id || !document?.storage_path) throw new Error('Belge bilgisi eksik.');
   if (document.status === 'approved') throw new Error('Onaylanmış belgeler silinemez.');
 
-  const { error: storageError } = await supabase.storage
-    .from(VERIFICATION_BUCKET)
-    .remove([document.storage_path]);
-  if (storageError) throw storageError;
-
+  // Delete the DB row first: it's the source of truth for what "exists" from
+  // the app's perspective. If the storage removal below then fails, the
+  // worst case is an orphaned, harmless file — never a DB row pointing at a
+  // file that's already gone.
   const { error: deleteError } = await supabase
     .from('psychologist_verification_documents')
     .delete()
     .eq('id', document.id);
   if (deleteError) throw deleteError;
+
+  const { error: storageError } = await supabase.storage
+    .from(VERIFICATION_BUCKET)
+    .remove([document.storage_path]);
+  if (storageError) throw storageError;
 }
 
 export async function createVerificationDocumentUrl(storagePath) {
