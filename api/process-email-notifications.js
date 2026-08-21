@@ -58,7 +58,12 @@ const callSupabaseRpc = async (configuration, functionName, body) => {
 };
 
 export const getSafeEmailActionUrl = (actionPath, appUrl) => {
-  if (typeof actionPath !== 'string' || !actionPath.startsWith('/') || actionPath.startsWith('//')) {
+  if (
+    typeof actionPath !== 'string' ||
+    !actionPath.startsWith('/') ||
+    actionPath.startsWith('//') ||
+    actionPath.includes('\\')
+  ) {
     return null;
   }
 

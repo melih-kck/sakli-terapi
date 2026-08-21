@@ -2,98 +2,23 @@
 import { createContext, useContext, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { useToast } from './ToastContext';
+import { useLanguage } from './LanguageContext';
 import { ALLOW_LOCAL_SIMULATION } from '../config/runtime';
 import { formatLocalDateIso } from '../lib/session-flow';
+import {
+  getInitials,
+  normalizePsychologistProfile,
+  normalizeClientProfile,
+  DEFAULT_PSYCHOLOGIST_PROFILE,
+  DEFAULT_CLIENT_PROFILE,
+} from '../lib/profile-normalization';
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 const ProfileContext = createContext(null);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const getInitials = (name = '') => {
-  const words = name.trim().split(/\s+/).filter(Boolean);
-  return words
-    .filter(word => !['dr.', 'uzm.', 'psk.'].includes(word.toLocaleLowerCase('tr-TR')))
-    .slice(0, 2)
-    .map(word => word.charAt(0).toLocaleUpperCase('tr-TR'))
-    .join('') || 'ST';
-};
-
 const isDevMockUser = (user) => ALLOW_LOCAL_SIMULATION && Boolean(user?.id?.startsWith('mock-'));
-
-// ─── Default shapes ──────────────────────────────────────────────────────────
-
-const DEFAULT_PSYCHOLOGIST_PROFILE = {
-  title: 'Psikolog',
-  bio: '',
-  shortBio: '',
-  experience: 0,
-  basePrice: 1000,
-  specializations: [],
-  approaches: [],
-  channels: ['video-blur', 'voice', 'text'],
-  availability: {},
-  languages: ['Türkçe'],
-  university: '',
-  supervisor: '',
-  isCandidate: false,
-  approvalStatus: 'pending',
-  rating: 0,
-  reviewCount: 0,
-  sessionCount: 0,
-};
-
-const DEFAULT_CLIENT_PROFILE = {
-  topics: [],
-  preferredChannel: 'video-blur',
-  emergencyName: '',
-  emergencyPhone: '',
-  city: '',
-  privacyLevel: 5,
-};
-
-// ─── Normalization ────────────────────────────────────────────────────────────
-
-const normalizePsychologistProfile = (profile = {}) => ({
-  displayName: profile.display_name || profile.displayName || '',
-  avatarInitials:
-    profile.avatar_initials ||
-    profile.avatarInitials ||
-    getInitials(profile.display_name || profile.displayName || ''),
-  title: profile.title || DEFAULT_PSYCHOLOGIST_PROFILE.title,
-  bio: profile.bio || '',
-  shortBio: profile.short_bio || profile.shortBio || '',
-  experience: Number(profile.experience || 0),
-  basePrice: Number(profile.base_price ?? profile.basePrice ?? DEFAULT_PSYCHOLOGIST_PROFILE.basePrice),
-  specializations: profile.specializations || [],
-  approaches: profile.approaches || [],
-  channels: profile.channels?.length
-    ? profile.channels
-    : DEFAULT_PSYCHOLOGIST_PROFILE.channels,
-  availability: profile.availability || {},
-  languages: profile.languages?.length
-    ? profile.languages
-    : DEFAULT_PSYCHOLOGIST_PROFILE.languages,
-  university: profile.university || '',
-  supervisor: profile.supervisor || '',
-  isCandidate: Boolean(profile.is_candidate ?? profile.isCandidate),
-  approvalStatus:
-    profile.approval_status || profile.approvalStatus || DEFAULT_PSYCHOLOGIST_PROFILE.approvalStatus,
-  reviewReason: profile.review_reason || profile.reviewReason || '',
-  reviewedAt: profile.reviewed_at || profile.reviewedAt || null,
-  rating: Number(profile.rating || 0),
-  reviewCount: Number(profile.review_count ?? profile.reviewCount ?? 0),
-  sessionCount: Number(profile.session_count ?? profile.sessionCount ?? 0),
-});
-
-const normalizeClientProfile = (profile = {}) => ({
-  topics: profile.topics || profile.clientTopics || DEFAULT_CLIENT_PROFILE.topics,
-  preferredChannel: profile.preferred_channel || profile.preferredChannel || DEFAULT_CLIENT_PROFILE.preferredChannel,
-  emergencyName: profile.emergency_name || profile.emergencyName || '',
-  emergencyPhone: profile.emergency_phone || profile.emergencyPhone || '',
-  city: profile.city || '',
-  privacyLevel: Number(profile.privacy_level ?? profile.privacyLevel ?? DEFAULT_CLIENT_PROFILE.privacyLevel),
-});
 
 // ─── Payload builders (camelCase → snake_case) ────────────────────────────────
 
@@ -148,6 +73,7 @@ const toClientProfileUpsertPayload = (userId, updates) => {
 
 export function ProfileProvider({ user, setUser, children }) {
   const { success, error: showError } = useToast();
+  const { t } = useLanguage();
 
   // ── updateProfile ─────────────────────────────────────────────────────────
   const updateProfile = useCallback(
@@ -185,7 +111,7 @@ export function ProfileProvider({ user, setUser, children }) {
       const { data, error } = await saveProfile(payload);
 
       if (error) {
-        showError('Profil Güncellenemedi', error.message);
+        showError(t('toast.profile.updateFailedTitle'), error.message);
         return { success: false, error: error.message };
       }
 
@@ -224,7 +150,7 @@ export function ProfileProvider({ user, setUser, children }) {
       setUser(updatedUser);
       return { success: true, profile: updatedUser };
     },
-    [user, setUser, showError],
+    [user, setUser, showError, t],
   );
 
   // ── updatePsychologistProfile ─────────────────────────────────────────────
@@ -270,7 +196,7 @@ export function ProfileProvider({ user, setUser, children }) {
         .single();
 
       if (error) {
-        showError('Psikolog Profili Güncellenemedi', error.message);
+        showError(t('toast.profile.psychologistUpdateFailedTitle'), error.message);
         return { success: false, error: error.message };
       }
 
@@ -278,7 +204,7 @@ export function ProfileProvider({ user, setUser, children }) {
       setUser((prev) => (prev ? { ...prev, psychologistProfile: updatedPsychologistProfile } : prev));
       return { success: true, psychologistProfile: updatedPsychologistProfile };
     },
-    [user, setUser, showError],
+    [user, setUser, showError, t],
   );
 
   // ── updateClientProfile ───────────────────────────────────────────────────
@@ -323,7 +249,7 @@ export function ProfileProvider({ user, setUser, children }) {
         .single();
 
       if (error) {
-        showError('Danışan Profili Güncellenemedi', error.message);
+        showError(t('toast.profile.clientUpdateFailedTitle'), error.message);
         return { success: false, error: error.message };
       }
 
@@ -340,31 +266,31 @@ export function ProfileProvider({ user, setUser, children }) {
 
       return { success: true, clientProfile: updatedClientProfile };
     },
-    [user, setUser, showError],
+    [user, setUser, showError, t],
   );
 
   // ── updatePassword ────────────────────────────────────────────────────────
   const updatePassword = useCallback(
     async (currentPassword, newPassword) => {
       if (!user) {
-        return { success: false, error: 'Şifre güncellemek için giriş yapmalısınız.' };
+        return { success: false, error: t('toast.profile.mustBeLoggedInMessage') };
       }
 
       if (!currentPassword) {
-        const message = 'Mevcut şifrenizi yazmalısınız.';
-        showError('Şifre Güncellenemedi', message);
+        const message = t('toast.profile.currentPasswordRequiredMessage');
+        showError(t('toast.profile.passwordUpdateFailedTitle'), message);
         return { success: false, error: message };
       }
 
       if (!newPassword || newPassword.length < 8) {
-        const message = 'Yeni şifre en az 8 karakter olmalıdır.';
-        showError('Şifre Güncellenemedi', message);
+        const message = t('toast.profile.passwordTooShortMessage');
+        showError(t('toast.profile.passwordUpdateFailedTitle'), message);
         return { success: false, error: message };
       }
 
       // ── Mock / dev fallback ───────────────────────────────────────────────
       if (isDevMockUser(user)) {
-        success('Şifre Güncellendi', 'Test hesabı için şifre değişikliği simüle edildi.');
+        success(t('toast.profile.passwordUpdatedTitle'), t('toast.profile.passwordSimulatedMessage'));
         return { success: true, isLocalFallback: true };
       }
 
@@ -375,22 +301,22 @@ export function ProfileProvider({ user, setUser, children }) {
       });
 
       if (verificationError) {
-        const message = 'Mevcut şifreniz doğrulanamadı.';
-        showError('Şifre Güncellenemedi', message);
+        const message = t('toast.profile.currentPasswordInvalidMessage');
+        showError(t('toast.profile.passwordUpdateFailedTitle'), message);
         return { success: false, error: message };
       }
 
       const { error } = await supabase.auth.updateUser({ password: newPassword });
 
       if (error) {
-        showError('Şifre Güncellenemedi', error.message);
+        showError(t('toast.profile.passwordUpdateFailedTitle'), error.message);
         return { success: false, error: error.message };
       }
 
-      success('Şifre Güncellendi', 'Yeni şifreniz kaydedildi.');
+      success(t('toast.profile.passwordUpdatedTitle'), t('toast.profile.passwordSavedMessage'));
       return { success: true };
     },
-    [user, success, showError],
+    [user, success, showError, t],
   );
 
   // ── addMoodEntry ──────────────────────────────────────────────────────────
@@ -417,7 +343,7 @@ export function ProfileProvider({ user, setUser, children }) {
           localStorage.setItem('mock_user_session', JSON.stringify(nextUser));
           return nextUser;
         });
-        success('Ruh Hali Kaydedildi', 'Bugünkü ruh hali notunuz güncellendi.');
+        success(t('toast.profile.moodSavedTitle'), t('toast.profile.moodSavedMessage'));
         return { success: true, moodHistory: nextMoodHistory, isLocalFallback: true };
       }
 
@@ -435,7 +361,7 @@ export function ProfileProvider({ user, setUser, children }) {
 
       if (error) {
         console.error("Ruh hali kaydı Supabase'e yazılamadı:", error);
-        showError('Ruh Hali Kaydedilemedi', error.message);
+        showError(t('toast.profile.moodSaveFailedTitle'), error.message);
         return { success: false, error: error.message };
       }
 
@@ -444,10 +370,10 @@ export function ProfileProvider({ user, setUser, children }) {
         return { ...prev, moodHistory: nextMoodHistory };
       });
 
-      success('Ruh Hali Kaydedildi', 'Bugünkü ruh hali notunuz güncellendi.');
+      success(t('toast.profile.moodSavedTitle'), t('toast.profile.moodSavedMessage'));
       return { success: true, moodHistory: nextMoodHistory };
     },
-    [user, setUser, success, showError],
+    [user, setUser, success, showError, t],
   );
 
   // ── Context value (memoised) ──────────────────────────────────────────────

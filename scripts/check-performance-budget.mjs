@@ -1,6 +1,5 @@
 import { readFile, stat } from 'node:fs/promises';
 import { gzipSync } from 'node:zlib';
-import { fileURLToPath } from 'node:url';
 
 const distDirectory = new URL('../dist/', import.meta.url);
 const indexPath = new URL('index.html', distDirectory);

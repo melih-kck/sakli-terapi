@@ -12,7 +12,14 @@ const wcagTags = [
 test.use({ reducedMotion: 'reduce' });
 
 const expectAccessiblePage = async (page) => {
-  await page.waitForTimeout(800);
+  await expect(page.locator('h1')).toBeVisible();
+  await page.waitForLoadState('networkidle');
+  // `.animate-on-scroll` elements (see animations.css) are revealed by an
+  // IntersectionObserver and finish their 0.6s opacity/transform transition
+  // asynchronously; scanning mid-transition makes axe sample antialiased,
+  // partially-blended text pixels and report false color-contrast failures.
+  // Wait past the transition duration so the DOM is in its resting state.
+  await page.waitForTimeout(700);
 
   const results = await new AxeBuilder({ page })
     .withTags(wcagTags)
