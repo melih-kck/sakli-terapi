@@ -13,7 +13,10 @@ html {
   -webkit-text-size-adjust: 100%;
   -moz-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  font-size: 16px;
+  /* Root font-size is intentionally NOT set here: it's canonically defined
+     in index.css's :root rule (18px desktop, 16px at <=1024px). :root has
+     higher specificity than this html selector, so a value here would be
+     dead code that misleads readers about the actual rendered size. */
 }
 
 body {
