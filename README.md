@@ -105,7 +105,7 @@ npm run test:e2e
 
 | Katman | Otomatik kapsam |
 |---|---|
-| Birim ve bileşen | 91 Vitest testi |
+| Birim ve bileşen | 94 Vitest testi |
 | Kritik ürün yolculukları | 7 senaryo × 5 tarayıcı/cihaz profili |
 | Sayfa sağlığı | 15 açık ve rol tabanlı rota × masaüstü/mobil Chromium |
 | Tarayıcılar | Chromium, Firefox ve WebKit |

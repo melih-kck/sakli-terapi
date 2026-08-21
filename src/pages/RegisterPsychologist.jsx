@@ -3,10 +3,18 @@ import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { SPECIALIZATIONS } from '../data/constants';
 import Navbar from '../components/Navbar';
+import { useLanguage } from '../context/LanguageContext';
 import '../styles/pages/Auth.css';
+
+// Splits a translated "{{link}}"-templated sentence around an inline <Link>,
+// so the link can sit anywhere in the sentence regardless of language word
+// order. Uses a control character as a sentinel that can't collide with
+// real translated text.
+const LINK_MARKER = '\u0000';
 
 export default function RegisterPsychologist() {
   const { register, isLoading } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   
   const [step, setStep] = useState(1);
@@ -73,8 +81,8 @@ export default function RegisterPsychologist() {
       <Navbar />
       <main className="page-content" style={{ padding: 'var(--space-2xl) 0' }}>
         <div className="container container-md text-center mb-xl">
-          <h1>Psikolog Başvurusu</h1>
-          <p className="section-subtitle">Mesleki profilinizi inceleme için hazırlayın.</p>
+          <h1>{t('registerPsychologist.pageTitle')}</h1>
+          <p className="section-subtitle">{t('registerPsychologist.pageSubtitle')}</p>
         </div>
 
         {/* Step Indicator */}
@@ -83,7 +91,7 @@ export default function RegisterPsychologist() {
             <div key={num} className="register-step-item">
               <div className={`step-circle ${step >= num ? 'active' : ''}`}>{num}</div>
               <span className={`step-label ${step >= num ? 'active' : ''}`}>
-                {num === 1 ? 'Hesap' : num === 2 ? 'Mesleki' : num === 3 ? 'Profil' : 'Onay'}
+                {num === 1 ? t('registerPsychologist.stepAccount') : num === 2 ? t('registerPsychologist.stepProfessional') : num === 3 ? t('registerPsychologist.stepProfile') : t('registerPsychologist.stepConfirm')}
               </span>
               {num < 4 && <div className={`step-connector ${step > num ? 'active' : ''}`}></div>}
             </div>
@@ -97,32 +105,32 @@ export default function RegisterPsychologist() {
               {/* Step 1: Personal Info */}
               {step === 1 && (
                 <div className="register-step-content slide-up">
-                  <h3>1. Hesap Bilgileri</h3>
+                  <h3>{t('registerPsychologist.step1Title')}</h3>
                   <div className="auth-info-box mb-lg">
-                    Profil adınız yalnızca başvurunuz onaylandıktan sonra katalogda görünür.
+                    {t('registerPsychologist.step1InfoBox')}
                   </div>
 
                   <div className="grid grid-2 gap-md mb-md">
                     <div className="input-group">
-                      <label htmlFor="psych-register-name">Ad Soyad</label>
-                      <input id="psych-register-name" type="text" name="name" className="input" placeholder="Örn: Ayşe Yılmaz" value={formData.name} onChange={handleChange} required />
+                      <label htmlFor="psych-register-name">{t('registerPsychologist.nameLabel')}</label>
+                      <input id="psych-register-name" type="text" name="name" className="input" placeholder={t('registerPsychologist.namePlaceholder')} value={formData.name} onChange={handleChange} required />
                     </div>
                     <div className="input-group">
-                      <label htmlFor="psych-register-email">E-posta Adresi</label>
+                      <label htmlFor="psych-register-email">{t('registerPsychologist.emailLabel')}</label>
                       <input id="psych-register-email" type="email" name="email" className="input" value={formData.email} onChange={handleChange} autoComplete="email" required />
                     </div>
                   </div>
 
                   <div className="grid grid-2 gap-md mb-lg">
                     <div className="input-group">
-                      <label htmlFor="psych-register-password">Şifre</label>
+                      <label htmlFor="psych-register-password">{t('registerPsychologist.passwordLabel')}</label>
                       <input id="psych-register-password" type="password" name="password" className="input" value={formData.password} onChange={handleChange} minLength="8" autoComplete="new-password" required />
                     </div>
                     <div className="input-group">
-                      <label htmlFor="psych-register-password-confirm">Şifre Tekrar</label>
+                      <label htmlFor="psych-register-password-confirm">{t('registerPsychologist.passwordConfirmLabel')}</label>
                       <input id="psych-register-password-confirm" type="password" name="passwordConfirm" className="input" value={formData.passwordConfirm} onChange={handleChange} minLength="8" autoComplete="new-password" aria-invalid={hasPasswordMismatch} aria-describedby={hasPasswordMismatch ? 'psych-password-error' : undefined} required />
                       {hasPasswordMismatch && (
-                        <span className="input-hint" id="psych-password-error" role="alert" style={{ color: 'var(--danger)' }}>Şifreler eşleşmiyor.</span>
+                        <span className="input-hint" id="psych-password-error" role="alert" style={{ color: 'var(--danger)' }}>{t('registerPsychologist.passwordMismatch')}</span>
                       )}
                     </div>
                   </div>
@@ -130,7 +138,7 @@ export default function RegisterPsychologist() {
                   <div className="input-group mb-lg">
                     <label className="checkbox-group">
                        <input id="psych-register-candidate" type="checkbox" checked={isCandidate} onChange={(e) => setIsCandidate(e.target.checked)} />
-                      <span><strong>Aday Psikologum (Son Sınıf)</strong><br/><small className="text-tertiary">Süpervizör eşliğinde stajyer olarak seans vermek istiyorum.</small></span>
+                      <span><strong>{t('registerPsychologist.candidateLabel')}</strong><br/><small className="text-tertiary">{t('registerPsychologist.candidateHint')}</small></span>
                     </label>
                   </div>
                 </div>
@@ -139,30 +147,29 @@ export default function RegisterPsychologist() {
               {/* Step 2: Professional Info */}
               {step === 2 && (
                 <div className="register-step-content slide-up">
-                  <h3>2. Mesleki Yeterlilik</h3>
-                  
+                  <h3>{t('registerPsychologist.step2Title')}</h3>
+
                   <div className="grid grid-2 gap-md mb-md">
                     <div className="input-group">
-                      <label htmlFor="psych-register-university">Üniversite</label>
+                      <label htmlFor="psych-register-university">{t('registerPsychologist.universityLabel')}</label>
                       <input id="psych-register-university" type="text" name="university" className="input" value={formData.university} onChange={handleChange} required />
                     </div>
                     <div className="input-group">
-                      <label htmlFor="psych-register-graduation-year">{isCandidate ? 'Beklenen Mezuniyet' : 'Mezuniyet Yılı'}</label>
+                      <label htmlFor="psych-register-graduation-year">{isCandidate ? t('registerPsychologist.graduationExpectedLabel') : t('registerPsychologist.graduationYearLabel')}</label>
                       <input id="psych-register-graduation-year" type="number" name="graduationYear" className="input" value={formData.graduationYear} onChange={handleChange} min={currentYear - 80} max={isCandidate ? currentYear + 10 : currentYear} required />
                     </div>
                   </div>
 
                   {isCandidate && (
                     <div className="input-group mb-md">
-                      <label htmlFor="psych-register-supervisor">Süpervizör (Danışman) Adı</label>
-                      <input id="psych-register-supervisor" type="text" name="supervisorName" className="input" placeholder="Örn: Prof. Dr. Ayşe Yılmaz" value={formData.supervisorName} onChange={handleChange} required />
-                      <span className="input-hint">Bu alan yönetici incelemesi içindir ve herkese açık profilde gösterilmez.</span>
+                      <label htmlFor="psych-register-supervisor">{t('registerPsychologist.supervisorLabel')}</label>
+                      <input id="psych-register-supervisor" type="text" name="supervisorName" className="input" placeholder={t('registerPsychologist.supervisorPlaceholder')} value={formData.supervisorName} onChange={handleChange} required />
+                      <span className="input-hint">{t('registerPsychologist.supervisorHint')}</span>
                     </div>
                   )}
 
                   <div className="auth-info-box mb-md">
-                    Başvurunuz yönetici incelemesine alınır. Gerekli mesleki belgeler,
-                    kayıt sonrasında Ayarlar &gt; Mesleki Belgeler ekranından güvenli biçimde yüklenir.
+                    {t('registerPsychologist.step2InfoBox')}
                   </div>
                 </div>
               )}
@@ -170,10 +177,10 @@ export default function RegisterPsychologist() {
               {/* Step 3: Profile Setup */}
               {step === 3 && (
                 <div className="register-step-content slide-up">
-                  <h3>3. Uzmanlık ve Profil</h3>
-                  
+                  <h3>{t('registerPsychologist.step3Title')}</h3>
+
                   <div className="input-group mb-md">
-                    <span className="input-group-label" id="psych-register-specializations">Uzmanlık Alanları (En fazla 3 adet)</span>
+                    <span className="input-group-label" id="psych-register-specializations">{t('registerPsychologist.specializationsLabel')}</span>
                     <div className="topic-grid" role="group" aria-labelledby="psych-register-specializations">
                       {SPECIALIZATIONS.map(spec => (
                         <button
@@ -184,20 +191,20 @@ export default function RegisterPsychologist() {
                           onClick={() => handleSpecToggle(spec.id)}
                           disabled={!formData.specializations.includes(spec.id) && formData.specializations.length >= 3}
                         >
-                          {spec.icon} {spec.label}
+                          {spec.icon} {t(`specializations.${spec.id}`) || spec.label}
                         </button>
                       ))}
                     </div>
                   </div>
 
                   <div className="input-group mb-md">
-                    <label htmlFor="psych-register-bio">Kısa Biyografi (Profilde Görüntülenecek)</label>
-                    <textarea 
+                    <label htmlFor="psych-register-bio">{t('registerPsychologist.bioLabel')}</label>
+                    <textarea
                       id="psych-register-bio"
-                      name="shortBio" 
-                      className="input" 
-                      rows="3" 
-                      placeholder="Danışanların sizi daha iyi tanıması için 1-2 cümlelik özet..."
+                      name="shortBio"
+                      className="input"
+                      rows="3"
+                      placeholder={t('registerPsychologist.bioPlaceholder')}
                       value={formData.shortBio}
                       onChange={handleChange}
                       maxLength="600"
@@ -206,55 +213,59 @@ export default function RegisterPsychologist() {
                   </div>
 
                   <div className="input-group mb-lg">
-                    <label htmlFor="psych-register-price">Taban Seans Ücreti (TL)</label>
+                    <label htmlFor="psych-register-price">{t('registerPsychologist.priceLabel')}</label>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
                       <input id="psych-register-price" type="number" name="basePrice" className="input" style={{ width: '150px' }} value={formData.basePrice} onChange={handleChange} min="500" required />
-                      <span className="text-tertiary text-sm">₺ / Seans (Kendi ücretinizi belirleyebilirsiniz)</span>
+                      <span className="text-tertiary text-sm">{t('registerPsychologist.priceHint')}</span>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Step 4: Application confirmation */}
-              {step === 4 && (
+              {step === 4 && (() => {
+                const [termsBefore, termsAfter] = t('registerPsychologist.termsCheckboxText', { link: LINK_MARKER }).split(LINK_MARKER);
+                const [privacyBefore, privacyAfter] = t('registerPsychologist.privacyCheckboxText', { link: LINK_MARKER }).split(LINK_MARKER);
+                return (
                 <div className="register-step-content slide-up">
-                  <h3>4. Başvuru Onayı</h3>
+                  <h3>{t('registerPsychologist.step4Title')}</h3>
 
                   <div className="contract-box">
                     <div className="contract-text">
-                      <p><strong>PSİKOLOG BAŞVURU BEYANI</strong></p>
-                      <p>Başvuruda verdiğim mesleki bilgilerin doğru olduğunu ve gerektiğinde doğrulayıcı belge sunacağımı beyan ederim.</p>
-                      <p>Danışan mahremiyetini koruyacağımı; görüşme içeriğini, görüntüsünü veya sesini izinsiz kaydetmeyeceğimi kabul ederim.</p>
-                      <p>Ödeme ve komisyon altyapısının henüz etkin olmadığını; finansal koşullar devreye alınmadan önce ayrıca bilgilendirileceğimi kabul ederim.</p>
+                      <p><strong>{t('registerPsychologist.declarationTitle')}</strong></p>
+                      <p>{t('registerPsychologist.declarationItem1')}</p>
+                      <p>{t('registerPsychologist.declarationItem2')}</p>
+                      <p>{t('registerPsychologist.declarationItem3')}</p>
                     </div>
                   </div>
 
                   <div className="input-group mb-md">
                     <label className="checkbox-group">
                       <input type="checkbox" required />
-                      <span><Link to="/kullanim-kosullari">Kullanım Koşullarını</Link> okudum, kabul ediyorum.</span>
+                      <span>{termsBefore}<Link to="/kullanim-kosullari">{t('registerPsychologist.termsLinkLabel')}</Link>{termsAfter}</span>
                     </label>
                   </div>
                   <div className="input-group mb-lg">
                     <label className="checkbox-group">
                       <input type="checkbox" required />
-                      <span><Link to="/gizlilik-politikasi">Gizlilik Politikasını</Link> okudum ve danışan mahremiyetine uyacağımı taahhüt ederim.</span>
+                      <span>{privacyBefore}<Link to="/gizlilik-politikasi">{t('registerPsychologist.privacyLinkLabel')}</Link>{privacyAfter}</span>
                     </label>
                   </div>
                 </div>
-              )}
+                );
+              })()}
 
               {/* Navigation */}
               <div className="register-nav">
                 {step > 1 ? (
-                  <button type="button" className="btn btn-outline" onClick={handlePrev}>Geri</button>
+                  <button type="button" className="btn btn-outline" onClick={handlePrev}>{t('registerPsychologist.backButton')}</button>
                 ) : <div></div>}
-                
+
                 {step < 4 ? (
-                  <button type="submit" className="btn btn-primary" disabled={isLoading || (step === 1 && hasPasswordMismatch)}>İleri</button>
+                  <button type="submit" className="btn btn-primary" disabled={isLoading || (step === 1 && hasPasswordMismatch)}>{t('registerPsychologist.nextButton')}</button>
                 ) : (
                   <button type="submit" className="btn btn-primary" disabled={isLoading}>
-                    {isLoading ? 'Başvuru gönderiliyor...' : 'Başvuruyu Tamamla'}
+                    {isLoading ? t('registerPsychologist.submitting') : t('registerPsychologist.submitButton')}
                   </button>
                 )}
               </div>
