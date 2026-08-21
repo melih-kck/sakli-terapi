@@ -393,8 +393,13 @@ export function AuthProvider({ children }) {
           return { success: true, needsEmailConfirmation: true, email: normalizedEmail };
         }
 
+        // email/role are already set by the handle_auth_user_profile() DB
+        // trigger from the authoritative signUp() call; omitted here because
+        // the authenticated role's UPDATE grant on profiles is column-
+        // restricted to (alias, name, privacy_level) and this upsert always
+        // hits the ON CONFLICT branch (the trigger inserts the row first).
         const { error: insertError } = await supabase.from('profiles').upsert([{
-          id: data.user.id, email: normalizedEmail, role,
+          id: data.user.id,
           name: profileData.name || null, alias: profileData.alias || null,
           privacy_level: Number(profileData.privacyLevel || 5),
         }], { onConflict: 'id' });

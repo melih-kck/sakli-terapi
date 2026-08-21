@@ -217,7 +217,7 @@ CREATE TABLE IF NOT EXISTS public.psychologists (
   base_price INTEGER DEFAULT 1000 CHECK (base_price >= 0),
   specializations TEXT[],
   approaches TEXT[],
-  channels TEXT[],
+  channels TEXT[] CHECK (channels IS NULL OR channels <@ ARRAY['text', 'voice', 'video-blur']::text[]),
   availability JSONB DEFAULT '{}'::jsonb,
   languages TEXT[] DEFAULT ARRAY[U&'T\00FCrk\00E7e'],
   university TEXT,
@@ -243,6 +243,9 @@ ALTER TABLE public.psychologists ADD CONSTRAINT psychologists_base_price_check C
 ALTER TABLE public.psychologists ADD COLUMN IF NOT EXISTS specializations TEXT[];
 ALTER TABLE public.psychologists ADD COLUMN IF NOT EXISTS approaches TEXT[];
 ALTER TABLE public.psychologists ADD COLUMN IF NOT EXISTS channels TEXT[];
+ALTER TABLE public.psychologists DROP CONSTRAINT IF EXISTS psychologists_channels_check;
+ALTER TABLE public.psychologists ADD CONSTRAINT psychologists_channels_check
+  CHECK (channels IS NULL OR channels <@ ARRAY['text', 'voice', 'video-blur']::text[]);
 ALTER TABLE public.psychologists ADD COLUMN IF NOT EXISTS availability JSONB DEFAULT '{}'::jsonb;
 ALTER TABLE public.psychologists ADD COLUMN IF NOT EXISTS languages TEXT[] DEFAULT ARRAY[U&'T\00FCrk\00E7e'];
 ALTER TABLE public.psychologists ADD COLUMN IF NOT EXISTS university TEXT;

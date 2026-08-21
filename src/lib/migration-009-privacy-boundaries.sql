@@ -309,7 +309,12 @@ REVOKE ALL ON TABLE public.client_profiles FROM anon;
 REVOKE ALL ON TABLE public.mood_entries FROM anon;
 REVOKE ALL ON TABLE public.reviews FROM anon;
 
-GRANT SELECT, INSERT, UPDATE ON TABLE public.profiles TO authenticated;
+-- Column-restricted: email/role/id/created_at must stay out of client reach
+-- so a user can't rewrite their own delivery address to someone else's inbox
+-- or otherwise touch a server-managed field via a direct PostgREST call.
+GRANT SELECT, INSERT ON TABLE public.profiles TO authenticated;
+REVOKE UPDATE ON TABLE public.profiles FROM authenticated;
+GRANT UPDATE (alias, name, privacy_level) ON TABLE public.profiles TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON TABLE public.psychologists TO authenticated;
 GRANT SELECT, INSERT ON TABLE public.sessions TO authenticated;
 REVOKE UPDATE ON TABLE public.sessions FROM authenticated;
@@ -387,17 +392,22 @@ SECURITY DEFINER
 SET search_path = ''
 AS $$
 BEGIN
-  IF pg_trigger_depth() > 1 THEN
-    RETURN NEW;
-  END IF;
-
+  -- private.update_psychologist_rating() re-enters this trigger (depth > 1)
+  -- to write rating/review_count after a review changes; only those two
+  -- columns are exempted at depth, so approval_status/session_count/
+  -- created_at stay protected even inside that nested call.
   IF (SELECT auth.uid()) IS NOT NULL
      AND NOT (SELECT private.is_admin_user()) THEN
     IF NEW.approval_status IS DISTINCT FROM OLD.approval_status
-       OR NEW.rating IS DISTINCT FROM OLD.rating
-       OR NEW.review_count IS DISTINCT FROM OLD.review_count
        OR NEW.session_count IS DISTINCT FROM OLD.session_count
-       OR NEW.created_at IS DISTINCT FROM OLD.created_at THEN
+       OR NEW.created_at IS DISTINCT FROM OLD.created_at
+       OR (
+         pg_trigger_depth() <= 1
+         AND (
+           NEW.rating IS DISTINCT FROM OLD.rating
+           OR NEW.review_count IS DISTINCT FROM OLD.review_count
+         )
+       ) THEN
       RAISE EXCEPTION 'server-managed psychologist fields cannot be changed';
     END IF;
   END IF;
