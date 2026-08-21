@@ -13,6 +13,7 @@ export const normalizeIncomingSessionMessage = (
   value,
   expectedSender,
   now = new Date(),
+  locale = 'tr-TR',
 ) => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   if (!SESSION_ROLES.has(expectedSender) || value.sender !== expectedSender) return null;
@@ -28,7 +29,7 @@ export const normalizeIncomingSessionMessage = (
     id: remoteId,
     text,
     sender: expectedSender,
-    time: now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
+    time: now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }),
   };
 };
 

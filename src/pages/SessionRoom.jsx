@@ -194,6 +194,10 @@ export default function SessionRoom() {
   const pipVideoRef = useRef(null);    // Small screen (me)
 
   const animationFrameId = useRef(null);
+  // Shared by the client polling loop (tryConnect) and scheduleClientReconnect.
+  // Every current writer clears the previous timeout before scheduling a new
+  // one, so there's no live double-fire -- but any future writer added to
+  // this ref must do the same, or it will silently leak/duplicate timers.
   const retryTimerRef = useRef(null);
   const connectionAttemptTimerRef = useRef(null);
   const demoResponseTimerRef = useRef(null);
@@ -322,7 +326,7 @@ export default function SessionRoom() {
     }
 
     conn.on('data', (data) => {
-      const message = normalizeIncomingSessionMessage(data, expectedPeerRole);
+      const message = normalizeIncomingSessionMessage(data, expectedPeerRole, undefined, localeRef.current);
       if (message) {
         setMessages(prev => [...prev, message]);
       }

@@ -42,6 +42,14 @@ $$;
 REVOKE ALL ON FUNCTION private.scrub_auth_onboarding_metadata()
 FROM PUBLIC, anon, authenticated;
 
+-- This must run after `on_auth_user_created_profile` (migration-008), which
+-- copies the same signup metadata into profiles/psychologists/client_profiles
+-- before it is scrubbed here. PostgreSQL fires same-event triggers on a table
+-- in alphabetical order by trigger name, and 'on_auth_user_created_profile'
+-- sorts before 'on_auth_user_created_scrub_metadata', so the ordering holds
+-- today -- but it is implicit. Do not rename either trigger without
+-- re-checking this ordering; a scrub-before-copy would silently leave new
+-- signups with blank name/topics/emergency-contact/etc. fields.
 DROP TRIGGER IF EXISTS on_auth_user_created_scrub_metadata ON auth.users;
 CREATE TRIGGER on_auth_user_created_scrub_metadata
 AFTER INSERT ON auth.users

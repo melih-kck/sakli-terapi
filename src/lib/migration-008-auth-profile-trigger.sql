@@ -111,7 +111,11 @@ BEGIN
           THEN (metadata->>'experience')::integer
         ELSE 0
       END,
-      COALESCE((metadata->>'isCandidate')::boolean, false),
+      CASE
+        WHEN jsonb_typeof(metadata->'isCandidate') = 'boolean'
+          THEN (metadata->>'isCandidate')::boolean
+        ELSE false
+      END,
       'pending',
       CASE
         WHEN COALESCE(metadata->>'basePrice', '') ~ '^[0-9]+$'
