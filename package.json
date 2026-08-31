@@ -41,8 +41,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@sentry/react": "^10.70.0",
-    "@supabase/supabase-js": "^2.112.3",
+    "@sentry/react": "^10.71.0",
+    "@supabase/supabase-js": "^2.112.4",
     "peerjs": "^1.5.5",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
@@ -53,17 +53,17 @@
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.62.0",
     "@testing-library/jest-dom": "^7.0.1",
-    "@testing-library/react": "^16.3.2",
+    "@testing-library/react": "^16.3.3",
     "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
-    "eslint": "^10.8.1",
+    "@types/react-dom": "^19.2.5",
+    "@vitejs/plugin-react": "^6.1.1",
+    "eslint": "^10.9.1",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-react-refresh": "^0.5.4",
+    "eslint-plugin-react-refresh": "^0.5.5",
     "globals": "^17.11.0",
     "jsdom": "^30.0.1",
-    "knip": "^6.32.2",
-    "vite": "^8.2.1",
-    "vitest": "^4.1.9"
+    "knip": "^6.32.3",
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
   }
 }
