@@ -127,7 +127,7 @@ export const translations = {
       description: 'Saklı Terapi, mahremiyet odaklı çevrim içi psikolojik destek deneyimini araştıran etkileşimli bir ürün ve teknoloji prototipidir.',
     },
     demo: {
-      title: 'Ürün ve mühendislik portföyü için hazırlanmış teknoloji prototipi',
+      title: 'Mahremiyet odaklı etkileşimli teknoloji prototipi',
       short: 'Portföy demosu',
       description: 'Bu sürüm sağlık hizmeti sunmaz, gerçek randevu kabul etmez ve yalnızca kurgusal veriler kullanır.',
       noHealthService: 'Gerçek sağlık hizmeti sunmaz.',
@@ -154,7 +154,7 @@ export const translations = {
       emergencyNumber: '112 Acil Çağrı Merkezi',
       hospitalAppointment: 'Hastane randevusu',
       hospitalChannels: 'MHRS veya ALO 182',
-      portfolio: 'Ürün ve mühendislik portföyü.',
+      portfolio: 'Etkileşimli teknoloji prototipi.',
       rights: 'Tüm hakları saklıdır.',
       tls: 'TLS bağlantısı',
       roleAccess: 'Rol bazlı erişim',
@@ -206,7 +206,7 @@ export const translations = {
         ['Psikologlar nasıl yayımlanıyor?', 'Demo yönetici paneli, mesleki belge inceleme ve başvuru kararının ürün akışını gösterir. Portföy sürümündeki bütün profiller kurgusaldır.'],
         ['Acil durumda ne olur?', '{{brand}} portföy sürümü sağlık veya acil müdahale hizmeti değildir. Hayati risk veya acil durumda 112 Acil Çağrı Merkezi aranmalıdır.'],
         ['Seans ücreti ne kadardır?', 'Portföy sürümünde gerçek ücret veya ödeme bulunmaz. Ödeme entegrasyonu, hukuki ve operasyonel onaylardan sonra ele alınacak üretim özelliğidir.'],
-        ['Gerçek hesap açabilir miyim?', 'Hayır. Bu sürüm yalnızca ürün ve mühendislik portföyü içindir. Hazır demo rolleri gerçek kişisel veri girmeden kullanılabilir.'],
+        ['Gerçek hesap açabilir miyim?', 'Hayır. Bu sürüm yalnızca kurgusal verilerle çalışan bir teknoloji demosudur. Hazır demo rolleri gerçek kişisel veri girmeden kullanılabilir.'],
       ],
     },
     loginPage: {
@@ -590,7 +590,7 @@ export const translations = {
         summary: 'Bu sürüm sağlık hizmeti veya acil müdahale sağlamaz ve gerçek randevu oluşturmaz.',
         updated: 'Son güncelleme: 26 Temmuz 2026',
         purposeTitle: 'Amaç',
-        purpose: '{{brand}}, ürün ve mühendislik portföyü amacıyla sunulan çalışan bir prototiptir. Arayüz ve iş akışları yalnızca kurgusal verilerle incelenebilir.',
+        purpose: '{{brand}}, araştırma ve değerlendirme amacıyla sunulan çalışan bir teknoloji prototipidir. Arayüz ve iş akışları yalnızca kurgusal verilerle incelenebilir.',
         limitsTitle: 'Kullanım Sınırları',
         limits: [
           'Gerçek kişisel veya sağlık verisi girilmemelidir.',
@@ -1358,7 +1358,7 @@ export const translations = {
       description: 'Saklı Terapi is an interactive product and technology prototype exploring privacy-first online psychological support.',
     },
     demo: {
-      title: 'Technology prototype created as a product and engineering portfolio',
+      title: 'Privacy-focused interactive technology prototype',
       short: 'Portfolio demo',
       description: 'This version does not provide healthcare, accept real appointments, or use real user data.',
       noHealthService: 'No real healthcare services are provided.',
@@ -1385,7 +1385,7 @@ export const translations = {
       emergencyNumber: '112 Emergency Call Center',
       hospitalAppointment: 'Hospital appointment',
       hospitalChannels: 'MHRS or ALO 182',
-      portfolio: 'Product and engineering portfolio.',
+      portfolio: 'Interactive technology prototype.',
       rights: 'All rights reserved.',
       tls: 'TLS connection',
       roleAccess: 'Role-based access',
@@ -1437,7 +1437,7 @@ export const translations = {
         ['How are psychologists published?', 'The demo administrator dashboard shows the product flow for professional document review and application decisions. Every profile in the portfolio version is fictional.'],
         ['What happens in an emergency?', 'The {{brand}} portfolio version is not a healthcare or emergency response service. Call the 112 Emergency Call Center in a life-threatening situation or emergency.'],
         ['How much does a session cost?', 'The portfolio version has no real fees or payments. Payment integration is a production feature to be considered after legal and operational approvals.'],
-        ['Can I create a real account?', 'No. This version exists only as a product and engineering portfolio. Prepared demo roles can be used without entering real personal data.'],
+        ['Can I create a real account?', 'No. This version is a technology demo that uses only fictional data. Prepared demo roles can be used without entering real personal data.'],
       ],
     },
     loginPage: {
@@ -1821,7 +1821,7 @@ export const translations = {
         summary: 'This version does not provide healthcare or emergency intervention and does not create real appointments.',
         updated: 'Last updated: July 26, 2026',
         purposeTitle: 'Purpose',
-        purpose: '{{brand}} is a working prototype presented as a product and engineering portfolio project. Its interface and workflows may only be reviewed with fictional data.',
+        purpose: '{{brand}} is a working technology prototype presented for research and evaluation. Its interface and workflows may only be reviewed with fictional data.',
         limitsTitle: 'Usage Boundaries',
         limits: [
           'Do not enter real personal or health data.',
