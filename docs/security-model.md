@@ -1,14 +1,14 @@
 # Supabase Security Model
 
-Migrations 009 through 019 are the canonical authorization boundary for
+Migrations 009 through 020 are the canonical authorization boundary for
 application tables. Run `src/lib/verify-rls.sql` after applying them to a
 Supabase project.
 
 Migrations 006 through 008 are earlier, prerequisite hardening steps (RLS
 groundwork, session-update hardening, and the auth-profile trigger) that
-009–019 build on. They are not part of the authorization boundary itself, but
+009–020 build on. They are not part of the authorization boundary itself, but
 restore drills (`backup-recovery.md`, `backup-log.md`) reapply the full
-006–019 range because the migrations are cumulative and 009+ assume 006–008
+006–020 range because the migrations are cumulative and 009+ assume 006–008
 are already in place.
 
 ## Access Matrix
@@ -68,7 +68,9 @@ denies admin policies and review triggers until the second factor is verified.
 Psychologists can delete pending or rejected documents, but cannot delete an
 approved document. A profile cannot become `approved` without an approved
 document, and its last approved document cannot be rejected while the profile
-remains active.
+remains active. Migration 020 preserves that boundary while allowing the owner
+to clean up an orphaned Storage object after a failed metadata insert or after
+the corresponding pending/rejected metadata row has been deleted.
 
 Migration 011 also derives session aliases, psychologist display fields, fee,
 initial workflow state, and room token in PostgreSQL. The browser supplies only
@@ -95,7 +97,7 @@ secret-protected operational-email worker and must never be exposed to Vite.
 
 ## Verification
 
-1. Apply migrations 009 through 019 in order.
+1. Apply migrations 009 through 020 in order.
 2. Run `src/lib/verify-rls.sql`.
 3. Test with separate client, psychologist, and admin accounts.
 4. Confirm anonymous requests can query only the two public views.

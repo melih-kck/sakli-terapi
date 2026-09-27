@@ -3,10 +3,17 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
+export const assertLiveContactEmails = (env) => {
+  if (!env.VITE_SUPPORT_EMAIL?.trim() || !env.VITE_CONTACT_EMAIL?.trim()) {
+    throw new Error('VITE_SUPPORT_EMAIL and VITE_CONTACT_EMAIL are required when VITE_APP_MODE=live')
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const isDemoMode = env.VITE_APP_MODE !== 'live'
+  if (!isDemoMode) assertLiveContactEmails(env)
   const publicSiteUrl = (env.PUBLIC_APP_URL || 'https://sakli-terapi.vercel.app').replace(/\/$/, '')
   const siteMetadata = {
     name: 'site-metadata',

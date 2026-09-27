@@ -9,7 +9,7 @@
 -- - Missing columns, indexes, policies, functions, and triggers are added.
 -- - Known old policies are replaced with the current canonical policies.
 --
--- After this baseline setup, also run migrations 009 through 019 in order.
+-- After this baseline setup, also run migrations 009 through 020 in order.
 -- They are kept separate so each privacy and operational boundary is auditable.
 --
 -- Important:

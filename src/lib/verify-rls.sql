@@ -1,4 +1,4 @@
--- Read-only verification for Migrations 009-019.
+-- Read-only verification for Migrations 009-020.
 -- Run in Supabase SQL Editor after applying the migrations.
 --
 -- Scope: this only checks privilege METADATA -- that RLS is enabled, that
@@ -53,6 +53,16 @@ WHERE schemaname = 'public'
     ]
   )
 ORDER BY tablename, policyname;
+
+SELECT
+  policyname,
+  roles,
+  cmd,
+  qual
+FROM pg_policies
+WHERE schemaname = 'storage'
+  AND tablename = 'objects'
+  AND policyname = 'psychologist_documents_storage_delete_owner';
 
 SELECT
   table_name,
@@ -273,6 +283,22 @@ BEGIN
       AND public
   ) THEN
     RAISE EXCEPTION 'psychologist document bucket is public';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename = 'objects'
+      AND policyname = 'psychologist_documents_storage_delete_owner'
+      AND cmd = 'DELETE'
+      AND qual ILIKE '%psychologist-documents%'
+      AND qual ILIKE '%storage.foldername%'
+      AND qual ILIKE '%has_profile_role%psychologist%'
+      AND qual ILIKE '%documents.status = ''approved''%'
+      AND qual ~* 'NOT[[:space:](]+EXISTS'
+  ) THEN
+    RAISE EXCEPTION 'verification document cleanup storage policy is invalid';
   END IF;
 
   IF has_function_privilege(

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { assertLiveContactEmails } from '../../vite.config';
 import { APP_MODE, FEATURES, IS_DEMO_MODE } from './runtime';
 
 describe('runtime feature gates', () => {
@@ -16,5 +17,16 @@ describe('runtime feature gates', () => {
       liveSessions: false,
       payments: false,
     });
+  });
+
+  it('rejects live mode without both public contact emails', () => {
+    expect(() => assertLiveContactEmails({
+      VITE_SUPPORT_EMAIL: 'support@example.invalid',
+    })).toThrow('VITE_SUPPORT_EMAIL and VITE_CONTACT_EMAIL are required');
+
+    expect(() => assertLiveContactEmails({
+      VITE_SUPPORT_EMAIL: 'support@example.invalid',
+      VITE_CONTACT_EMAIL: 'contact@example.invalid',
+    })).not.toThrow();
   });
 });
