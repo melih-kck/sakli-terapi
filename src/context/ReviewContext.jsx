@@ -149,7 +149,7 @@ export function ReviewProvider({ user, sessions: sessionContextSessions = [], ma
       try {
         const { data, error } = await supabase
           .from('sessions')
-          .select('*')
+          .select('id, status, reviewed, channel, psychologist_id')
           .eq('id', sessionId)
           .single();
           
