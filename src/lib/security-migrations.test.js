@@ -16,6 +16,7 @@ const verificationMigration = readSource('./migration-015-psychologist-verificat
 const adminMfaMigration = readSource('./migration-016-admin-mfa.sql');
 const publicViewSecurityMigration = readSource('./migration-017-public-view-security.sql');
 const authMetadataMigration = readSource('./migration-019-auth-metadata-minimization.sql');
+const verificationCleanupMigration = readSource('./migration-020-verification-storage-cleanup.sql');
 const verificationQuery = readSource('./verify-rls.sql');
 const verificationDocuments = readSource('./verification-documents.js');
 const adminQueries = readSource('./admin.js');
@@ -175,6 +176,8 @@ describe('Supabase privacy boundaries', () => {
     expect(sessionRoomMigration).toContain('psychologist_peer_token');
     expect(sessionContext).not.toContain(".select('*')");
     expect(sessionContext).not.toContain('peer_room_token');
+    expect(reviewQueries).toContain(".select('id, status, reviewed, channel, psychologist_id')");
+    expect(reviewQueries).not.toMatch(/\.from\('sessions'\)\s*\.select\('\*'\)/);
   });
 
   it('limits session completion to the psychologist after the scheduled start', () => {
@@ -294,6 +297,13 @@ describe('Supabase privacy boundaries', () => {
     expect(verificationMigration).toContain('psychologist_documents_storage_select_admin');
     expect(verificationMigration).toContain('documents.storage_path = name');
     expect(verificationMigration).not.toContain('CREATE POLICY "psychologist_documents_storage_delete_admin"');
+    expect(verificationCleanupMigration).toContain('psychologist_documents_storage_delete_owner');
+    expect(verificationCleanupMigration).toContain('(storage.foldername(name))[1] = (SELECT auth.uid())::text');
+    expect(verificationCleanupMigration).toContain("private.has_profile_role('psychologist')");
+    expect(verificationCleanupMigration).toContain('AND NOT EXISTS (');
+    expect(verificationCleanupMigration).toContain("documents.status = 'approved'");
+    expect(verificationCleanupMigration).not.toContain("documents.status <> 'approved'");
+    expect(verificationQuery).toContain('verification document cleanup storage policy is invalid');
   });
 
   it('requires approved evidence before activating a psychologist profile', () => {

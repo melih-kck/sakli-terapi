@@ -12,8 +12,8 @@ export const BRAND = Object.freeze({
     'VITE_BRAND_DESCRIPTION',
     'Rumuz temelli profiller ve kontrollü görüntü seçeneklerini araştıran mahremiyet odaklı ürün prototipi.',
   ),
-  supportEmail: envValue('VITE_SUPPORT_EMAIL', 'destek@example.com'),
-  contactEmail: envValue('VITE_CONTACT_EMAIL', 'iletisim@example.com'),
+  supportEmail: envValue('VITE_SUPPORT_EMAIL', ''),
+  contactEmail: envValue('VITE_CONTACT_EMAIL', ''),
 });
 
 export const getMailto = (email, subject = '') => (
