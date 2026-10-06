@@ -70,12 +70,12 @@ Ayrıntılı model için [güvenlik belgesine](docs/security-model.md) bakın.
 
 ## Yerel Geliştirme
 
-Gereksinim: Node.js `22.22.0` veya üzeri.
+Önerilen ortam: Node.js `24.15.0` veya üzeri bir `24.x` sürümü (CI da Node 24 kullanır). Desteklenen aralıklar: `22.22.2+` (22.x), `24.15.0+` (24.x) veya `26.0.0+`.
 
 ```bash
 git clone https://github.com/melih-kck/sakli-terapi.git
 cd sakli-terapi
-npm install
+npm ci
 npm run dev
 ```
 
@@ -118,6 +118,8 @@ npm run test:e2e
 Uçtan uca paket; ana sayfa, kalıcı dil tercihi, blur onayı, üç demo rolü, belge görüntüleme ve seans odası akışını doğrular. Erişilebilirlik kontrolleri axe-core ile otomatikleştirilmiştir; otomatik tarama manuel klavye ve yardımcı teknoloji değerlendirmesinin yerini tutmaz.
 
 Tüm kontroller `main` dalına gönderilen her değişiklikte GitHub Actions tarafından yeniden çalıştırılır. Derleme sonrasında başlangıç performans bütçesini doğrulamak için `npm run check:performance`, belge görsellerini güncel yerel demo üzerinden yeniden üretmek için geliştirme sunucusu açıkken `npm run screenshots:portfolio` komutunu kullanın.
+
+React, React DOM ve ilgili type paketleri Dependabot tarafından ayrı bir grupta güncellenir. React 19.3 geçişi başlangıç aktarım bütçesini aştığı için 19.2.x korunur; güvenlik güncellemeleri kapatılmadan yeni sürümler aynı kalite kontrolleriyle ayrıca değerlendirilir.
 
 ## Proje Yapısı
 
