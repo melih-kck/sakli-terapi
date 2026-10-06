@@ -9,6 +9,15 @@ updates:
       timezone: Europe/Istanbul
     open-pull-requests-limit: 5
     groups:
+      react-runtime:
+        patterns:
+          - react
+          - react-dom
+          - "@types/react"
+          - "@types/react-dom"
+        update-types:
+          - patch
+          - minor
       npm-patch-and-minor:
         update-types:
           - patch
