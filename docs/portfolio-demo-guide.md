@@ -1,4 +1,4 @@
-# Portföy Demo Rehberi
+# Demo İnceleme Rehberi
 
 ## Demo Amacı
 
@@ -33,7 +33,7 @@ Saklı Terapi, çevrim içi psikolojik danışmanlıkta mahremiyet kaygısının
 
 ## Güvenlik ve Etik Sınır
 
-Portföy sürümü sağlık hizmeti sunmaz, gerçek randevu kabul etmez, ödeme almaz ve gerçek kullanıcı verisi saklamaz. Demo sırasında gerçek kişi, diploma, sağlık bilgisi veya iletişim bilgisi girilmemelidir. Canlı hizmete geçiş; hukuk, klinik yönetişim, veri koruma ve operasyon onaylarından ayrı bir aşamadır.
+Demo sürümü sağlık hizmeti sunmaz, gerçek randevu kabul etmez, ödeme almaz ve gerçek kullanıcı verisi saklamaz. Demo sırasında gerçek kişi, diploma, sağlık bilgisi veya iletişim bilgisi girilmemelidir. Canlı hizmete geçiş; hukuk, klinik yönetişim, veri koruma ve operasyon onaylarından ayrı bir aşamadır.
 
 ## Ürün İncelemesinde Tartışılabilecek Sorular
 
@@ -43,6 +43,6 @@ Portföy sürümü sağlık hizmeti sunmaz, gerçek randevu kabul etmez, ödeme 
 - Bir üniversite ortamında kullanıcı araştırması ve etik kurul süreci nasıl tasarlanmalı?
 - Kapalı pilot için hangi başarı ve güvenlik ölçütleri kullanılmalı?
 
-## Kısa CV Açıklaması
+## Kısa Proje Açıklaması
 
-“Gizlilik odaklı çevrim içi danışmanlık deneyimini araştıran Saklı Terapi prototipini geliştirdim. React, Supabase/PostgreSQL RLS ve WebRTC kullanan sistemde danışan, uzman ve yönetici akışları; rol tabanlı erişim, profesyonel belge doğrulama, MFA, denetim kaydı ve güvenli portföy demo modu tasarladım.”
+“Gizlilik odaklı çevrim içi danışmanlık deneyimini araştıran Saklı Terapi prototipini geliştirdim. React, Supabase/PostgreSQL RLS ve WebRTC kullanan sistemde danışan, uzman ve yönetici akışları; rol tabanlı erişim, profesyonel belge doğrulama, MFA, denetim kaydı ve güvenli demo modu tasarladım.”
