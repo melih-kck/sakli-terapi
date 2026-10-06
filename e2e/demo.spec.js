@@ -140,6 +140,7 @@ test('yönetici demo belgesini aynı sekmede güvenilir biçimde görüntüler',
 
 test('danışan seans odasında blursuz görüntüyü yalnızca açık onayla paylaşır', async ({ page }) => {
   await openDemoRole(page, 'client', '/panel');
+  await expect(page.locator('html')).toHaveCSS('scroll-behavior', 'auto');
 
   const sessionLink = page.locator('a[href="/seans/demo-session-privacy"]');
   await expect(sessionLink).toBeVisible();
