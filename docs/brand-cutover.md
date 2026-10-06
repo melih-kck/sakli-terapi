@@ -32,4 +32,4 @@ Son güncelleme: 1 Ağustos 2026
 - Marka vekiliyle TÜRKPATENT uygunluk ve tescil süreci
 - Gerçek kullanıcı kabulü için gerekli hukuki, klinik ve operasyonel onaylar
 
-Özel alan adı alınana kadar ana üretim adresi `https://sakli-terapi.vercel.app` olarak kullanılacaktır. Hosting, ücretli SSL, site kurucu veya premium DNS paketi satın almak bu portföy sürümü için gerekli değildir.
+Özel alan adı alınana kadar ana üretim adresi `https://sakli-terapi.vercel.app` olarak kullanılacaktır. Hosting, ücretli SSL, site kurucu veya premium DNS paketi satın almak bu demo sürümü için gerekli değildir.

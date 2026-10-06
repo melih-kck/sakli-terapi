@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/melih-kck/sakli-terapi/actions/workflows/ci.yml/badge.svg)](https://github.com/melih-kck/sakli-terapi/actions/workflows/ci.yml)
 
-Saklı Terapi, çevrim içi psikolojik destek deneyiminde mahremiyet kontrolünü ürün tasarımı ve yazılım mimarisiyle ele alan etkileşimli bir portföy projesidir. Uygulama; danışan, uzman ve yönetici yolculuklarını tek bir güvenli demo ortamında gösterir.
+Saklı Terapi, çevrim içi psikolojik destek deneyiminde mahremiyet kontrolünü ürün tasarımı ve yazılım mimarisiyle ele alan etkileşimli bir teknoloji prototipidir. Uygulama; danışan, uzman ve yönetici yolculuklarını tek bir güvenli demo ortamında gösterir.
 
 **Canlı demo:** [sakli-terapi.vercel.app](https://sakli-terapi.vercel.app/)
 
@@ -11,7 +11,7 @@ Saklı Terapi, çevrim içi psikolojik destek deneyiminde mahremiyet kontrolün�
 
 ## Ürüne Bakış
 
-![Saklı Terapi ana sayfa ve etkileşimli portföy demosu](docs/screenshots/landing-overview.jpg)
+![Saklı Terapi ana sayfa ve etkileşimli teknoloji prototipi](docs/screenshots/landing-overview.jpg)
 
 | Gizlilik kontrollü görüşme | Yönetici belge inceleme |
 |---|---|
@@ -25,7 +25,7 @@ Saklı Terapi, çevrim içi psikolojik destek deneyiminde mahremiyet kontrolün�
 4. Uzman rolünde takvim, rumuzla temsil edilen danışan ve seans yönetimini inceleyin.
 5. Yönetici rolünde kurgusal belgeyi görüntüleyin, karar akışını ve denetim kaydını izleyin.
 
-Detaylı anlatım için [portföy demo rehberine](docs/portfolio-demo-guide.md) bakın.
+Detaylı anlatım için [demo inceleme rehberine](docs/portfolio-demo-guide.md) bakın.
 
 ## Ürün Deneyimi
 
@@ -79,7 +79,7 @@ npm install
 npm run dev
 ```
 
-Portföy demosu Supabase anahtarı olmadan çalışır. İsteğe bağlı yapılandırma için `.env.example` dosyasını `.env.local` olarak kopyalayın.
+Demo sürümü Supabase anahtarı olmadan çalışır. İsteğe bağlı yapılandırma için `.env.example` dosyasını `.env.local` olarak kopyalayın.
 
 Varsayılan güvenli özellik kapıları:
 
@@ -130,12 +130,12 @@ src/context/     Kimlik, profil, seans ve bildirim durumu
 src/lib/         Supabase erişimi, güvenlik yardımcıları ve SQL migration'ları
 src/pages/       Ziyaretçi, danışan, uzman ve yönetici ekranları
 e2e/             Çapraz tarayıcı ve erişilebilirlik kabul testleri
-scripts/         Tekrarlanabilir portföy görseli üretimi
+scripts/         Tekrarlanabilir demo görseli üretimi
 ```
 
 ## Belgeler
 
-- [Portföy demo rehberi](docs/portfolio-demo-guide.md)
+- [Demo inceleme rehberi](docs/portfolio-demo-guide.md)
 - [Güvenlik modeli](docs/security-model.md)
 - [Teslim hazırlığı](docs/release-readiness.md)
 - [Operasyon runbook'u](docs/operations-runbook.md)
@@ -154,4 +154,4 @@ Bir güvenlik sorunu fark ederseniz herkese açık issue açmayın. [Özel güve
 
 ## Lisans
 
-Kaynak kodu portföy incelemesi amacıyla herkese açıktır. Yeniden kullanım veya dağıtım izni verilmemiştir; ayrıntılar için [LICENSE](LICENSE) dosyasına bakın.
+Kaynak kodu teknik ve akademik inceleme amacıyla herkese açıktır. Yeniden kullanım veya dağıtım izni verilmemiştir; ayrıntılar için [LICENSE](LICENSE) dosyasına bakın.
