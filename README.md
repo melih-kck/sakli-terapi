@@ -119,7 +119,7 @@ Uçtan uca paket; ana sayfa, kalıcı dil tercihi, blur onayı, üç demo rolü,
 
 Tüm kontroller `main` dalına gönderilen her değişiklikte GitHub Actions tarafından yeniden çalıştırılır. Derleme sonrasında başlangıç performans bütçesini doğrulamak için `npm run check:performance`, belge görsellerini güncel yerel demo üzerinden yeniden üretmek için geliştirme sunucusu açıkken `npm run screenshots:portfolio` komutunu kullanın.
 
-React, React DOM ve ilgili type paketleri Dependabot tarafından ayrı bir grupta güncellenir. React 19.3 geçişi başlangıç aktarım bütçesini aştığı için 19.2.x korunur; güvenlik güncellemeleri kapatılmadan yeni sürümler aynı kalite kontrolleriyle ayrıca değerlendirilir.
+React, React DOM ve ilgili type paketleri Dependabot tarafından ayrı bir grupta güncellenir ve genel npm grubundan açıkça dışlanır. React 19.3 geçişi başlangıç aktarım bütçesini aştığı için 19.2.x korunur; güvenlik güncellemeleri kapatılmadan yeni sürümler aynı kalite kontrolleriyle ayrıca değerlendirilir.
 
 ## Proje Yapısı
 
