@@ -16,7 +16,7 @@ export default defineConfig({
     baseURL,
     locale: 'tr-TR',
     timezoneId: 'Europe/Istanbul',
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },
