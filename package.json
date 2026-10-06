@@ -19,7 +19,7 @@
     "supabase",
     "webrtc",
     "privacy",
-    "portfolio"
+    "prototype"
   ],
   "type": "module",
   "engines": {

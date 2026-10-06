@@ -1,15 +1,15 @@
 # Teslim Hazırlığı
 
-Son güncelleme: 1 Ağustos 2026
+Son güncelleme: 6 Ekim 2026
 
-## Profesyonel Portföy Sürümü
+## Etkileşimli Teknoloji Prototipi
 
-- [x] Uygulamanın varsayılan modu güvenli portföy demosu yapıldı
+- [x] Uygulamanın varsayılan modu güvenli demo yapıldı
 - [x] Danışan, uzman ve yönetici için tek tıkla kurgusal rol deneyimleri hazırlandı
 - [x] Gerçek kayıt, başvuru, randevu, ödeme ve sağlık hizmeti özellikleri kapatıldı
 - [x] Demo verilerinin Supabase ve Sentry'ye gönderilmesi engellendi
 - [x] Kurgusal uzman kataloğu, randevu, seans ve belge onay akışları hazırlandı
-- [x] Herkese açık GitHub portföy deposu, CI ve Vercel dağıtım yapısı hazır
+- [x] Herkese açık GitHub deposu, CI ve Vercel dağıtım yapısı hazır
 - [x] Otomatik lint, test, build ve yüksek önem düzeyi bağımlılık denetimi var
 - [x] Kritik demo akışları Chromium, Firefox ve WebKit masaüstü/mobil profillerinde uçtan uca otomatik test ediliyor
 - [x] Kritik ekranlar WCAG A/AA kuralları için masaüstü ve mobilde otomatik taranıyor
@@ -49,4 +49,4 @@ Son güncelleme: 1 Ağustos 2026
 
 ## Teslim Kararı
 
-Mevcut sürüm işe alım ekiplerine, ürün ve mühendislik incelemelerine sunulabilecek etkileşimli portföy demosudur. Sağlık hizmeti veya açık pilot değildir. `demo` modu ve özellik kapıları, yukarıdaki üretim gereklilikleri tamamlanana kadar korunmalıdır.
+Mevcut sürüm teknik ve akademik incelemelere sunulabilecek etkileşimli bir teknoloji prototipidir. Sağlık hizmeti veya açık pilot değildir. `demo` modu ve özellik kapıları, yukarıdaki üretim gereklilikleri tamamlanana kadar korunmalıdır.
