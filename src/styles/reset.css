@@ -9,7 +9,8 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  /* Keep automatic scrolling immediate so WebKit click targets stay stable. */
+  scroll-behavior: auto;
   -webkit-text-size-adjust: 100%;
   -moz-text-size-adjust: 100%;
   text-size-adjust: 100%;
